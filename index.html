@@ -29,6 +29,34 @@
          border-left:2px solid #2a3142;padding-left:12px}
   .grule b{color:#e8bd55;margin-right:8px}
   .gate .agrid{max-height:38vh;overflow:auto}
+  .portal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
+    background:#05080d;overflow:hidden}
+  .portal[hidden]{display:none}
+  .pdoor{position:relative;width:min(86vw,420px);aspect-ratio:1/1.06;display:flex;align-items:center;justify-content:center;
+    clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+    background:radial-gradient(60% 60% at 50% 45%,#12202e 0%,#080d14 62%,#05080d 100%);
+    box-shadow:0 0 90px rgba(120,200,220,.20) inset;overflow:hidden;
+    transition:transform 1.9s cubic-bezier(.2,.8,.2,1),opacity 1.9s ease}
+  .pfog{position:absolute;border-radius:50%;filter:blur(28px);opacity:.55;mix-blend-mode:screen}
+  .f1{width:70%;height:52%;left:-10%;top:8%;background:radial-gradient(circle,#5ee0c0,transparent 70%);
+      animation:drift1 11s ease-in-out infinite}
+  .f2{width:64%;height:60%;right:-12%;top:26%;background:radial-gradient(circle,#7aa8ff,transparent 70%);
+      animation:drift2 14s ease-in-out infinite}
+  .f3{width:56%;height:44%;left:22%;bottom:-8%;background:radial-gradient(circle,#e8bd55,transparent 72%);
+      opacity:.32;animation:drift3 17s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(14%,10%) scale(1.18)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-12%,-8%) scale(.92)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(8%,-12%) scale(1.14)}}
+  .prim{position:absolute;inset:6%;clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+    border:0;box-shadow:0 0 0 1px rgba(232,189,85,.55) inset,0 0 34px rgba(232,189,85,.28) inset}
+  .pmark{position:relative;font-family:Georgia,serif;font-size:16px;letter-spacing:.42em;color:#eef4fb;
+    text-shadow:0 0 24px rgba(160,220,255,.55);opacity:.92}
+  .pmark span{color:#e8bd55}
+  .penter{position:absolute;bottom:16%;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;
+    color:#9fb4cc;opacity:.8;animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+  .portal.open .pdoor{transform:scale(1.55) rotate(2deg);opacity:0}
+  .portal.open .pfog{opacity:0;transition:opacity 1.4s ease}
   .hbtns{display:flex;flex-wrap:wrap;gap:6px;max-width:100%}
   .brandbar{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
   .brandbar img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 18px rgba(232,189,85,.28)}
@@ -163,6 +191,34 @@
          border-left:2px solid #2a3142;padding-left:12px}
   .grule b{color:#e8bd55;margin-right:8px}
   .gate .agrid{max-height:38vh;overflow:auto}
+  .portal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
+    background:#05080d;overflow:hidden}
+  .portal[hidden]{display:none}
+  .pdoor{position:relative;width:min(86vw,420px);aspect-ratio:1/1.06;display:flex;align-items:center;justify-content:center;
+    clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+    background:radial-gradient(60% 60% at 50% 45%,#12202e 0%,#080d14 62%,#05080d 100%);
+    box-shadow:0 0 90px rgba(120,200,220,.20) inset;overflow:hidden;
+    transition:transform 1.9s cubic-bezier(.2,.8,.2,1),opacity 1.9s ease}
+  .pfog{position:absolute;border-radius:50%;filter:blur(28px);opacity:.55;mix-blend-mode:screen}
+  .f1{width:70%;height:52%;left:-10%;top:8%;background:radial-gradient(circle,#5ee0c0,transparent 70%);
+      animation:drift1 11s ease-in-out infinite}
+  .f2{width:64%;height:60%;right:-12%;top:26%;background:radial-gradient(circle,#7aa8ff,transparent 70%);
+      animation:drift2 14s ease-in-out infinite}
+  .f3{width:56%;height:44%;left:22%;bottom:-8%;background:radial-gradient(circle,#e8bd55,transparent 72%);
+      opacity:.32;animation:drift3 17s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(14%,10%) scale(1.18)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-12%,-8%) scale(.92)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(8%,-12%) scale(1.14)}}
+  .prim{position:absolute;inset:6%;clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+    border:0;box-shadow:0 0 0 1px rgba(232,189,85,.55) inset,0 0 34px rgba(232,189,85,.28) inset}
+  .pmark{position:relative;font-family:Georgia,serif;font-size:16px;letter-spacing:.42em;color:#eef4fb;
+    text-shadow:0 0 24px rgba(160,220,255,.55);opacity:.92}
+  .pmark span{color:#e8bd55}
+  .penter{position:absolute;bottom:16%;font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;
+    color:#9fb4cc;opacity:.8;animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+  .portal.open .pdoor{transform:scale(1.55) rotate(2deg);opacity:0}
+  .portal.open .pfog{opacity:0;transition:opacity 1.4s ease}
   .hbtns{display:flex;gap:5px;align-items:center}
   .chalbar{display:flex;gap:10px;align-items:center;justify-content:space-between;background:#1b1408;
     border:1px solid #6a4f14;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:13px;color:#f0e2c0}
@@ -378,6 +434,14 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
       <div class="grule"><b>4</b> Hold ten subjects at most. Anyone who beats you takes one, and a knockback costs you climb points, so the top is a long haul, not an evening.</div>
       <button class="btn" id="grulesgo" style="margin-top:18px">Start at the rim</button>
     </div>
+  </div>
+</div>
+<div class="portal" id="portal" hidden>
+  <div class="pdoor">
+    <div class="pfog f1"></div><div class="pfog f2"></div><div class="pfog f3"></div>
+    <div class="prim"></div>
+    <div class="pmark">GENIAL<span>ITY</span></div>
+    <div class="penter" id="penter">enter the realm</div>
   </div>
 </div>
 <div class="wrap">
@@ -2099,6 +2163,16 @@ function bestRating(){
   }
   function grade(){ var b=bestRating(); return b<1050?0:b<1120?1:b<1200?2:b<1320?3:4; }
 
+  /* ---------- the way in: a hexagonal door, and the fog behind it ---------- */
+  function portalOpen(then){
+    var p=$("portal"); if(!p){ if(then) then(); return; }
+    p.hidden=false; p.classList.remove("open");
+    setTimeout(function(){
+      p.classList.add("open");
+      try{ ac(); musicStart("map"); }catch(e){}
+      setTimeout(function(){ p.hidden=true; if(then) then(); },1900);
+    },900);
+  }
   /* ---------- first run: the mark, your name, your face, the rules ---------- */
   var GPICK=null;
   function gateFaces(){
@@ -2135,8 +2209,10 @@ function bestRating(){
     $("grulesgo").onclick=function(){
       store.set("onboarded",true);
       g.hidden=true;
-      musicStart("map");
-      if(PENDING){ start(PENDING.cat,false,0); } else { showMap(); }
+      ac(); musicStart("map");
+      portalOpen(function(){
+        if(PENDING){ start(PENDING.cat,false,0); } else { showMap(); }
+      });
     };
   }
     function paintMe(){
@@ -4026,6 +4102,15 @@ function bestRating(){
   } else if(!me.name||me.avatar===null){
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
+  (function(){
+    function wake(){
+      try{ var c=ac(); if(c&&c.state==="suspended") c.resume(); musicStart("map"); }catch(e){}
+      document.removeEventListener("pointerdown",wake);
+      document.removeEventListener("touchstart",wake);
+    }
+    document.addEventListener("pointerdown",wake,{passive:true});
+    document.addEventListener("touchstart",wake,{passive:true});
+  })();
   if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
   rebuildTiers();
   ladderButton();
