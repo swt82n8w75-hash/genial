@@ -144,6 +144,7 @@
   .arsrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #1a2230}
   .arsrow span:first-child{font-size:15px;color:#eef2f8}
   .arsrow em{font-style:normal;font-size:11px;color:#7f8ea4;letter-spacing:.06em}
+  .arsrow.you span:first-child{color:#e8bd55}
   .arsrow button{background:#1b2a3d;border:1px solid #2f4663;color:#cfe0f5;font:inherit;font-size:11px;
     letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border-radius:8px}
   .hbtns .snd{padding:6px 9px;font-size:12px}
@@ -318,7 +319,7 @@
 
 <div class="arsenal" id="ars" hidden>
   <div class="arscard">
-    <div class="arsh">Your arsenal</div>
+    <div class="arsh" id="arsh">Your arsenal</div>
     <div id="arslist"></div>
     <div class="note" id="arsnote"></div>
     <button class="btn" id="arsclose" style="margin-top:14px">Close</button>
@@ -2093,7 +2094,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     tone(t+2.25, 880, 0.05, 0.40, "triangle");
   }
   function kindLabel(){
-    return S.kind==="truefalse" ? "true or false" : S.kind==="ladder" ? "the ladder" : "five questions";
+    return S.kind==="truefalse" ? "true or false" : S.kind==="ladder" ? "the ladder"
+      : S.kind==="streak" ? "three in a row" : "five questions";
   }
   function roundIntro(then){
     var box=document.createElement("div");
@@ -2126,6 +2128,33 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
 
   /* ---------- play ---------- */
   var S={}, CLOCK=12, tick=null, t0=0, MODE='solo', PENDING=null;
+  var PRICES={
+    entry:{price:"\u00a32",  label:"the entry level",   blurb:"the whole ground floor, all 25 subjects and everything above them as you climb"},
+    square:{price:"\u00a32.99", label:"versus everybody", blurb:"the square, where everyone plays the same question at once"},
+    live:{price:"\u00a32.99", label:"versus live",      blurb:"the race, where the faster correct answer takes the point"}
+  };
+  function ownedBook(){ return store.get("owned",{}); }
+  function owns(k){ var o=ownedBook(); return !!o[k]; }
+  function unlock(k){ var o=ownedBook(); o[k]=true; store.set("owned",o); }
+  function paywall(k,then){
+    var p=PRICES[k], box=$("arslist");
+    $("arsh").textContent="Unlock \u00b7 "+p.label;
+    box.innerHTML='<div class="arsrow"><span>'+p.label+'</span><em>'+p.price+'</em></div>'+
+      '<div class="note" style="margin-top:10px">'+p.blurb+'. Pay once, yours for good.</div>';
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Prototype:</b> no money is taken here. '+
+      'In the released app this is an Apple in-app purchase; tapping below unlocks it so you can test the rest.';
+    var old=$("arsunlock"); if(old) old.remove();
+    var b=document.createElement("button");
+    b.id="arsunlock"; b.className="btn"; b.style.marginTop="12px";
+    b.textContent="Unlock for "+p.price;
+    b.onclick=function(){
+      unlock(k); b.remove(); $("ars").hidden=true;
+      if(kindOf(then)==="function") then();
+    };
+    $("arsclose").parentNode.insertBefore(b,$("arsclose"));
+    $("ars").hidden=false;
+  }
+  function kindOf(x){ return typeof x; }
   var COUNT={low:4,medium:6,hard:8,genial:10};
   var TIER={low:1,medium:2,hard:3,genial:5};
   function tierOf(i){ return i<1?"low":i<3?"medium":i<4?"hard":"genial"; }
@@ -2196,7 +2225,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[],
        mode:MODE,qs:qs.slice(0,5),oppAt:0,banked:0,lpot:1,li:0,defend:defend||null};
     var roll=Math.random();
-    S.kind = roll<0.22?"truefalse" : roll<0.44?"ladder" : "standard";
+    S.kind = roll<0.18?"truefalse" : roll<0.36?"ladder" : roll<0.54?"streak" : "standard";
+    S.run=0;
     S.opp=makeOpponent();
     S.target=null;
     if(PENDING){
@@ -2233,9 +2263,9 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     if(S.kind==="ladder") return askLadder();
     S.answered=false;
     var q=BANK[S.cat].q[S.qs[S.i]], t=tierAt(S.i);
-    $("count").textContent=(S.i+1)+" / 5";
+    $("count").textContent=(S.i+1)+" / 5"+(S.kind==="streak"?" \u00b7 run of "+(S.run||0):"");
     $("q").textContent=q[0];
-    var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>"+t+"</span>";
+    var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>"+(S.kind==="streak"?"three in a row":t)+"</span>";
     $("feedback").innerHTML=""; $("next").hidden=true; $("heard").textContent="";
     S.built=buildOptions(S.cat,S.qs[S.i],COUNT[t]);
     var box=$("options"); box.innerHTML=""; box.className="opts n"+COUNT[t];
@@ -2279,11 +2309,14 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     S.answered=true; clearInterval(tick); clearTimeout(S.oppTimer);
     var ok=(saidTrue?1:0)===(S.tf.isTrue?1:0);
     var secs=Math.min(CLOCK,(Date.now()-t0)/1000);
+    recordAnswer("medium",ok,secs);
     var pts=ok?+(2*mult(secs)).toFixed(1):0;
     S.score+=pts; if(ok) S.correct++;
     S.results[S.i]=ok;
     S.streak=ok?(S.streak||0)+1:0;
+    if(S.kind==="streak"){ S.run=ok?(S.run||0)+1:0; }
     if(ok&&(S.fastest===null||secs<S.fastest)) S.fastest=secs;
+    recordAnswer(t,ok,secs);
     var their=S.opp.res[S.i]||{ok:false,pts:0};
     if(S.mode==="live"){ if(ok){ S.opp.res[S.i]={ok:false,pts:0}; } else { S.opp.score+=2; S.opp.got++; } }
     else { S.opp.score+=their.pts; if(their.ok) S.opp.got++; }
@@ -2324,6 +2357,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     if(S.answered) return;
     S.answered=true; clearInterval(tick); clearTimeout(S.oppTimer);
     var ok=pick===S.built.correct;
+    recordAnswer(tierAt(Math.min(4,S.li)),ok,(Date.now()-t0)/1000);
     var qs=BANK[S.cat].q, q=qs[S.lorder[S.li]];
     var btns=$("options").querySelectorAll(".opt");
     for(var i=0;i<btns.length;i++){
@@ -2407,6 +2441,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     S.score+=pts; if(ok) S.correct++;
     S.results[S.i]=ok;
     S.streak=ok?(S.streak||0)+1:0;
+    if(S.kind==="streak"){ S.run=ok?(S.run||0)+1:0; }
     if(ok&&(S.fastest===null||secs<S.fastest)) S.fastest=secs;
     var their=S.opp.res[S.i]||{ok:false,pts:0};
     if(S.mode==="live"){
@@ -2549,7 +2584,9 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     clearInterval(tick);
     $("play").hidden=true; $("end").hidden=false;
     var rt=ratings(), before=rt[S.cat]||1000;
-    var won = S.kind==="ladder" ? (S.banked>=3) : (S.correct>=(S.kind==="truefalse"?4:3));
+    var won = S.kind==="ladder" ? (S.banked>=3)
+            : S.kind==="streak" ? ((S.run||0)>=3)
+            : (S.correct>=(S.kind==="truefalse"?4:3));
     var delta=Math.round((S.correct/5-0.5)*60);
     var after=Math.max(600,before+delta);
     rt[S.cat]=after; store.set("ratings",rt);
@@ -2558,7 +2595,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     $("endvs").innerHTML=whoHTML(me.name,me.avatar,grade(),S.score,true)+
       '<span class="mid">vs</span>'+whoHTML(S.opp.name,S.opp.avatar,0,S.opp.score,false);
     $("score").textContent=S.score.toFixed(1);
-    $("correct").textContent = S.kind==="ladder" ? ("banked "+S.banked) : (S.correct+" / 5");
+    $("correct").textContent = S.kind==="ladder" ? ("banked "+S.banked)
+      : S.kind==="streak" ? ("run of "+(S.run||0)) : (S.correct+" / 5");
     $("fastest").textContent=S.fastest!==null?S.fastest.toFixed(1)+"s":"\u2013";
     $("rating").textContent=after;
     $("delta").textContent=(delta>=0?"+":"")+delta;
@@ -2663,19 +2701,24 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     var tiers=[];
     tiers.push({level:1, list:entry.length?entry:CATS.slice(0,25), cols:5, s:40, opens:0, name:"The Ground"});
     if(spec.length){
-      tiers.push({level:2, list:spec.slice(0,half), cols:10, s:20, opens:25, name:"The Ascent"});
-      if(spec.length>half) tiers.push({level:3, list:spec.slice(half), cols:10, s:20, opens:60, name:"The High Table"});
+      var bands=[[2,0,25],[3,60,100],[4,100,150],[5,150,220]];
+      var chunk=50, lvl=0;
+      for(var bi=0; bi<bands.length && bi*chunk<spec.length; bi++){
+        tiers.push({level:bands[bi][0], list:spec.slice(bi*chunk,(bi+1)*chunk), cols:10, s:20,
+                    opens:bands[bi][2], name:inkFor(bands[bi][0]).name});
+      }
     }
     tiers.forEach(function(T){ T.rows=Math.max(3,Math.ceil(T.list.length/T.cols)); });
     TIERS=tiers;
   }
-  rebuildTiers();
   var GAP=54, ZOOM=1;
   var LEVELINK={
     1:{name:"The Ground",    reach:"#4a5a78", held:"#8fb4e8", fill:"#161d2b", hfill:"#17243a", ink:"#9db6dd"},
     2:{name:"The Ascent",    reach:"#6f7683", held:"#e4e8ee", fill:"#1a1d23", hfill:"#24282f", ink:"#dfe5ee"},
     3:{name:"The High Table",reach:"#8a6b1e", held:"#f2cd63", fill:"#1d1809", hfill:"#2b2210", ink:"#f2cd63"},
-    4:{name:"The Red",       reach:"#7d2f2f", held:"#f0756a", fill:"#1e1010", hfill:"#2d1616", ink:"#f0756a"}
+    4:{name:"The Crystal",   reach:"#5f7f96", held:"#cfe9ff", fill:"#131c24", hfill:"#1b2a36", ink:"#cfe9ff"},
+    5:{name:"The Snow",      reach:"#8a97a8", held:"#ffffff", fill:"#1b1f26", hfill:"#262c35", ink:"#ffffff"},
+    6:{name:"The Red",       reach:"#7d2f2f", held:"#f0756a", fill:"#1e1010", hfill:"#2d1616", ink:"#f0756a"}
   };
   function inkFor(l){ return LEVELINK[l]||LEVELINK[1]; }
   function tierByLevel(l){ for(var i=0;i<TIERS.length;i++) if(TIERS[i].level===l) return TIERS[i]; return TIERS[0]; }
@@ -2692,6 +2735,26 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
                .map(function(p){return {r:p[0],c:p[1]};});
   }
   function heldList(){ return store.get("held",[]); }
+  var IQW={low:0.6,medium:1.0,hard:1.4,genial:1.8};
+  function iqBook(){ return store.get("iq",{n:0,cw:0,tw:0,secs:0}); }
+  function recordAnswer(tierKey,ok,secs){
+    var b=iqBook(), w=IQW[tierKey]||1;
+    b.n++; b.tw+=w; if(ok) b.cw+=w;
+    b.secs+=(isFinite(secs)?Math.min(20,Math.max(1,secs)):8);
+    store.set("iq",b);
+  }
+  function iqNow(){
+    var b=iqBook();
+    if(b.n<5) return null;
+    var perf=b.tw?b.cw/b.tw:0, avg=b.secs/Math.max(1,b.n);
+    var speed=Math.max(0,Math.min(8,8*(1-Math.min(1,avg/12))));
+    return Math.round(85+55*perf+speed);
+  }
+  function iqLine(){
+    var b=iqBook(), q=iqNow();
+    if(q===null) return "IQ not yet measured \u00b7 five answers and it starts counting";
+    return "IQ "+q+" \u00b7 from "+b.n+" answers";
+  }
   function hash32(s){ var h=2166136261,i; for(i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=(h*16777619)>>>0; } return h; }
   function playsBook(){ return store.get("plays",{}); }
   function addPlay(cat){ var p=playsBook(); p[cat]=(p[cat]||0)+1; store.set("plays",p); }
@@ -2738,6 +2801,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   }
   function renderArsenal(mode,newCat){
     var h=heldList(), b=arsenalBook(), box=$("arslist");
+    $("arsh").textContent="Your arsenal \u00b7 "+iqLine();
     box.innerHTML="";
     if(!h.length){
       box.innerHTML='<div class="note" style="margin:10px 0 0">Nothing yet. Win a hexagon and the subject is yours.</div>';
@@ -2916,11 +2980,33 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   $("zoomin").onclick=function(){ setZoom(ZOOM+0.5); };
   $("zoomout").onclick=function(){ setZoom(ZOOM-0.5); };
   ZOOM=store.get("zoom",1);
+  function wireModes(){
+    var btns=document.querySelectorAll("#modes button"), i;
+    for(i=0;i<btns.length;i++){
+      (function(b){
+        b.onclick=function(){
+          var m=b.getAttribute("data-mode");
+          var go=function(){
+            MODE=m;
+            var all=document.querySelectorAll("#modes button"), j;
+            for(j=0;j<all.length;j++) all[j].className=(all[j].getAttribute("data-mode")===m?"on":"");
+            $("modehint").textContent = m==="live" ? "Live: the faster correct answer takes the point."
+              : m==="send" ? "Challenge: play five, then send the link to anyone."
+              : "Five questions, twelve seconds each.";
+          };
+          if(m==="live"&&!owns("live")){ paywall("live",go); return; }
+          go();
+        };
+      })(btns[i]);
+    }
+  }
   function showMap(){
+    if(!owns("entry")){ paywall("entry",function(){ showMap(); }); return; }
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=true;
     $("mapwrap").hidden=false; drawMap();
   }
   $("tolist").onclick=function(){ $("mapwrap").hidden=true; $("home").hidden=false; drawList(); };
+  $("toars").onclick=function(){ if(!owns("entry")){ paywall("entry",function(){}); return; } renderArsenal(); };
   function mapButton(){
     var b=document.createElement("button");
     b.className="snd"; b.textContent="the map"; b.style.marginLeft="8px";
@@ -3057,6 +3143,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     if(SQ.out) return;
     clearInterval(tick);
     var ok=pick===SQ.built.correct;
+    recordAnswer("medium",ok,(Date.now()-SQ.t0)/1000);
     var btns=$("options").querySelectorAll(".opt");
     for(var i=0;i<btns.length;i++){
       btns[i].disabled=true;
@@ -3083,8 +3170,16 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       'You are in the top '+pct+' per cent of the square.</div>';
     $("next").hidden=false; $("next").textContent="Next question";
   }
+  function sqBand(correct){
+    if(correct>=10) return {pct:1, bonus:60, label:"top 1 per cent \u00b7 the genius prize"};
+    if(correct===9)  return {pct:3, bonus:40, label:"top 3 per cent \u00b7 a rare thing"};
+    if(correct===8)  return {pct:5, bonus:30, label:"top 5 per cent"};
+    if(correct===7)  return {pct:10, bonus:20, label:"top 10 per cent \u00b7 through"};
+    return {pct:100, bonus:5, label:"outside the top ten per cent"};
+  }
   function sqWin(){
-    var bonus=15+Math.round(SQ.correct*2);
+    var band=sqBand(SQ.correct);
+    var bonus=band.bonus;
     store.set("climb",+(climbPts()+bonus).toFixed(1));
     $("play").hidden=true; $("end").hidden=false;
     $("endcat").textContent="The square";
@@ -3095,11 +3190,53 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     $("fastest").textContent="–";
     $("rating").textContent=Math.round(climbPts());
     $("delta").textContent="+"+bonus;
-    $("verdict").textContent="Last one standing out of "+SQ.start+". That is "+bonus+" on the climb.";
+    $("verdict").textContent=SQ.correct+" of ten. You finished in the "+band.label+
+      " of "+SQ.start+". "+bonus+" on the climb.";
+    $("endpct").textContent=band.pct<=10 ? "top "+band.pct+" per cent \u00b7 promoted" : "not promoted this time";
     $("home2").textContent="Back to the map";
     paintMe();
   }
-  $("tosq").onclick=function(){ squareStart(); };
+  $("tosq").onclick=function(){
+    if(!owns("square")){ paywall("square",function(){ squareStart(); }); return; }
+    squareStart();
+  };
+
+  /* ---------- the genius board ---------- */
+  function boardNames(){
+    var seed=hash32("board"+currentLevel()), out=[], used={};
+    var A=["Cressida","Osric","Beatrix","Idris","Aurora","Sylvie","Tobias","Cormac","Imogen","Rafferty",
+           "Delphine","Magnus","Ottilie","Peregrine","Rosalind","Sinclair","Tamsin","Ulric","Verity","Wren"];
+    for(var i=0;i<12;i++){
+      var n=A[(seed+i*7)%A.length];
+      if(used[n]) continue; used[n]=1;
+      out.push({name:n, avatar:(seed+i*13)%72, iq:96+((seed>>>(i%16))%46)});
+    }
+    return out;
+  }
+  function geniusBoard(){
+    var mine=iqNow()||0, rows=boardNames(), lvl=currentLevel(), pal=inkFor(lvl);
+    rows.push({name:me.name||"you", avatar:me.avatar||0, iq:mine, you:true});
+    rows.sort(function(a,b){ return b.iq-a.iq; });
+    var rank=1, i; for(i=0;i<rows.length;i++) if(rows[i].you) rank=i+1;
+    var pctile=Math.max(1,Math.round(rank/rows.length*100));
+    var html='';
+    rows.forEach(function(r,ix){
+      html+='<div class="arsrow'+(r.you?' you':'')+'"><span>'+(ix+1)+'. '+r.name+
+        (r.you?' <em>you</em>':'')+'</span><em>IQ '+r.iq+'</em></div>';
+    });
+    $("arslist").innerHTML=html;
+    $("arsh").textContent="Genius board \u00b7 level "+lvl+" \u00b7 "+pal.name;
+    $("arsnote").textContent = mine ? ("You are "+rank+" of "+rows.length+" at this level, the top "+pctile+
+      " per cent. You only meet players at your own level.") :
+      "Answer five questions and your IQ is measured, then you take your place here.";
+    $("ars").hidden=false;
+  }
+  function boardButton(){
+    var b=document.createElement("button");
+    b.className="snd"; b.textContent="genius board"; b.id="toboard";
+    b.onclick=function(){ geniusBoard(); };
+    var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
+  }
 
   /* ---------- packs: the world grows without a rebuild ---------- */
   function mergePack(p){
@@ -3143,6 +3280,9 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   if(!me.name||me.avatar===null){
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
+  rebuildTiers();
+  wireModes();
+  boardButton();
   loadPacks().then(function(n){
     if(!n) return;
     document.querySelector("#home .tag").textContent = CATS.length+
