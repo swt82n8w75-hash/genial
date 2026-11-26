@@ -2851,115 +2851,113 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   }
   function isGate(T,i){ return i===gateCell(T); }
   function floorFor(r,rows){ return r>=rows-2?1:r>=1?2:3; }
+  /* ---------- the field: one vast lattice, rim to centre ---------- */
+  var FIELD=null;
+  function buildField(){
+    var R=18, cells=[], q, r;
+    for(q=-R;q<=R;q++){
+      for(r=Math.max(-R,-q-R);r<=Math.min(R,-q+R);r++){
+        cells.push({q:q,r:r,ring:Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r))});
+      }
+    }
+    var byRing={};
+    cells.forEach(function(c){ (byRing[c.ring]=byRing[c.ring]||[]).push(c); });
+    var entry=[], spec=[], i;
+    for(i=0;i<CATS.length;i++){ (BANK[CATS[i]].area==="Entry level"?entry:spec).push(CATS[i]); }
+    var order=entry.concat(spec), idx=0, ring;
+    for(ring=R; ring>=0 && idx<order.length; ring--){
+      var rc=(byRing[ring]||[]).slice();
+      rc.sort(function(a,b){ return Math.atan2(a.r,a.q)-Math.atan2(b.r,b.q); });
+      for(i=0;i<rc.length && idx<order.length;i++) rc[i].cat=order[idx++];
+    }
+    // the places you can go up: the centre, and a few scattered through the field
+    cells.forEach(function(c){ if(c.ring<=1) c.ascent=true; });
+    var seed=hash32("ascent"), pool=cells.filter(function(c){ return c.ring>3 && c.ring<R-1; });
+    for(i=0;i<6 && pool.length;i++){
+      var pick=pool[(seed+i*97)%pool.length];
+      if(!pick.ascent){ pick.ascent=true; }
+    }
+    return {R:R, cells:cells, byKey:{}, s:11};
+  }
+  function fieldIndex(f){
+    f.byKey={};
+    f.cells.forEach(function(c){ f.byKey[c.q+","+c.r]=c; });
+  }
+  function cellOf(cat){
+    if(!FIELD) return null;
+    for(var i=0;i<FIELD.cells.length;i++) if(FIELD.cells[i].cat===cat) return FIELD.cells[i];
+    return null;
+  }
+  function axialNeighbours(c){
+    var d=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]], out=[], i, n;
+    for(i=0;i<d.length;i++){
+      n=FIELD.byKey[(c.q+d[i][0])+","+(c.r+d[i][1])];
+      if(n) out.push(n);
+    }
+    return out;
+  }
   function drawMap(){
-    maybeChallenged();
-    var held=heldList(), climb=climbPts();
+    if(!FIELD){ FIELD=buildField(); fieldIndex(FIELD); }
+    var f=FIELD, s=f.s*ZOOM, held=heldList(), climb=climbPts();
     var lv=currentLevel(), pal=inkFor(lv);
-    var nxt=null;
-    for(var i=0;i<TIERS.length;i++) if(climb<TIERS[i].opens) { nxt=TIERS[i]; break; }
+    maybeChallenged();
+    var nxt=null, i;
+    for(i=0;i<TIERS.length;i++) if(climb<TIERS[i].opens){ nxt=TIERS[i]; break; }
     $("lvlname").textContent="Level "+lv+" \u00b7 "+pal.name;
     $("lvlname").style.color=pal.ink;
     $("climbbar").style.background="linear-gradient(90deg,"+pal.reach+","+pal.held+")";
     if(nxt){
-      var prev=nxt.opens===25?0:25;
+      var prev=nxt.level<=2?0:(nxt.level===3?25:60);
       var pct=Math.max(0,Math.min(100,(climb-prev)/(nxt.opens-prev)*100));
       $("climbbar").style.width=pct+"%";
       $("climbtxt").textContent=climb+" of "+nxt.opens+" to Level "+nxt.level+" \u00b7 "+inkFor(nxt.level).name;
+    } else { $("climbbar").style.width="100%"; $("climbtxt").textContent=climb+" points \u00b7 the top of the world so far"; }
+
+    var reach={};
+    if(!held.length){
+      // the edge is open: start wherever your subject is
+      f.cells.forEach(function(c){ if(c.cat && c.ring>=f.R-2) reach[c.q+","+c.r]=1; });
     } else {
-      $("climbbar").style.width="100%";
-      $("climbtxt").textContent=climb+" points \u00b7 the top of the world so far";
-    }
-
-    // geometry, top tier first
-    var ys=[], y=0, maxW=0;
-    for(var k=TIERS.length-1;k>=0;k--){
-      var T=TIERS[k], w=Math.sqrt(3)*T.s, h=1.5*T.s*(T.rows-1)+2*T.s;
-      ys[k]=y; y+=h+GAP;
-      maxW=Math.max(maxW, w*T.cols+w/2);
-    }
-    var W=maxW+8, H=y-GAP+8;
-    var parts=[];
-    var defs='<defs>';
-    TIERS.forEach(function(T){
-      var p=inkFor(T.level);
-      defs+='<linearGradient id="g'+T.level+'" x1="0" y1="0" x2="0" y2="1">'+
-        '<stop offset="0" stop-color="'+p.fill+'" stop-opacity="1"/>'+
-        '<stop offset="1" stop-color="#080b10"/></linearGradient>';
-      defs+='<linearGradient id="h'+T.level+'" x1="0" y1="0" x2="0" y2="1">'+
-        '<stop offset="0" stop-color="'+p.hfill+'"/><stop offset="1" stop-color="#0a0d12"/></linearGradient>';
-      defs+='<filter id="s'+T.level+'" x="-20%" y="-20%" width="140%" height="140%">'+
-        '<feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="'+p.held+'" flood-opacity="0.18"/></filter>';
-    });
-    defs+='</defs>';
-    parts.push(defs);
-    TIERS.forEach(function(T,ti){
-      var w=Math.sqrt(3)*T.s, cells=gridCells(T.rows,T.cols), open=tierOpen(T.level);
-      var heldCells={};
-      cells.forEach(function(c,i){ if(held.indexOf(T.list[i])>=0) heldCells[gkey(c)]=i; });
-      var reach={};
-      if(open){
-        if(!Object.keys(heldCells).length){
-          var mid=Math.floor(T.cols/2);
-          cells.forEach(function(c,i){
-            if(c.r===T.rows-1 && (c.c===mid-1||c.c===mid||c.c===mid+1)) reach[gkey(c)]=i;
-          });
-        } else {
-          cells.forEach(function(c,i){
-            if(held.indexOf(T.list[i])>=0) return;
-            if(gN(c,T.rows,T.cols).some(function(nb){ return heldCells.hasOwnProperty(gkey(nb)); })) reach[gkey(c)]=i;
-          });
-        }
-      }
-      var p=inkFor(T.level);
-      // the plate this lattice sits on, so a level reads as raised above the one below
-      var plateW=Math.sqrt(3)*T.s*T.cols+8, plateH=1.5*T.s*(T.rows-1)+2*T.s+10;
-      parts.push('<rect x="0" y="'+(ys[ti]-4)+'" width="'+plateW.toFixed(0)+'" height="'+plateH.toFixed(0)+
-        '" rx="18" fill="#0a0e15" opacity="0.85" stroke="'+p.reach+'" stroke-opacity="0.16" filter="url(#s'+T.level+')"/>');
-      cells.forEach(function(c,i){
-        var cx=c.c*w+(c.r%2?w/2:0)+w/2+4, cy=c.r*1.5*T.s+T.s+ys[ti];
-        var name=T.list[i];
-        if(!name){
-          // the edge of the world: space the next pack will fill
-          var epts=[[0,-T.s],[T.s*0.866,-T.s/2],[T.s*0.866,T.s/2],[0,T.s],[-T.s*0.866,T.s/2],[-T.s*0.866,-T.s/2]]
-            .map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
-          parts.push('<polygon points="'+epts+'" fill="#080b10" stroke="#101620" stroke-width="0.6" opacity="0.6"/>');
-          return;
-        }
-        var isHeld=held.indexOf(name)>=0;
-        var isReach=reach.hasOwnProperty(gkey(c));
-        var cls="hx"+(isHeld?" held":isReach?" reach":"");
-        var fill=isHeld?"url(#h"+T.level+")":isReach?"url(#g"+T.level+")":"#0b0e14";
-        var stroke=isHeld?p.held:isReach?p.reach:"#161c26";
-        var sw=isHeld?2.2:isReach?1.5:0.7;
-        var fl=T.level===1?floorFor(c.r,T.rows):(c.r>=T.rows-2?2:3);
-        var pts=[[0,-T.s],[T.s*0.866,-T.s/2],[T.s*0.866,T.s/2],[0,T.s],[-T.s*0.866,T.s/2],[-T.s*0.866,-T.s/2]]
-          .map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
-        var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+fl+'" data-level="'+T.level+'">'+
-              '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'+
-              (isHeld||isReach?'<polygon points="'+[[-T.s*0.866,-T.s/2],[0,-T.s],[T.s*0.866,-T.s/2]]
-                .map(function(q){return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1);}).join(" ")+
-                '" fill="none" stroke="'+p.held+'" stroke-opacity="'+(isHeld?0.5:0.22)+'" stroke-width="1"/>':'');
-        if((isHeld||isReach)&&isGate(T,i)){
-          g+='<text x="'+cx.toFixed(1)+'" y="'+(cy-T.s*0.62).toFixed(1)+'" style="font-size:'+(T.s>30?11:8)+
-             'px;fill:'+p.held+'">\u25c6</text>';
-        }
-        if(isHeld||isReach){
-          var lines=wrapName(name,T.s>30?10:8), fs=T.s>30?11:7.4, lh=fs+2.6;
-          var y0=cy-(lines.length-1)*lh/2+fs*0.35;
-          lines.forEach(function(ln,ix){
-            g+='<text x="'+cx.toFixed(1)+'" y="'+(y0+ix*lh).toFixed(1)+'" style="font-size:'+fs+'px;fill:'+(isHeld?p.held:"#b9c2d2")+'">'+ln+'</text>';
-          });
-        }
-        parts.push(g+"</g>");
+      held.forEach(function(cat){
+        var c=cellOf(cat); if(!c) return;
+        axialNeighbours(c).forEach(function(n){ if(n.cat && held.indexOf(n.cat)<0) reach[n.q+","+n.r]=1; });
       });
-      // a quiet band naming each tier
-      parts.push('<text x="6" y="'+(ys[ti]+10)+'" style="font-size:9px;letter-spacing:.18em;fill:'+p.ink+';opacity:.75">'+
-        T.level+" \u00b7 "+p.name.toUpperCase()+(open?"":" \u00b7 LOCKED")+'</text>');
-      parts.push('<text x="'+(plateW-6).toFixed(0)+'" y="'+(ys[ti]+10)+'" text-anchor="end" '+
-        'style="font-size:9px;letter-spacing:.12em;fill:'+p.ink+';opacity:.55">'+
-        shortNum(levelPlays(T.level))+' ROUNDS PLAYED</text>');
-    });
+    }
 
+    var w=Math.sqrt(3)*s, W=w*(2*f.R+2)+20, H=3*s*f.R+3*s+20, parts=[];
+    parts.push('<defs>'+
+      '<radialGradient id="goldglow"><stop offset="0" stop-color="#ffe9a8" stop-opacity="0.95"/>'+
+      '<stop offset="1" stop-color="#e8bd55" stop-opacity="0"/></radialGradient>'+
+      '<linearGradient id="goldhex" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0" stop-color="#4a3a10"/><stop offset="1" stop-color="#1a1408"/></linearGradient></defs>');
+    var pts, cx, cy, ringCol;
+    f.cells.forEach(function(c){
+      cx=w*(c.q+c.r/2)+W/2, cy=1.5*s*c.r+H/2;
+      pts=[[0,-s],[s*0.866,-s/2],[s*0.866,s/2],[0,s],[-s*0.866,s/2],[-s*0.866,-s/2]]
+        .map(function(p){ return (cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); }).join(" ");
+      var isHeld=c.cat&&held.indexOf(c.cat)>=0;
+      var isReach=!!reach[c.q+","+c.r];
+      var cls="hx"+(isHeld?" held":isReach?" reach":"");
+      var fill="#070a0f", stroke="#0e141c", sw=0.5;
+      if(c.ascent){ fill="url(#goldhex)"; stroke="#e8bd55"; sw=1.1; }
+      else if(isHeld){ fill="#1b2430"; stroke="#e8bd55"; sw=1.6; }
+      else if(isReach){ fill="#121a26"; stroke="#6f8bb5"; sw=1.2; }
+      else if(c.cat){ fill="#0c1219"; stroke="#1b2734"; sw=0.6; }
+      parts.push('<g class="'+cls+'" data-cat="'+(c.cat&&(isHeld||isReach)?c.cat:"")+'" data-floor="2" data-ascent="'+(c.ascent?1:0)+'">'+
+        '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>');
+      if(c.ascent&&s>7){
+        parts.push('<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+(s*0.55).toFixed(1)+'" fill="url(#goldglow)" opacity="0.55"/>');
+      }
+      if(c.cat&&(isHeld||isReach)&&s>9){
+        var nm=c.cat.length>13?c.cat.slice(0,12)+"\u2026":c.cat;
+        parts.push('<text x="'+cx.toFixed(1)+'" y="'+(cy+s*0.28).toFixed(1)+'" style="font-size:'+
+          Math.max(5.5,s*0.40).toFixed(1)+'px;fill:'+(isHeld?"#e8bd55":"#c7d3e4")+'">'+nm+'</text>');
+      }
+      parts.push('</g>');
+    });
+    // the centre, named
+    parts.push('<text x="'+(W/2).toFixed(0)+'" y="'+(H/2-6).toFixed(0)+'" text-anchor="middle" '+
+      'style="font-size:9px;letter-spacing:.22em;fill:#f2cd63">THE CENTRE</text>');
     $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet" '+
       'style="width:'+(ZOOM*100).toFixed(0)+'%">'+parts.join("")+'</svg>';
     renderChalBar();
@@ -2968,18 +2966,11 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       (function(nd){
         nd.addEventListener("click",function(){
           var cat=nd.getAttribute("data-cat");
-          if(cat) start(cat,true,+nd.getAttribute("data-floor")||0);
+          if(cat) start(cat,true,+nd.getAttribute("data-floor")||2);
         });
       })(ns[j]);
     }
   }
-  function setZoom(z){
-    ZOOM=Math.max(1,Math.min(3,Math.round(z*10)/10));
-    store.set("zoom",ZOOM); drawMap();
-  }
-  $("zoomin").onclick=function(){ setZoom(ZOOM+0.5); };
-  $("zoomout").onclick=function(){ setZoom(ZOOM-0.5); };
-  ZOOM=store.get("zoom",1);
   function wireModes(){
     var btns=document.querySelectorAll("#modes button"), i;
     for(i=0;i<btns.length;i++){
@@ -3281,6 +3272,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
   rebuildTiers();
+  mapButton();
   wireModes();
   boardButton();
   loadPacks().then(function(n){
