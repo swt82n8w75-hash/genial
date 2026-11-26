@@ -35,32 +35,24 @@
       linear-gradient(160deg,#f6f4ef 0%,#e9e6df 45%,#dcd8cf 100%);
     overflow:hidden}
   .portal[hidden]{display:none}
-  .pdoor{position:relative;width:min(74vw,360px);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
-    transform:rotate(45deg);
-    clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
-    background:linear-gradient(150deg,#111a26 0%,#0a1119 55%,#070c12 100%);
-    box-shadow:0 0 0 2px #d9b356 inset,0 0 0 10px #0a1119 inset,0 0 0 11px #8a6b1e inset,0 26px 60px rgba(30,40,55,.35);
-    overflow:hidden;
-    transition:transform 1.9s cubic-bezier(.2,.8,.2,1),opacity 1.9s ease}
-  .pfog{position:absolute;border-radius:50%;filter:blur(30px);opacity:.5;mix-blend-mode:screen}
-  .f1{width:70%;height:52%;left:-10%;top:8%;background:radial-gradient(circle,#5ee0c0,transparent 70%);
-      animation:drift1 11s ease-in-out infinite}
-  .f2{width:64%;height:60%;right:-12%;top:26%;background:radial-gradient(circle,#7aa8ff,transparent 70%);
-      animation:drift2 14s ease-in-out infinite}
-  .f3{width:56%;height:44%;left:22%;bottom:-8%;background:radial-gradient(circle,#e8bd55,transparent 72%);
-      opacity:.32;animation:drift3 17s ease-in-out infinite}
-  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(14%,10%) scale(1.18)}}
-  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-12%,-8%) scale(.92)}}
-  @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(8%,-12%) scale(1.14)}}
-  .prim{position:absolute;inset:14%;box-shadow:0 0 0 1px rgba(232,189,85,.45) inset,0 0 40px rgba(232,189,85,.18) inset}
-  .pmark{position:relative;transform:rotate(-45deg);font-family:Georgia,serif;font-size:15px;letter-spacing:.40em;
-    color:#f4e9c8;text-shadow:0 0 26px rgba(232,189,85,.55);opacity:.95}
-  .pmark span{color:#e8bd55}
-  .penter{position:absolute;bottom:9%;transform:rotate(-45deg);font-size:10px;letter-spacing:.26em;
-    text-transform:uppercase;color:#8b6f2a;opacity:.85;animation:pulse 2.4s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
-  .portal.open .pdoor{transform:rotate(45deg) scale(1.6);opacity:0}
-  .portal.open .pfog{opacity:0;transition:opacity 1.4s ease}
+  .pdoor{position:relative;width:min(84vw,400px);display:flex;flex-direction:column;align-items:center;gap:6px;
+    transition:transform 1.8s cubic-bezier(.2,.8,.2,1),opacity 1.6s ease}
+  .pglow{position:absolute;top:2%;width:92%;aspect-ratio:1/1;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,189,85,.42) 0%,rgba(232,189,85,.12) 42%,rgba(232,189,85,0) 70%);
+    animation:breathe 4.2s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(.94);opacity:.7}50%{transform:scale(1.06);opacity:1}}
+  .pgem{position:relative;width:88%;height:auto;filter:drop-shadow(0 22px 34px rgba(20,28,40,.38));
+    animation:rise 1.4s cubic-bezier(.2,.8,.2,1) both, float 6s ease-in-out 1.4s infinite}
+  @keyframes rise{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .pmark{position:relative;font-family:Georgia,serif;font-size:15px;letter-spacing:.46em;color:#14202e;margin-top:6px;
+    animation:fadein 1.6s ease .5s both}
+  .pmark span{color:#a77f1e}
+  .penter{position:relative;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#6b7a8e;margin-top:10px;
+    animation:fadein 1.6s ease 1.1s both,pulse 2.6s ease-in-out 2.4s infinite}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:.95}}
+  .portal.open .pdoor{transform:scale(1.7);opacity:0}
   .hbtns{display:flex;flex-wrap:wrap;gap:6px;max-width:100%}
   .brandbar{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
   .brandbar img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 18px rgba(232,189,85,.28)}
@@ -181,6 +173,7 @@
   .climb{height:3px;background:#1b2130;border-radius:2px;overflow:hidden}
   .climbbar{height:100%;width:0;background:linear-gradient(90deg,#8a6b1e,#e2b64c);transition:width .4s}
   .climbtxt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:7px 0 4px}
+  .vhint{margin-top:10px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8fa0b8}
   .groundnote{margin:10px 16px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(226,182,76,.35);
     background:rgba(226,182,76,.08);color:#f0d79a;font-size:12px;line-height:1.5;letter-spacing:.02em}
   .hexstage{margin:6px -14px 0;overflow:auto;-webkit-overflow-scrolling:touch}
@@ -332,14 +325,14 @@ body{
 }
 /* header */
 .brandbar{padding:12px 16px 10px;border-bottom:1px solid rgba(226,182,76,.10)}
-.brandbar img{width:28px;height:28px;border-radius:8px;box-shadow:0 0 22px rgba(232,189,85,.22)}
+.brandbar img{width:30px;height:30px;border-radius:0;box-shadow:none;filter:drop-shadow(0 0 10px rgba(232,189,85,.35))}
 .wordmark{font-size:12.5px;letter-spacing:.42em;color:#dfe7f2}
 /* map header */
 .maphead{align-items:flex-start;gap:10px;padding:14px 16px 0}
 .lvlname{font-family:Georgia,serif;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:#c3cfe0;line-height:1.5;max-width:52%}
 .hbtns{gap:5px}
 .snd{
-  padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);
+  min-height:34px;padding:9px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.10);
   background:rgba(255,255,255,.035);color:#b8c5d8;font-size:10.5px;
   letter-spacing:.11em;text-transform:uppercase;line-height:1;backdrop-filter:blur(6px);
 }
@@ -414,7 +407,26 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
 .big{font-family:Georgia,serif;font-size:52px;letter-spacing:-.02em;color:#f7f4ec;text-shadow:0 0 30px rgba(226,182,76,.22)}
 .tag{color:#8b99ae;font-size:13px;letter-spacing:.02em}
 </style>
-</head>
+<style>
+.blockbtn,.reportbtn{min-height:40px;padding:10px 14px;border-radius:999px;font-size:12px}
+.preset{min-height:40px}
+.snd{min-height:36px}
+</style><style>
+.rdoors{position:fixed;inset:0;z-index:90;pointer-events:none;overflow:hidden}
+.rdoors[hidden]{display:none}
+.rdoors i{position:absolute;top:0;bottom:0;width:50.5%;
+  background:linear-gradient(180deg,#0f1823 0%,#0a1119 100%);
+  box-shadow:inset 0 0 0 1px rgba(226,182,76,.35),inset 0 0 60px rgba(226,182,76,.08);
+  transition:transform .85s cubic-bezier(.7,0,.2,1)}
+.rdoors .dl{left:0;clip-path:polygon(0 0,100% 0,88% 50%,100% 100%,0 100%)}
+.rdoors .dr{right:0;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,12% 50%)}
+.rdoors .dline{position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;
+  background:linear-gradient(180deg,transparent,#e8bd55,transparent);opacity:.9;transition:opacity .5s ease}
+.rdoors.shut i{transform:translateX(0)}
+.rdoors.open .dl{transform:translateX(-102%)}
+.rdoors.open .dr{transform:translateX(102%)}
+.rdoors.open .dline{opacity:0}
+</style></head>
 <body>
   <div class="brandbar">
     <img id="mark" src="logo.png" alt="Geniality">
@@ -446,8 +458,8 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
 </div>
 <div class="portal" id="portal" hidden>
   <div class="pdoor">
-    <div class="pfog f1"></div><div class="pfog f2"></div><div class="pfog f3"></div>
-    <div class="prim"></div>
+    <div class="pglow"></div>
+    <img class="pgem" src="logo.png" alt="">
     <div class="pmark">GENIAL<span>ITY</span></div>
     <div class="penter" id="penter">enter the realm</div>
   </div>
@@ -476,7 +488,7 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
     <div class="groundnote" id="groundnote" hidden></div>
     <div class="hexstage" id="hexstage"></div>
     <div class="chalbar" id="chalbar" hidden></div>
-    <p class="note">The lattice. You can only take a hexagon that touches one you hold. Win it and the ones around it open. Fifty points opens Level 2 above you.</p>
+    <p class="note">You can only take a hexagon that touches one you hold. Win it and the ones around it open. Climb points lift you up a level.</p>
   </section>
 
   <section id="home">
@@ -489,7 +501,7 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
     <input id="search" type="text" placeholder="Search the subjects" autocomplete="off">
     <div class="chips" id="chips"></div>
     <div id="list"></div>
-    <p class="note">Practice mode. The pools and the ladder live on this phone. Opponents, the three-question toll and the marking of your own questions arrive with the server.</p>
+    <p class="note">Your progress is saved on this phone. Playing against real opponents, usernames and hubs arrive in the next update.</p>
   </section>
 
   <section id="play" hidden>
@@ -520,7 +532,7 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
     <div class="kv"><span>Change</span><span id="delta">–</span></div>
     <div class="safe" id="safebox">
       <div class="safehead">A word with <span id="oppname">them</span></div>
-      <p class="safehint">Presets only, and a hundred characters. No numbers, no links, no contact details. Everything is checked.</p>
+      <p class="safehint">Quick messages only. No numbers, links or contact details, and every message is checked.</p>
       <div class="presets" id="presets"></div>
       <input id="msgtext" type="text" placeholder="Say something kind" maxlength="100" autocomplete="off">
       <button class="btn ghost" id="sendmsg">Send</button>
@@ -2421,18 +2433,20 @@ function bestRating(){
   function beat(){ var c=ac(); if(!c||!soundOn) return; var t=c.currentTime+0.01;
     tone(t,62,0.5,0.22,"sine"); tone(t+0.23,47,0.32,0.20,"sine"); }
   function tickSound(){ var c=ac(); if(!c||!soundOn) return; tone(c.currentTime+0.01,1500,0.10,0.045,"square"); }
+  function beat(){ var c=ac(); if(!c||!soundOn) return; var t=c.currentTime+0.01;
+    tone(t,62,0.5,0.22,"sine"); tone(t+0.23,47,0.32,0.20,"sine"); }
+  function tickSound(){ var c=ac(); if(!c||!soundOn) return; tone(c.currentTime+0.01,1500,0.10,0.045,"square"); }
   function introMusic(){
     var c=ac(); if(!c||!soundOn) return;
     var t=c.currentTime+0.05, i;
-    for(i=0;i<7;i++) tone(t+i*0.32, 55, 0.09, 0.30, "sine");
-    var notes=[110,130.81,164.81,220,261.63,329.63,440,523.25,659.25,880];
-    for(i=0;i<notes.length;i++) tone(t+0.08+i*0.17, notes[i], 0.075+i*0.004, 0.22, "triangle");
-    var hit=[110,164.81,220,440];
-    for(i=0;i<hit.length;i++) tone(t+1.92, hit[i], 0.11, 0.90, "sawtooth");
-    tone(t+1.92, 1760, 0.045, 0.55, "sine");
-    tone(t+2.25, 880, 0.05, 0.40, "triangle");
+    for(i=0;i<5;i++) tone(t+i*0.36, 55, 0.07, 0.34, "sine");
+    var notes=[110,164.81,220,329.63,440,659.25];
+    for(i=0;i<notes.length;i++) tone(t+0.10+i*0.26, notes[i], 0.06+i*0.004, 0.45, "triangle");
+    var hit=[110,164.81,220,329.63,440];
+    for(i=0;i<hit.length;i++) tone(t+1.80, hit[i], 0.075, 1.5, "sine");
+    tone(t+1.80, 880, 0.04, 1.1, "triangle");
+    tone(t+2.10, 1318.5, 0.028, 0.9, "sine");
   }
-
   /* ---------- music: a bed that follows what you are doing ---------- */
   var MUS={timer:null,step:0,mode:"map",gain:null,verb:null};
   function bus(){
@@ -2463,19 +2477,23 @@ function bestRating(){
   function musicStep(){
     var c=ac(); if(!c||!soundOn||!MUS.timer) return;
     var bar=Math.floor(MUS.step/16)%4, beat=MUS.step%16;
+    var phrase=Math.floor(MUS.step/64)%4;                       // sixteen bars: four phrases
+    var swell=[0.85,1.0,1.12,0.95][phrase];
     var t=c.currentTime+0.06;
     var round=MUS.mode==="round";
     var ch=CHORDS[bar], root=ROOTS[bar];
-    if(beat%4===0){ note(root,0.20,1.1,"sine",t); }
+    if(beat%4===0){ note(root,0.17*swell,1.3,"sine",t); }
+    if(beat===0&&phrase===2){ note(root*2,0.05,2.8,"sine",t+0.02); }      // an octave shimmer on the third phrase
     if(beat===0){
       for(var i=0;i<ch.length;i++) note(ch[i]*(round?1:0.5),0.055,2.6,"triangle",t+i*0.02);
     }
     if(round){
-      if(beat%2===0) note(ch[beat%3]*(beat%4===0?2:1.5),0.05,0.34,"square",t);
+      if(beat%2===0) note(ch[beat%3]*(beat%4===0?2:1.5),0.042,0.42,"triangle",t);
       if(beat===8) note(ch[1]*2,0.045,0.5,"triangle",t);
     } else {
-      if(beat===6||beat===14) note(ch[2]*(beat===6?2:1.5),0.05,0.9,"triangle",t);
+      if(beat===6||beat===14) note(ch[2]*(beat===6?2:1.5),0.05*swell,1.1,"sine",t);
       if(beat===12) note(ch[0]*1.5,0.04,1.2,"sine",t);
+      if(beat===10&&phrase%2===1) note(ch[2]*4,0.022,1.6,"sine",t);   // a far bell, every other phrase
     }
     MUS.step++;
   }
@@ -2527,6 +2545,19 @@ function bestRating(){
     return S.kind==="truefalse" ? "true or false" : S.kind==="ladder" ? "the ladder"
       : S.kind==="streak" ? "three in a row" : "five questions";
   }
+  function doorsOpen(done){
+    var d=document.getElementById("rdoors");
+    if(!d){ d=document.createElement("div"); d.id="rdoors"; d.className="rdoors";
+      d.innerHTML='<i class="dl"></i><i class="dr"></i><b class="dline"></b>'; document.body.appendChild(d); }
+    d.className="rdoors shut"; d.hidden=false;
+    // a low sliding sweep, two soft stone-like tones, nothing buzzy
+    try{ var c=ac(); if(c&&soundOn){ var w=c.currentTime+0.02;
+      tone(w,82,0.10,0.9,"sine"); tone(w+0.05,123.47,0.05,0.8,"triangle"); tone(w+0.62,659.25,0.03,0.6,"sine"); } }catch(e){}
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      d.className="rdoors open";
+      setTimeout(function(){ d.hidden=true; d.className="rdoors"; if(done) done(); },900);
+    }); });
+  }
   function roundIntro(then){
     var box=document.createElement("div");
     box.className="intro"; box.id="introbox";
@@ -2534,16 +2565,18 @@ function bestRating(){
       '<div class="is">'+TORDER[S.floor]+' \u00b7 '+kindLabel()+'</div>'+
       '<div class="is">Section '+sectionOf(currentLevel())+' of 12 \u00b7 '+SECTIONS[sectionOf(currentLevel())-1]+'</div>'+
       '<div class="ip">played by '+playedCount(S.cat)+'</div>'+
-      '<button class="btn" id="go">Begin</button>';
+      '<button class="btn" id="go">'+(voiceOn&&SR?"Begin, or say go":"Begin")+'</button>'+
+      (voiceOn&&SR?'<div class="vhint" id="voicehint">listening for go</div>':'');
     $("play").appendChild(box);
     introMusic();
     musicStart("round");
     var go=function(){
       if(!document.getElementById("introbox")) return;
       var el=document.getElementById("introbox"); if(el) el.remove();
-      then();
+      doorsOpen(then);
     };
     box.querySelector("#go").onclick=go;
+    listenForStart(go);
     setTimeout(go,2900);
   }
   function chime(up){ var c=ac(); if(!c||!soundOn) return; var t=c.currentTime+0.01;
@@ -2582,7 +2615,7 @@ function bestRating(){
     box.innerHTML='<div class="arsrow"><span>'+p.label+'</span><em>'+p.price+'</em></div>'+
       '<div class="note" style="margin-top:10px">'+p.blurb+'. Pay once, yours for good.</div>';
     $("arsnote").innerHTML='<b style="color:#e8bd53">Prototype:</b> no money is taken here. '+
-      'In the released app this is an Apple in-app purchase; tapping below unlocks it so you can test the rest.';
+      'In the store version this is a one-off purchase.';
     var old=$("arsunlock"); if(old) old.remove();
     var b=document.createElement("button");
     b.id="arsunlock"; b.className="btn"; b.style.marginTop="12px";
@@ -2962,6 +2995,46 @@ function bestRating(){
   };
 
   /* ---------- voice ---------- */
+  /* ---------- voice: turn the microphone on and it starts every round ---------- */
+  var voiceOn=store.get("voice",false);
+  var STARTWORDS=["go","begin","start","ready","play","yes","lets go","let's go","go on"];
+  function heardWords(txt){
+    var n=norm(txt||"");
+    for(var i=0;i<STARTWORDS.length;i++){
+      if(n===STARTWORDS[i]||n.indexOf(STARTWORDS[i]+" " )===0||n.indexOf(" "+STARTWORDS[i])>=0) return true;
+    }
+    return false;
+  }
+  function listenForStart(onGo){
+    if(!SR||!voiceOn) return false;
+    try{
+      var rec=new SR();
+      rec.lang="en-GB"; rec.interimResults=false; rec.continuous=false; rec.maxAlternatives=4;
+      rec.onresult=function(ev){
+        var all=[],i,j;
+        for(i=0;i<ev.results.length;i++) for(j=0;j<ev.results[i].length;j++) all.push(ev.results[i][j].transcript);
+        for(i=0;i<all.length;i++){ if(heardWords(all[i])){ onGo(); return; } }
+        var hb=$("voicehint"); if(hb) hb.textContent="I heard \u201c"+(all[0]||"")+"\u201d. Say go, or tap.";
+      };
+      rec.onerror=function(){};
+      rec.start();
+      return true;
+    }catch(e){ return false; }
+  }
+  function voicePill(){
+    var b=document.createElement("button");
+    b.className="snd"; b.id="tovoice";
+    b.textContent=voiceOn?"voice on":"voice off";
+    if(voiceOn) b.style.borderColor="rgba(226,182,76,.55)", b.style.color="#f4dda0";
+    b.onclick=function(){
+      voiceOn=!voiceOn; store.set("voice",voiceOn);
+      b.textContent=voiceOn?"voice on":"voice off";
+      b.style.borderColor=voiceOn?"rgba(226,182,76,.55)":"";
+      b.style.color=voiceOn?"#f4dda0":"";
+      if(voiceOn){ try{ var c=ac(); if(c&&c.state==="suspended") c.resume(); }catch(e){} }
+    };
+    var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
+  }
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ $("mic").hidden=true; }
   else{
@@ -3987,8 +4060,8 @@ function bestRating(){
       el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+row[1]+'</small></span><em>'+p.price+'</em>';
       box.appendChild(el);
     });
-    $("arsnote").innerHTML='<b style="color:#e8bd53">Nothing is charged in this build.</b> '+
-      'Every door is open so you can test the whole game. In the released app these are Apple in-app purchases, paid once and kept.';
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Everything is open while you try it.</b> '+
+      'In the store version these are one-off purchases, paid once and kept for good.';
     $("ars").hidden=false;
   }
   function doorsButton(){
@@ -4049,8 +4122,8 @@ function bestRating(){
       el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+row[1]+'</small></span><em>'+p.price+'</em>';
       box.appendChild(el);
     });
-    $("arsnote").innerHTML='<b style="color:#e8bd53">Nothing is charged in this build.</b> '+
-      'Every door is open so you can test the whole game. In the released app these are Apple in-app purchases, paid once and kept.';
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Everything is open while you try it.</b> '+
+      'In the store version these are one-off purchases, paid once and kept for good.';
     $("ars").hidden=false;
   }
   function doorsButton(){
@@ -4121,6 +4194,7 @@ function bestRating(){
   })();
   if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
   rebuildTiers();
+  voicePill();
   ladderButton();
   doorsButton();
   runGate();
