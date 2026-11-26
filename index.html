@@ -131,6 +131,21 @@
   .hexstage{margin:6px -14px 0;overflow:auto;-webkit-overflow-scrolling:touch}
   .hexstage svg{transition:width .18s}
   .hbtns{display:flex;gap:5px;align-items:center}
+  .chalbar{display:flex;gap:10px;align-items:center;justify-content:space-between;background:#1b1408;
+    border:1px solid #6a4f14;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:13px;color:#f0e2c0}
+  .chalbar b{color:#f2cd63}
+  .chalbar button{background:#6a4f14;border:0;color:#fff5dc;font:inherit;font-size:12px;letter-spacing:.08em;
+    text-transform:uppercase;padding:8px 11px;border-radius:8px;flex:0 0 auto}
+  .arsenal{position:fixed;inset:0;background:rgba(4,7,12,.88);display:flex;align-items:center;justify-content:center;
+    padding:18px;z-index:60}
+  .arscard{background:#0e141d;border:1px solid #223047;border-radius:16px;padding:16px;width:100%;max-width:430px;
+    max-height:82vh;overflow:auto}
+  .arsh{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fa3c0;margin-bottom:4px}
+  .arsrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #1a2230}
+  .arsrow span:first-child{font-size:15px;color:#eef2f8}
+  .arsrow em{font-style:normal;font-size:11px;color:#7f8ea4;letter-spacing:.06em}
+  .arsrow button{background:#1b2a3d;border:1px solid #2f4663;color:#cfe0f5;font:inherit;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border-radius:8px}
   .hbtns .snd{padding:6px 9px;font-size:12px}
   .hexstage svg{display:block;width:100%;height:auto;max-width:none}
   .hx{cursor:default}
@@ -197,6 +212,7 @@
       <span class="hbtns">
         <button class="snd" id="zoomout" aria-label="Zoom out">−</button>
         <button class="snd" id="zoomin" aria-label="Zoom in">+</button>
+        <button class="snd" id="toars">arsenal</button>
         <button class="snd" id="tolist">subjects</button>
       </span>
     </div>
@@ -209,6 +225,7 @@
     </div>
     <div class="modehint" id="modehint">Five questions, twelve seconds each.</div>
     <div class="hexstage" id="hexstage"></div>
+    <div class="chalbar" id="chalbar" hidden></div>
     <p class="note">The lattice. You can only take a hexagon that touches one you hold. Win it and the ones around it open. Fifty points opens Level 2 above you.</p>
   </section>
 
@@ -284,6 +301,15 @@
     <input id="hsearch" type="text" placeholder="Search the subjects" autocomplete="off" style="margin-top:12px">
     <div class="hlist" id="hlist"></div>
     <button class="btn" id="handone">That is my three</button>
+  </div>
+</div>
+
+<div class="arsenal" id="ars" hidden>
+  <div class="arscard">
+    <div class="arsh">Your arsenal</div>
+    <div id="arslist"></div>
+    <div class="note" id="arsnote"></div>
+    <button class="btn" id="arsclose" style="margin-top:14px">Close</button>
   </div>
 </div>
 
@@ -2105,12 +2131,12 @@ Object.assign(BANK,{
     if(qs.length<5) return null;
     return {cat:o.c,score:parseFloat(o.s)||0,qs:qs.slice(0,5),name:o.n||""};
   }
-  function start(cat,fromMap,floor){
+  function start(cat,fromMap,floor,defend){
     ac();
     var qs=[]; for(var qi=0;qi<BANK[cat].q.length;qi++) qs.push(qi);
     qs.sort(function(){ return Math.random()-0.5; });
     S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[],
-       mode:MODE,qs:qs.slice(0,5),oppAt:0,banked:0,lpot:1,li:0};
+       mode:MODE,qs:qs.slice(0,5),oppAt:0,banked:0,lpot:1,li:0,defend:defend||null};
     var roll=Math.random();
     S.kind = roll<0.22?"truefalse" : roll<0.44?"ladder" : "standard";
     S.opp=makeOpponent();
@@ -2138,6 +2164,9 @@ Object.assign(BANK,{
       $("stake").hidden=false;
       $("stake").innerHTML='Win this to hold <b>'+S.cat+'</b>'+(nb?' and open '+nb+' more':'')+
         ' \u00b7 from '+TORDER[S.floor];
+    } else if(S.defend){
+      $("stake").hidden=false;
+      $("stake").innerHTML='Defending <b>'+S.cat+'</b> against '+S.opp.name+' \u00b7 three of five keeps it';
     } else { $("stake").hidden=true; }
     ask();
   }
@@ -2513,13 +2542,41 @@ Object.assign(BANK,{
       };
       $("end").insertBefore(btn,$("home2"));
     }
-    if(S.map){
+    if(S.defend){
+      var bk=arsenalBook(), hd=heldList();
+      if(won){
+        bk[S.cat]=bk[S.cat]||{def:0}; bk[S.cat].def=(bk[S.cat].def||0)+1;
+        bookSave(bk);
+        $("verdict").textContent="Held. "+S.cat+" stays yours, defence number "+(bk[S.cat].def)+".";
+      } else {
+        store.set("held",hd.filter(function(x){ return x!==S.cat; }));
+        $("verdict").textContent=S.opp.name+" took "+S.cat+" off you. It is back on the map.";
+      }
+      var cl2=climbPts()+S.score;
+      store.set("climb",+cl2.toFixed(1));
+      $("home2").textContent="Back to the map";
+    } else if(S.map){
       var cl=climbPts()+S.score;
       store.set("climb",+cl.toFixed(1));
       if(won){
         var h=heldList();
-        if(h.indexOf(S.cat)<0) h.push(S.cat);
-        store.set("held",h);
+        if(h.indexOf(S.cat)<0){
+          if(h.length>=CAP){
+            var rb=document.createElement("button");
+            rb.id="relinq"; rb.className="btn"; rb.style.marginTop="10px"; rb.style.background="#6a4f14";
+            rb.textContent="Ten held \u00b7 give one up to take this";
+            rb.onclick=function(){ renderArsenal("relinquish",S.cat); };
+            $("end").insertBefore(rb,$("home2"));
+            $("verdict").textContent="You won "+S.cat+", but the arsenal is full at ten.";
+          } else {
+            h.push(S.cat); store.set("held",h);
+            if(h.length===CAP&&!store.get("tenbonus",false)){
+              store.set("tenbonus",true);
+              store.set("climb",+(climbPts()+10).toFixed(1));
+              $("verdict").textContent="Ten subjects. The arsenal is full, and that is worth ten points on the climb.";
+            }
+          }
+        }
       }
 
       $("home2").textContent="Back to the map";
@@ -2560,6 +2617,67 @@ Object.assign(BANK,{
                .map(function(p){return {r:p[0],c:p[1]};});
   }
   function heldList(){ return store.get("held",[]); }
+  var CAP=10;
+  function arsenalBook(){ return store.get("arsenal",{}); }
+  function bookSave(b){ store.set("arsenal",b); }
+  function chalPending(){ return store.get("chal",null); }
+  function setChal(c){ store.set("chal",c); }
+  function maybeChallenged(){
+    if(chalPending()) return;
+    var h=heldList();
+    if(!h.length) return;
+    if(Math.random()>0.55) return;
+    var cat=h[Math.floor(Math.random()*h.length)];
+    var who=makeOpponent();
+    setChal({cat:cat,name:who.name,avatar:who.avatar});
+  }
+  function renderChalBar(){
+    var bar=$("chalbar"), c=chalPending();
+    if(!c||!heldList().length){ bar.hidden=true; return; }
+    bar.hidden=false;
+    bar.innerHTML="";
+    var txt=document.createElement("div");
+    txt.innerHTML="<b>"+c.name+"</b> wants "+c.cat+" off you.";
+    var btn=document.createElement("button");
+    btn.textContent="Defend";
+    btn.onclick=function(){ defendStart(c); };
+    bar.appendChild(txt); bar.appendChild(btn);
+  }
+  function defendStart(c){
+    setChal(null);
+    start(c.cat,false,2,c);
+  }
+  function renderArsenal(mode,newCat){
+    var h=heldList(), b=arsenalBook(), box=$("arslist");
+    box.innerHTML="";
+    if(!h.length){
+      box.innerHTML='<div class="note" style="margin:10px 0 0">Nothing yet. Win a hexagon and the subject is yours.</div>';
+    }
+    h.forEach(function(cat){
+      var rec=b[cat]||{def:0};
+      var row=document.createElement("div");
+      row.className="arsrow";
+      row.innerHTML='<span>'+cat+'</span><em>'+rec.def+' defended</em>';
+      if(mode==="relinquish"){
+        var btn=document.createElement("button");
+        btn.textContent="Let it go";
+        btn.onclick=function(){
+          var nh=heldList().filter(function(x){ return x!==cat; });
+          nh.push(newCat); store.set("held",nh);
+          $("ars").hidden=true; showMap();
+        };
+        row.appendChild(btn);
+      }
+      box.appendChild(row);
+    });
+    $("arsnote").textContent = mode==="relinquish"
+      ? "You can hold ten. To take "+newCat+" you give one up, and it goes back to the map."
+      : (h.length>=CAP ? "Ten held. The ceiling. Anyone who beats you takes one, and you choose which one goes if you want an eleventh."
+         : h.length+"/"+CAP+" held. Every subject you win stays yours until somebody beats you for it.");
+    $("ars").hidden=false;
+  }
+  $("toars").onclick=function(){ renderArsenal(); };
+  $("arsclose").onclick=function(){ $("ars").hidden=true; };
   function climbPts(){ return store.get("climb",0); }
   function tierOpen(l){ if(l===1) return true; return climbPts()>=tierByLevel(l).opens; }
   function currentLevel(){ var c=climbPts(), l=1; TIERS.forEach(function(t){ if(c>=t.opens) l=t.level; }); return l; }
@@ -2581,6 +2699,7 @@ Object.assign(BANK,{
   function isGate(T,i){ return i===gateCell(T); }
   function floorFor(r,rows){ return r>=rows-2?1:r>=1?2:3; }
   function drawMap(){
+    maybeChallenged();
     var held=heldList(), climb=climbPts();
     var lv=currentLevel(), pal=inkFor(lv);
     var nxt=null;
@@ -2680,6 +2799,7 @@ Object.assign(BANK,{
 
     $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet" '+
       'style="width:'+(ZOOM*100).toFixed(0)+'%">'+parts.join("")+'</svg>';
+    renderChalBar();
     var ns=$("hexstage").querySelectorAll(".hx.reach");
     for(var j=0;j<ns.length;j++){
       (function(nd){
