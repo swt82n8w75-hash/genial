@@ -2114,6 +2114,78 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     tone(t+1.92, 1760, 0.045, 0.55, "sine");
     tone(t+2.25, 880, 0.05, 0.40, "triangle");
   }
+
+  /* ---------- music: a bed that follows what you are doing ---------- */
+  var MUS={timer:null,step:0,mode:"map",gain:null,verb:null};
+  function bus(){
+    var c=ac(); if(!c) return null;
+    if(!MUS.gain){
+      MUS.gain=c.createGain(); MUS.gain.gain.value=0.5;
+      var d=c.createDelay(0.4); d.delayTime.value=0.23;
+      var fb=c.createGain(); fb.gain.value=0.28;
+      var lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2200;
+      MUS.gain.connect(c.destination);
+      MUS.gain.connect(d); d.connect(fb); fb.connect(d); d.connect(lp); lp.connect(c.destination);
+      MUS.verb=d;
+    }
+    return MUS.gain;
+  }
+  function note(freq,gainv,dur,type,when){
+    var c=ac(), g=bus(); if(!c||!g) return;
+    var o=c.createOscillator(), e=c.createGain();
+    o.type=type||"triangle"; o.frequency.setValueAtTime(freq,when);
+    e.gain.setValueAtTime(0.0001,when);
+    e.gain.linearRampToValueAtTime(gainv,when+0.05);
+    e.gain.exponentialRampToValueAtTime(0.0008,when+dur);
+    o.connect(e); e.connect(g); o.start(when); o.stop(when+dur+0.05);
+  }
+  // A minor, four bars: Am, F, C, G
+  var CHORDS=[[220,261.63,329.63],[174.61,220,261.63],[196,261.63,329.63],[196,246.94,293.66]];
+  var ROOTS=[110,87.31,130.81,98];
+  function musicStep(){
+    var c=ac(); if(!c||!soundOn||!MUS.timer) return;
+    var bar=Math.floor(MUS.step/16)%4, beat=MUS.step%16;
+    var t=c.currentTime+0.06;
+    var round=MUS.mode==="round";
+    var ch=CHORDS[bar], root=ROOTS[bar];
+    if(beat%4===0){ note(root,0.20,1.1,"sine",t); }
+    if(beat===0){
+      for(var i=0;i<ch.length;i++) note(ch[i]*(round?1:0.5),0.055,2.6,"triangle",t+i*0.02);
+    }
+    if(round){
+      if(beat%2===0) note(ch[beat%3]*(beat%4===0?2:1.5),0.05,0.34,"square",t);
+      if(beat===8) note(ch[1]*2,0.045,0.5,"triangle",t);
+    } else {
+      if(beat===6||beat===14) note(ch[2]*(beat===6?2:1.5),0.05,0.9,"triangle",t);
+      if(beat===12) note(ch[0]*1.5,0.04,1.2,"sine",t);
+    }
+    MUS.step++;
+  }
+  function musicStart(mode){
+    if(!soundOn){ musicStop(); return; }
+    MUS.mode=mode||"map";
+    if(MUS.timer) return;
+    MUS.timer=setInterval(musicStep,300);
+    musicStep();
+  }
+  function musicStop(){ if(MUS.timer){ clearInterval(MUS.timer); MUS.timer=null; } MUS.step=0; }
+  function musicMode(m){ if(!MUS.timer) return; MUS.mode=m; }
+  function sting(kind){
+    var c=ac(); if(!c||!soundOn) return;
+    var t=c.currentTime+0.02, i;
+    if(kind==="win"){
+      var up=[440,554.37,659.25,880,1108.73];
+      for(i=0;i<up.length;i++) note(up[i],0.16,0.9,"triangle",t+i*0.09);
+      note(1760,0.06,1.6,"sine",t+0.5);
+    } else if(kind==="lose"){
+      var dn=[329.63,261.63,196,146.83];
+      for(i=0;i<dn.length;i++) note(dn[i],0.16,1.1,"sawtooth",t+i*0.13);
+    } else if(kind==="egg"){
+      [880,1174.66,1567.98].forEach(function(f,j){ note(f,0.13,1.8,"sine",t+j*0.07); });
+    } else if(kind==="level"){
+      [220,329.63,440,659.25,880].forEach(function(f,j){ note(f,0.14,2.2,"triangle",t+j*0.11); });
+    }
+  }
   function kindLabel(){
     return S.kind==="truefalse" ? "true or false" : S.kind==="ladder" ? "the ladder"
       : S.kind==="streak" ? "three in a row" : "five questions";
@@ -2127,6 +2199,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       '<button class="btn" id="go">Begin</button>';
     $("play").appendChild(box);
     introMusic();
+    musicStart("round");
     var go=function(){
       if(!document.getElementById("introbox")) return;
       var el=document.getElementById("introbox"); if(el) el.remove();
@@ -2142,7 +2215,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     soundOn=!soundOn; store.set("sound",soundOn);
     $("sound").textContent=soundOn?"sound on":"sound off";
     $("sound").className="snd"+(soundOn?"":" off");
-    if(soundOn){ ac(); beat(); }
+    if(soundOn){ ac(); beat(); musicStart($("play").hidden?"map":"round"); } else { musicStop(); }
   };
   $("sound").textContent=soundOn?"sound on":"sound off";
   $("sound").className="snd"+(soundOn?"":" off");
@@ -2633,6 +2706,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
 
   function finish(){
     clearInterval(tick);
+    musicStart("map");
     $("play").hidden=true; $("end").hidden=false;
     var rt=ratings(), before=rt[S.cat]||1000;
     var won = S.kind==="ladder" ? (S.banked>=3)
@@ -2691,8 +2765,9 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     }
     if(S.map) addPlay(S.cat);
     if(S.map&&S.cellKind==="double"&&won) $("verdict").textContent="Double square. "+$("verdict").textContent;
+    if(won) sting("win"); else sting("lose");
     if(S.map&&won&&S.cellKind==="egg"){
-      addEgg(1);
+      addEgg(1); sting("egg");
       $("verdict").textContent="A gold egg. It will hatch a subject of your own. "+$("verdict").textContent;
     } else if(S.map&&won&&S.correct>=5&&!S.eggPaid){
       S.eggPaid=true; addEgg(1);
@@ -2713,8 +2788,10 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       $("home2").textContent="Back to the map";
     } else if(S.map){
       var mult=(S.cellKind==="double")?2:1;
+      var before2=currentLevel();
       var cl=climbPts()+S.score*mult;
       store.set("climb",+cl.toFixed(1));
+      if(currentLevel()>before2) sting("level");
       if(won){
         var h=heldList();
         if(h.indexOf(S.cat)<0){
@@ -3062,6 +3139,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       'style="width:'+(ZOOM*100).toFixed(0)+'%">'+parts.join("")+'</svg>';
     refreshEggs();
     renderChalBar();
+    musicStart("map");
     var ns=$("hexstage").querySelectorAll(".hx.reach");
     for(var j=0;j<ns.length;j++){
       (function(nd){
