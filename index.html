@@ -135,6 +135,15 @@
   .hx text{font-family:"Helvetica Neue",Arial,sans-serif;fill:#7c8699;font-size:9px;text-anchor:middle}
   .hx.held text{fill:#f2efe6;font-weight:600}
   .hx.reach text{fill:#d9d3c2}
+  .hexstage svg .hx.held polygon{filter:drop-shadow(0 0 7px rgba(232,189,85,.5))}
+  .hexstage svg .hx.reach polygon{filter:drop-shadow(0 0 5px rgba(110,145,205,.4))}
+  .streak{color:var(--gold);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .legend{display:flex;gap:14px;margin:14px 0 0;font-size:10.5px;color:var(--dim);letter-spacing:.04em}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend i{width:9px;height:11px;display:inline-block;background:#2a2312;border:1px solid #e8bd55;
+    clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+  .legend i.nx{background:#161d2b;border-color:#5b6884}
+  .legend i.lk{background:#0c1017;border-color:#1f2735}
   .modes{display:flex;gap:6px;margin:10px 0 0}
   .modes button{flex:1;background:transparent;border:1px solid var(--line);color:var(--dim);
     padding:9px 6px;border-radius:2px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
@@ -156,6 +165,17 @@
        font-family:inherit;cursor:pointer}
   .snd.off{color:#6b7488;border-color:#222836}
   [hidden]{display:none!important}
+@media (max-height:700px){
+  .q{font-size:21px;margin:9px 0 11px;line-height:1.28}
+  .stake{font-size:10.5px;margin:6px 0 0}
+  .opts{gap:7px;margin-bottom:6px}
+  .opt{min-height:44px;padding:9px 10px;font-size:14px}
+  .opts.n8 .opt,.opts.n10 .opt{min-height:42px;padding:8px 9px;font-size:12.4px}
+  #heard{margin:5px 0 0;min-height:14px}
+  .btn{padding:12px;font-size:15px}
+  .pips{margin:14px 0 0}
+  .vs{margin:6px 0}
+}
 </style>
 </head>
 <body>
@@ -1887,7 +1907,8 @@ Object.assign(BANK,{
     me.name=n||me.name||"You";
     if(me.avatar===null){ me.avatar=0; }
     store.set("name",me.name); store.set("avatar",me.avatar);
-    $("sheet").hidden=true; paintMe(); drawList(); showMap();
+    $("sheet").hidden=true; paintMe(); drawList();
+    if(PENDING){ start(PENDING.cat,false,0); } else { showMap(); }
   };
 
   /* ---------- your three ---------- */
@@ -2068,7 +2089,7 @@ Object.assign(BANK,{
     if(!o.c||!BANK[o.c]) return null;
     var qs=(o.i||"").split("-").map(Number).filter(function(n){ return n>=0&&n<BANK[o.c].q.length; });
     if(qs.length<5) return null;
-    return {cat:o.c,score:parseFloat(o.s)||0,qs:qs.slice(0,5)};
+    return {cat:o.c,score:parseFloat(o.s)||0,qs:qs.slice(0,5),name:o.n||""};
   }
   function start(cat,fromMap,floor){
     ac();
@@ -2080,10 +2101,11 @@ Object.assign(BANK,{
     S.target=null;
     if(PENDING){
       S.qs=PENDING.qs.slice(0,5); S.mode="send"; S.target=PENDING.score;
+      if(PENDING.name) S.opp.name=PENDING.name;
       $("stake").hidden=false;
       $("stake").innerHTML='A challenge from <b>'+S.opp.name+'</b> \u00b7 beat '+PENDING.score.toFixed(1);
     }
-    $("home").hidden=true; $("end").hidden=true; $("mapwrap").hidden=true; $("play").hidden=false;
+    $("home").hidden=true; $("end").hidden=true; $("mapwrap").hidden=true; $("sheet").hidden=true; $("play").hidden=false;
     $("cat").textContent=cat;
     var p=$("pips"); p.innerHTML="";
     for(var i=0;i<5;i++){ p.appendChild(document.createElement("i")); }
@@ -2172,6 +2194,7 @@ Object.assign(BANK,{
     var pts=ok?+(TIER[t]*mult(secs)).toFixed(1):0;
     S.score+=pts; if(ok) S.correct++;
     S.results[S.i]=ok;
+    S.streak=ok?(S.streak||0)+1:0;
     if(ok&&(S.fastest===null||secs<S.fastest)) S.fastest=secs;
     var their=S.opp.res[S.i]||{ok:false,pts:0};
     if(S.mode==="live"){
@@ -2191,6 +2214,7 @@ Object.assign(BANK,{
       '<span class="pts">'+(ok?"+"+pts:"0")+'</span>'+
       '<b>'+(ok?"Correct":(timedOut?"Time":"No"))+'</b>'+
       (ok?"":"The answer is <strong>"+primary(q[1])+"</strong>. ")+
+      (S.streak>=3?' <span class="streak">'+S.streak+' in a row</span>':'')+
       '<span style="color:var(--dim);font-size:13px">'+
       (S.mode==="live"?(ok?'You were quicker than '+S.opp.name:S.opp.name+' took the point'):
         S.opp.name+(their.ok?' took it for '+their.pts:' missed it'))+'</span></div>';
@@ -2329,7 +2353,7 @@ Object.assign(BANK,{
     var oldSend=$("sendchal"); if(oldSend) oldSend.remove();
     if(S.mode==="send" && (S.target===null||S.target===undefined)){
       var link=location.origin+location.pathname+"#c="+encodeURIComponent(S.cat)+
-        "&s="+S.score.toFixed(1)+"&i="+S.qs.join("-");
+        "&s="+S.score.toFixed(1)+"&i="+S.qs.join("-")+"&n="+encodeURIComponent(me.name);
       var btn=document.createElement("button");
       btn.id="sendchal"; btn.className="btn"; btn.style.marginTop="10px";
       btn.textContent="Send this challenge";
@@ -2492,7 +2516,7 @@ Object.assign(BANK,{
   }
   mapButton();
   PENDING=parseChallenge();
-  if(PENDING){ start(PENDING.cat,false,0); }
+  if(PENDING&&me.name&&me.avatar!==null){ start(PENDING.cat,false,0); }
 
   if(me.name&&me.avatar!==null){ showMap(); }
 })();
