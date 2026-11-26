@@ -2,7 +2,13 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Geniality">
+  <meta name="theme-color" content="#070a0f">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>Geniality</title>
 <meta name="theme-color" content="#0d0f14">
 <style>
@@ -13,6 +19,7 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--ink);color:var(--cream)}
+  .hbtns{display:flex;flex-wrap:wrap;gap:6px;max-width:100%}
   .brandbar{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
   .brandbar img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 18px rgba(232,189,85,.28)}
   .wordmark{font-family:Georgia,serif;font-size:15px;letter-spacing:.34em;color:#e8eef7}
@@ -2195,6 +2202,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     box.className="intro"; box.id="introbox";
     box.innerHTML='<div class="ik">'+S.cat+'</div>'+
       '<div class="is">'+TORDER[S.floor]+' \u00b7 '+kindLabel()+'</div>'+
+      '<div class="is">Section '+sectionOf(currentLevel())+' of 12 \u00b7 '+SECTIONS[sectionOf(currentLevel())-1]+'</div>'+
       '<div class="ip">played by '+playedCount(S.cat)+'</div>'+
       '<button class="btn" id="go">Begin</button>';
     $("play").appendChild(box);
@@ -2779,7 +2787,13 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
         $("verdict").textContent="Held. "+S.cat+" stays yours, defence number "+(bk[S.cat].def)+".";
       } else {
         store.set("held",hd.filter(function(x){ return x!==S.cat; }));
-        $("verdict").textContent=S.opp.name+" took "+S.cat+" off you. It is back on the map.";
+        var secBefore=sectionOf(currentLevel());
+        var cl3=Math.max(0,climbPts()-25);
+        store.set("climb",+cl3.toFixed(1));
+        var secAfter=sectionOf(currentLevel());
+        $("verdict").textContent = secAfter<secBefore
+          ? S.opp.name+" took "+S.cat+" off you, and that knocked you out of Section "+secBefore+" \u00b7 "+SECTIONS[secBefore-1]+". You are back in Section "+secAfter+"."
+          : S.opp.name+" took "+S.cat+" off you. It is back on the map.";
       }
       var cl2=climbPts()+S.score;
       store.set("climb",+cl2.toFixed(1));
@@ -2971,6 +2985,36 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   function tierOpen(l){ if(l===1) return true; return climbPts()>=tierByLevel(l).opens; }
   var TOP=50;
   function levelOpens(n){ return n<=1 ? 0 : Math.round(25*Math.pow(n-1,1.45)); }
+  var SECTIONS=["The Ground","The Threshold","The Ascent","The Terrace","The High Table",
+    "The Gallery","The Crystal","The Spire","The Snow","The Summit","The Red","The Crown"];
+  function sectionOf(n){ return Math.max(1,Math.min(12,Math.ceil(n/50*12))); }
+  function sectionFloor(s){ return levelOpens(Math.max(1,Math.ceil((s-1)*50/12)+1)); }
+  function badgeOf(cat){
+    var i=0, k;
+    for(k=0;k<CATS.length;k++){ if(CATS[k]===cat){ i=k; break; } }
+    return i%12;
+  }
+  function badgeSVG(b,x,y,s){
+    var cx=x+s/2, cy=y+s/2, r=s*0.34, pts=[], i, ang, rr;
+    for(i=0;i<10;i++){ ang=(-90+i*36)*Math.PI/180; rr=(i%2?r*0.45:r);
+      pts.push((cx+rr*Math.cos(ang)).toFixed(2)+","+(cy+rr*Math.sin(ang)).toFixed(2)); }
+    var star='<polygon points="'+pts.join(" ")+'" fill="currentColor" opacity="0.75"/>';
+    var m=[
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+      '<rect x="'+(x+s*0.18)+'" y="'+(y+s*0.18)+'" width="'+(s*0.64)+'" height="'+(s*0.64)+'" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+      '<path d="M'+cx+' '+(y+s*0.16)+' L'+(x+s*0.86)+' '+(y+s*0.82)+' L'+(x+s*0.14)+' '+(y+s*0.82)+' Z" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+      '<path d="M'+cx+' '+(y+s*0.14)+' L'+(x+s*0.86)+' '+cy+' L'+cx+' '+(y+s*0.86)+' L'+(x+s*0.14)+' '+cy+' Z" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+      '<path d="M'+cx+' '+(y+s*0.16)+' L'+cx+' '+(y+s*0.84)+' M'+(x+s*0.16)+' '+cy+' L'+(x+s*0.84)+' '+cy+'" stroke="currentColor" stroke-width="1.6"/>',
+      '<path d="M'+(x+s*0.2)+' '+(y+s*0.66)+' L'+cx+' '+(y+s*0.34)+' L'+(x+s*0.8)+' '+(y+s*0.66)+'" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="currentColor" opacity="0.55"/>',
+      '<path d="M'+(x+s*0.2)+' '+(y+s*0.5)+' h'+(s*0.6)+'" stroke="currentColor" stroke-width="2.2"/>',
+      star,
+      '<path d="M'+(x+s*0.5)+' '+(y+s*0.18)+' L'+(x+s*0.82)+' '+(y+s*0.5)+' L'+(x+s*0.5)+' '+(y+s*0.82)+' L'+(x+s*0.18)+' '+(y+s*0.5)+' Z" fill="currentColor" opacity="0.35"/>',
+      '<path d="M'+(x+s*0.2)+' '+(y+s*0.7)+' Q'+cx+' '+(y+s*0.2)+' '+(x+s*0.8)+' '+(y+s*0.7)+'" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+      '<circle cx="'+(x+s*0.32)+'" cy="'+(y+s*0.5)+'" r="'+(s*0.09)+'" fill="currentColor"/><circle cx="'+(x+s*0.68)+'" cy="'+(y+s*0.5)+'" r="'+(s*0.09)+'" fill="currentColor"/>'
+    ];
+    return '<g style="color:'+(b%2?"#8fb3d9":"#e8bd55")+'" opacity="0.85">'+m[b]+'</g>';
+  }
   function levelMaterial(n){
     return n<=8 ? 1 : n<=16 ? 2 : n<=25 ? 3 : n<=33 ? 4 : n<=42 ? 5 : 6;
   }
@@ -3069,7 +3113,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     // the higher you stand, the harder the questions underneath you
     var floorNow = lv<=16 ? 0 : lv<=32 ? 1 : lv<=48 ? 2 : 3;
     maybeChallenged();
-    $("lvlname").textContent="Level "+lv+" of "+TOP+" \u00b7 "+pal.name;
+    var sec=sectionOf(lv);
+    $("lvlname").textContent="Section "+sec+" of 12 \u00b7 "+SECTIONS[sec-1]+" \u00b7 Level "+lv;
     $("lvlname").style.color=pal.ink;
     $("climbbar").style.background="linear-gradient(90deg,"+pal.reach+","+pal.held+")";
     if(lv<TOP){
@@ -3125,6 +3170,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
         if(!c.mystery&&!c.double&&c.cat.length>13) nm=c.cat.slice(0,12)+"\u2026";
         var tcol = c.egg?"#ffe9a8" : c.mystery?"#b79cf0" : c.double?"#f0a93b" : (isHeld?"#e8bd55":"#c7d3e4");
         var tsz = (c.mystery||c.double||c.egg)?Math.max(8,s*0.52):Math.max(5.5,s*0.40);
+        if(!c.mystery&&!c.double&&!c.egg) parts.push(badgeSVG(badgeOf(c.cat),cx-s*0.62,cy-s*0.74,Math.max(7,s*0.42)));
         parts.push('<text x="'+cx.toFixed(1)+'" y="'+(cy+s*0.28).toFixed(1)+'" style="font-size:'+
           tsz.toFixed(1)+'px;fill:'+tcol+'">'+nm+'</text>');
       }
@@ -3510,6 +3556,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   if(!me.name||me.avatar===null){
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
+  if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
   rebuildTiers();
   mapButton();
   eggButton();
