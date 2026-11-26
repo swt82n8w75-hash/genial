@@ -2363,11 +2363,25 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     var c=cellOf(cat);
     return c ? (c.egg?"egg":c.mystery?"mystery":c.double?"double":"plain") : "plain";
   }
+  var PRACTICE=false;
+  function practice(cat){
+    PRACTICE=true;
+    start(cat,false,currentLevelFloor(),false);
+  }
+  function currentLevelFloor(){
+    var TOR=["low","medium","hard","genial"], lv=currentLevel();
+    return lv<=16?0:lv<=32?1:lv<=48?2:3;
+  }
+  function poolDepth(cat){
+    var all=(BANK[cat]&&BANK[cat].q.length)||0, seen=(seenBook()[cat]||[]).length;
+    return {all:all, unseen:Math.max(0,all-seen)};
+  }
   function start(cat,fromMap,floor,defend){
     ac();
     var qs=pickQuestions(cat,5,floor);
     S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[],
        mode:MODE,qs:qs.slice(0,5),oppAt:0,banked:0,lpot:1,li:0,defend:defend||null};
+    S.practice=PRACTICE; PRACTICE=false;
     var roll=Math.random();
     S.kind = roll<0.18?"truefalse" : roll<0.36?"ladder" : roll<0.54?"streak" : "standard";
     S.run=0;
@@ -2400,6 +2414,11 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     } else if(S.defend){
       $("stake").hidden=false;
       $("stake").innerHTML='Defending <b>'+S.cat+'</b> against '+S.opp.name+' \u00b7 three of five keeps it';
+    } else if(S.practice){
+      var d=poolDepth(S.cat);
+      $("stake").hidden=false;
+      $("stake").innerHTML='Practice on <b>'+S.cat+'</b> \u00b7 '+d.unseen+' of '+d.all+
+        ' questions you have not seen \u00b7 played '+playedCount(S.cat)+' times';
     } else { $("stake").hidden=true; }
     roundIntro(ask);
   }
@@ -2759,6 +2778,17 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
            beat?(S.correct>=5?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
                :(S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it."));
     }
+    var oldAgain=$("again"); if(oldAgain) oldAgain.remove();
+    if(S.practice){
+      var d2=poolDepth(S.cat);
+      $("verdict").textContent=(won?"Clean run.":"Not this time.")+" Practice on "+S.cat+
+        ". "+d2.unseen+" of "+d2.all+" still unseen.";
+      var ag=document.createElement("button");
+      ag.id="again"; ag.className="btn"; ag.style.marginTop="10px";
+      ag.textContent="Play it again";
+      ag.onclick=function(){ practice(S.cat); };
+      $("end").insertBefore(ag,$("home2"));
+    }
     var oldGate=$("gategate"); if(oldGate) oldGate.remove();
     if(S.map&&won){
       var T=tierOfCat(S.cat), idx=T.list.indexOf(S.cat);
@@ -2976,7 +3006,9 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       var rec=b[cat]||{def:0};
       var row=document.createElement("div");
       row.className="arsrow";
-      row.innerHTML='<span>'+cat+'</span><em>'+rec.def+' defended</em>';
+      var d=poolDepth(cat);
+      row.innerHTML='<span>'+cat+'<small style="display:block;color:#7f8ea6;font-size:11px">'+
+        d.all+' questions \u00b7 '+d.unseen+' unseen \u00b7 '+Math.floor(d.unseen/5)+' clean rounds left</small></span><em>'+rec.def+' defended</em>';
       if(mode==="relinquish"){
         var btn=document.createElement("button");
         btn.textContent="Let it go";
@@ -2986,13 +3018,22 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
           $("ars").hidden=true; showMap();
         };
         row.appendChild(btn);
+      } else {
+        var pb=document.createElement("button");
+        pb.textContent="Play";
+        pb.onclick=function(){ $("ars").hidden=true; practice(cat); };
+        row.appendChild(pb);
+        var ab2=document.createElement("button");
+        ab2.textContent="+Q"; ab2.style.marginLeft="6px";
+        ab2.onclick=function(){ addQuestionsPanel(cat); };
+        row.appendChild(ab2);
       }
       box.appendChild(row);
     });
     $("arsnote").textContent = mode==="relinquish"
       ? "You can hold ten. To take "+newCat+" you give one up, and it goes back to the map."
       : (h.length>=CAP ? "Ten held. The ceiling. Anyone who beats you takes one, and you choose which one goes if you want an eleventh."
-         : h.length+"/"+CAP+" held. Every subject you win stays yours until somebody beats you for it.");
+         : h.length+"/"+CAP+" held. Every subject you win stays yours until somebody beats you for it, and you can play it as often as you like.");
     $("ars").hidden=false;
   }
   $("toars").onclick=function(){ renderArsenal(); };
@@ -3496,6 +3537,42 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       $("ars").hidden=true;
       drawList(); showMap();
       setTimeout(function(){ var st=$("stagetxt"); if(st) st.textContent=name+" is on the rim of the field. Play it like any other."; },100);
+    };
+    $("arsclose").parentNode.insertBefore(b,$("arsclose"));
+    $("ars").hidden=false;
+  }
+  function addQuestionsPanel(cat){
+    var box=$("arslist");
+    $("arsh").textContent=cat+" \u00b7 add questions";
+    var rows="";
+    for(var i=0;i<3;i++){
+      rows+='<div style="margin:8px 0"><input id="aq'+i+'" placeholder="Question '+(i+1)+'" '+
+        'style="width:100%;background:#0b0f15;border:1px solid #22303f;color:#e8eef7;border-radius:8px;padding:8px;font-size:12px">'+
+        '<div style="display:flex;gap:6px;margin-top:5px">'+
+        '<input id="aa'+i+'" placeholder="right answer" style="flex:1;background:#0b0f15;border:1px solid #2f4a35;color:#bff0c8;border-radius:8px;padding:7px;font-size:12px">'+
+        '<input id="aw'+i+'" placeholder="two wrong answers, comma" style="flex:1;background:#0b0f15;border:1px solid #3a2a2a;color:#f0c0c0;border-radius:8px;padding:7px;font-size:12px"></div></div>';
+    }
+    var d=poolDepth(cat);
+    box.innerHTML='<div class="note" style="margin-bottom:6px">'+d.all+' questions in this pool now. '+
+      'The deeper it is, the longer you can play it before it starts repeating.</div>'+rows;
+    $("arsnote").textContent="They join the pool straight away, and you play them like the rest.";
+    var b=document.createElement("button");
+    b.className="btn"; b.style.marginTop="10px"; b.textContent="Add them";
+    b.onclick=function(){
+      var add=store.get("addq",{}), n=0;
+      for(var j=0;j<3;j++){
+        var q=($("aq"+j).value||"").trim(), a=($("aa"+j).value||"").trim();
+        var w=($("aw"+j).value||"").split(",").map(function(x){ return x.trim(); }).filter(Boolean);
+        if(!q||!a||w.length<2) continue;
+        (add[cat]=add[cat]||[]).push([q,[a].concat(w.slice(0,3)).join("|"),"medium"]);
+        BANK[cat].q.push([q,[a].concat(w.slice(0,3)).join("|"),"medium"]);
+        n++;
+      }
+      if(!n){ $("arsnote").textContent="Nothing to add. Each one needs a question, the right answer and two wrong ones."; return; }
+      store.set("addq",add);
+      var d2=poolDepth(cat);
+      $("arsnote").textContent=n+" added. "+cat+" now has "+d2.all+" questions.";
+      renderArsenal();
     };
     $("arsclose").parentNode.insertBefore(b,$("arsclose"));
     $("ars").hidden=false;
