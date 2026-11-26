@@ -1,0 +1,1587 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Genial</title>
+<meta name="theme-color" content="#0d0f14">
+<style>
+  :root{
+    --ink:#0d0f14; --ink2:#141822; --card:#1a1f2c; --line:#2a3142;
+    --cream:#f3eee4; --dim:#98a1b4; --gold:#e2b64c; --gold2:#f0d189;
+    --green:#4fb477; --red:#d4604f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--cream)}
+  body{font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  .wrap{max-width:640px;margin:0 auto;padding:22px 18px 44px}
+  /* diamond language */
+  .dia{transform:rotate(45deg)}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .gem{width:16px;height:16px;background:var(--gold);border-radius:2px;flex:0 0 auto;
+       box-shadow:0 0 0 3px rgba(226,182,76,.14)}
+  .mark{font-family:Georgia,"Iowan Old Style",serif;font-size:30px;letter-spacing:.16em;
+        text-transform:uppercase;margin:0;line-height:1}
+  .avabtn{width:46px;height:46px;flex:0 0 auto;cursor:pointer;border:0;background:none;padding:0}
+  .ava{width:100%;height:100%;display:block;border-radius:3px;overflow:hidden}
+  .tag{color:var(--dim);font-size:14px;margin:14px 0 0}
+  .rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:18px 0}
+  input[type=text]{width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);
+    background:var(--ink2);color:var(--cream);font-size:16px;outline:none}
+  input[type=text]:focus{border-color:var(--gold)}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--line);
+        background:var(--ink2);color:var(--dim);font-size:13px;white-space:nowrap;cursor:pointer}
+  .chip.on{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:600}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}
+  .tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:4px;
+        padding:15px 14px 13px;cursor:pointer;overflow:hidden;
+        clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+        transition:border-color .15s,background .15s}
+  .tile:active{background:#212838}
+  .tile b{display:block;font-size:15px;line-height:1.25;font-weight:600;padding-right:6px}
+  .tile i{display:block;font-style:normal;color:var(--dim);font-size:11.5px;margin-top:7px;
+          letter-spacing:.04em}
+  .tile .rt{color:var(--gold)}
+  .tile .gem{position:absolute;top:9px;right:9px;width:7px;height:7px;opacity:.5;box-shadow:none}
+  .note{color:var(--dim);font-size:12.5px;line-height:1.55;margin-top:18px;
+        border-left:2px solid var(--line);padding-left:12px}
+  /* play */
+  .pips{display:flex;gap:7px;margin:0 0 18px}
+  .pips i{flex:1;height:7px;background:var(--ink2);border:1px solid var(--line);
+          border-radius:1px;transform:rotate(45deg) scale(.82)}
+  .pips i.done{background:var(--gold);border-color:var(--gold)}
+  .pips i.now{background:var(--gold2);border-color:var(--gold2)}
+  .pips i.miss{background:var(--red);border-color:var(--red)}
+  .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);
+       gap:10px}
+  .clock{height:3px;background:var(--ink2);border-radius:2px;overflow:hidden;margin:14px 0 20px}
+  .clock i{display:block;height:100%;background:var(--gold);width:100%;transition:width .1s linear}
+  .q{font-family:Georgia,"Iowan Old Style",serif;font-size:25px;line-height:1.34;margin:16px 0 18px}
+  .tier{display:inline-block;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+        padding:4px 11px;border:1px solid var(--line);border-radius:2px;
+        transform:skewX(-12deg);margin-bottom:22px}
+  .tier span{display:inline-block;transform:skewX(12deg)}
+  .tier.low{color:#8fb8d8;border-color:#2b3f52}
+  .tier.medium{color:#9fd8a8;border-color:#2e4a35}
+  .tier.hard{color:#e8b06a;border-color:#4d3a22}
+  .tier.genial{color:var(--gold);border-color:#6b5220;background:#221a09}
+  .btn{display:block;width:100%;padding:15px;border-radius:3px;border:0;font-size:16px;font-weight:600;
+       cursor:pointer;background:var(--gold);color:#1a1206;margin-top:10px;letter-spacing:.02em}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);font-weight:500}
+  .fb{border-radius:3px;padding:14px 15px;margin-top:16px;font-size:15px}
+  .fb.ok{background:#14301e;border:1px solid #2c5a3a}
+  .fb.no{background:#2c1815;border:1px solid #5a3129}
+  .fb b{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+  .fb.ok b{color:var(--green)} .fb.no b{color:var(--red)}
+  .pts{float:right;color:var(--gold);font-weight:700}
+  .big{font-family:Georgia,serif;font-size:56px;line-height:1;margin:14px 0 6px}
+  .kv{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+  .kv span:last-child{color:var(--cream);font-weight:600}
+  .kv span:first-child{color:var(--dim)}
+  /* avatar picker */
+  .sheet{position:fixed;inset:0;background:rgba(6,8,12,.94);z-index:20;display:flex;
+         align-items:center;justify-content:center;padding:24px}
+  .sheet .inner{max-width:420px;width:100%}
+  .agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+  .agrid button{border:0;background:none;padding:0;cursor:pointer;aspect-ratio:1}
+  .agrid button .ava{border-radius:3px;border:2px solid transparent}
+  .agrid button.on .ava{border-color:var(--gold)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="home">
+    <div class="head">
+      <div class="brand"><span class="gem dia"></span><h1 class="mark">Genial</h1></div>
+      <button class="avabtn" id="myavatar" aria-label="Your avatar"></button>
+    </div>
+    <p class="tag">A hundred subjects. Ten questions each. Answer fast, or don't bother.</p>
+    <div class="rule"></div>
+    <input id="search" type="text" placeholder="Search the hundred" autocomplete="off">
+    <div class="chips" id="chips"></div>
+    <div id="list"></div>
+    <p class="note">Practice mode. The pools and the ladder live on this phone. Opponents, the three-question toll and the marking of your own questions arrive with the server.</p>
+  </section>
+
+  <section id="play" hidden>
+    <div class="pips" id="pips"></div>
+    <div class="top"><span id="cat"></span><span id="count"></span></div>
+    <div class="clock"><i id="clockbar"></i></div>
+    <div class="q" id="q"></div>
+    <div><span class="tier low" id="tier"><span>low</span></span></div>
+    <div id="answerbox">
+      <input id="answer" type="text" placeholder="Your answer" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn" id="submit">Answer</button>
+      <button class="btn ghost" id="pass">Pass</button>
+    </div>
+    <div id="feedback"></div>
+    <button class="btn" id="next" hidden>Next</button>
+  </section>
+
+  <section id="end" hidden>
+    <div class="top"><span id="endcat"></span><span id="endpct"></span></div>
+    <div class="big" id="score">0</div>
+    <p class="tag" id="verdict"></p>
+    <div class="rule"></div>
+    <div class="kv"><span>Correct</span><span id="correct">0 / 10</span></div>
+    <div class="kv"><span>Fastest answer</span><span id="fastest">–</span></div>
+    <div class="kv"><span>Rating in this pool</span><span id="rating">1000</span></div>
+    <div class="kv"><span>Change</span><span id="delta">–</span></div>
+    <button class="btn" id="again">Play this pool again</button>
+    <button class="btn ghost" id="home2">Another subject</button>
+  </section>
+
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="inner">
+    <div class="head"><div class="brand"><span class="gem dia"></span><h1 class="mark" style="font-size:22px">Your face</h1></div></div>
+    <p class="tag">Pick a diamond. It goes on your card and your ladder.</p>
+    <div class="agrid" id="agrid"></div>
+    <button class="btn" id="avdone">That's me</button>
+  </div>
+</div>
+
+<script>
+const BANK={};
+Object.assign(BANK,{
+"Doctor Who":{area:"Screen",q:[
+["Which actor played the Fourth Doctor?","Tom Baker","baker"],
+["What is the name of the Doctor's time machine?","TARDIS","the tardis"],
+["Which 1966 story showed the first regeneration?","The Tenth Planet","tenth planet"],
+["Which metal creatures are the Doctor's oldest enemies?","Daleks","the daleks"],
+["What is the Doctor's home planet called?","Gallifrey"],
+["Which Time Lady, played by Lalla Ward, travelled with the Fourth Doctor?","Romana"],
+["Which composer at the BBC Radiophonic Workshop realised the original theme tune?","Delia Derbyshire","derbyshire"],
+["In which 1968 story do the Yeti appear in the London Underground?","The Web of Fear","web of fear"],
+["What is the name of the Doctor's granddaughter?","Susan","susan foreman"],
+["Which actor played the Seventh Doctor?","Sylvester McCoy","mccoy"]
+]},
+"The Simpsons":{area:"Screen",q:[
+["What is the name of Homer's boss?","Mr Burns","burns|montgomery burns"],
+["Which town do the Simpsons live in?","Springfield"],
+["What is Bart's full name?","Bartholomew Simpson","bart simpson|bartholomew jojo simpson"],
+["What is the name of the family dog?","Santa's Little Helper","santas little helper"],
+["Which shop does Apu run?","Kwik-E-Mart","kwik e mart"],
+["What is Marge's maiden name?","Bouvier"],
+["Which beer does Homer drink?","Duff","duff beer"],
+["Which jazz musician is Lisa's musical hero?","Bleeding Gums Murphy","bleeding gums"],
+["Who created The Simpsons?","Matt Groening","groening"],
+["What is the name of the school principal?","Seymour Skinner","skinner"]
+]},
+"Star Wars":{area:"Screen",q:[
+["Who directed the original 1977 film?","George Lucas","lucas"],
+["What is the name of Han Solo's ship?","Millennium Falcon","the millennium falcon"],
+["Which planet is Luke Skywalker from?","Tatooine"],
+["What is Darth Vader's real name?","Anakin Skywalker","anakin"],
+["Who trains Luke in the Force on Dagobah?","Yoda"],
+["What species is Chewbacca?","Wookiee","wookie"],
+["How many films are in the Skywalker saga?","Nine","9"],
+["Which bounty hunter captures Han Solo?","Boba Fett","boba"],
+["Which actress played Princess Leia?","Carrie Fisher","fisher"],
+["What is a Jedi's weapon called?","Lightsaber","light sabre"]
+]},
+"Star Trek":{area:"Screen",q:[
+["Who captained the Enterprise in the original series?","James T Kirk","kirk"],
+["Who is the Vulcan first officer of the original Enterprise?","Spock"],
+["Which species is Worf?","Klingon"],
+["Which captain commanded Deep Space Nine?","Benjamin Sisko","sisko"],
+["Who captained the Enterprise-D?","Jean-Luc Picard","picard"],
+["What is the traditional Vulcan greeting?","Live long and prosper"],
+["Which series is stranded in the Delta Quadrant?","Voyager"],
+["Who created Star Trek?","Gene Roddenberry","roddenberry"],
+["Which android officer serves on the Enterprise-D?","Data"],
+["What is the name of the Klingon homeworld?","Qo'noS","kronos"]
+]},
+"Marvel":{area:"Screen",q:[
+["What is Spider-Man's real name?","Peter Parker"],
+["Which metal coats Wolverine's skeleton?","Adamantium"],
+["Who is the king of Wakanda?","T'Challa","tchalla|black panther"],
+["What is the name of Thor's hammer?","Mjolnir"],
+["Who snapped his fingers to defeat Thanos?","Iron Man","tony stark"],
+["What is Captain America's real name?","Steve Rogers"],
+["Which writer created much of the Marvel universe with Jack Kirby?","Stan Lee"],
+["What is the Hulk's alter ego called?","Bruce Banner"],
+["Which neighbourhood does Daredevil protect?","Hell's Kitchen","hells kitchen"],
+["What is the name of Tony Stark's AI assistant in the films?","JARVIS","jarvis"]
+]},
+"DC":{area:"Screen",q:[
+["Which city does Batman protect?","Gotham"],
+["What is Superman's birth name?","Kal-El","kal el"],
+["Which actress played Wonder Woman in 2017?","Gal Gadot","gadot"],
+["What is the name of Batman's butler?","Alfred Pennyworth","alfred"],
+["What is Gotham's asylum for the criminally insane called?","Arkham"],
+["What is the Flash's real name?","Barry Allen"],
+["Which DC hero rules Atlantis?","Aquaman"],
+["What is Superman's adopted Earth name?","Clark Kent"],
+["Which 2019 film starred Joaquin Phoenix as the Joker?","Joker"],
+["What is Superman's home planet called?","Krypton"]
+]},
+"Alfred Hitchcock":{area:"Screen",q:[
+["Which 1960 film features the shower scene?","Psycho"],
+["Which 1959 film has a chase across Mount Rushmore?","North by Northwest","north by north west"],
+["Which 1954 film is set almost entirely in one apartment?","Rear Window"],
+["Which Hitchcock film won the Best Picture Oscar in 1941?","Rebecca"],
+["Which 1948 film is edited to look like one continuous take?","Rope"],
+["Which 1958 film follows a detective with a fear of heights?","Vertigo"],
+["Which 1963 film is about birds attacking a coastal town?","The Birds"],
+["Which 1951 film has two strangers agree to swap murders?","Strangers on a Train"],
+["Which 1935 film is his British thriller about a spy ring?","The 39 Steps","thirty nine steps"],
+["Which 1943 film is about a family of murderers?","Shadow of a Doubt"]
+]},
+"James Bond":{area:"Screen",q:[
+["Who played Bond in Dr No?","Sean Connery","connery"],
+["What is Bond's service number?","007"],
+["Which actor has played Bond most often?","Roger Moore","moore"],
+["What is the name of Bond's CIA friend?","Felix Leiter","leiter"],
+["Which 2012 Bond film was directed by Sam Mendes?","Skyfall"],
+["Who wrote the Bond novels?","Ian Fleming","fleming"],
+["Which actor played Bond in Casino Royale in 2006?","Daniel Craig","craig"],
+["Who played Q across seventeen Bond films?","Desmond Llewelyn","llewelyn"],
+["Which 1964 film has a villain obsessed with gold?","Goldfinger"],
+["Which Bond film features the assassin with metal teeth?","The Spy Who Loved Me","jaws"]
+]},
+"Sherlock Holmes":{area:"Screen",q:[
+["What is Holmes's address?","221B Baker Street","baker street"],
+["Who narrates most of the stories?","Dr Watson","watson"],
+["Who created Holmes?","Arthur Conan Doyle","conan doyle|doyle"],
+["What is the name of Holmes's housekeeper?","Mrs Hudson","hudson"],
+["Which novel features the Baskerville family?","The Hound of the Baskervilles","hound of the baskervilles"],
+["Who is Holmes's criminal nemesis?","Professor Moriarty","moriarty"],
+["Which instrument does Holmes play?","Violin"],
+["In which novel does Holmes first appear?","A Study in Scarlet","study in scarlet"],
+["Which police inspector does Holmes usually work with?","Lestrade"],
+["What is the name of Holmes's brother in the Foreign Office?","Mycroft","mycroft holmes"]
+]},
+"Harry Potter":{area:"Screen",q:[
+["What is the name of Harry's owl?","Hedwig"],
+["Which house is Harry sorted into?","Gryffindor"],
+["Who is the headmaster of Hogwarts?","Albus Dumbledore","dumbledore"],
+["What is the name of the school of witchcraft and wizardry?","Hogwarts"],
+["Which position does Harry play in Quidditch?","Seeker"],
+["Who wrote the Harry Potter books?","J K Rowling","rowling|jk rowling"],
+["Who is Harry's godfather?","Sirius Black","sirius"],
+["How many Horcruxes did Voldemort make?","Seven","7"],
+["Which wizarding bank do students visit in Diagon Alley?","Gringotts"],
+["Which King's Cross platform leads to Hogwarts?","Nine and three quarters","9 3/4|platform 9 3/4"]
+]},
+"Cinema of the 1970s":{area:"Screen",q:[
+["Which 1972 Coppola film won Best Picture?","The Godfather"],
+["Which 1975 Spielberg film is about a great white shark?","Jaws"],
+["Which 1979 film is set aboard the Nostromo?","Alien"],
+["Which 1976 film stars Robert De Niro as Travis Bickle?","Taxi Driver"],
+["Which 1971 Kubrick film is set in a violent near-future Britain?","A Clockwork Orange","clockwork orange"],
+["Which 1979 Coppola film is set in the Vietnam War?","Apocalypse Now"],
+["Which 1975 film stars Jack Nicholson as Randle McMurphy?","One Flew Over the Cuckoo's Nest","cuckoos nest"],
+["Which 1973 film stars Newman and Redford as con men?","The Sting"],
+["Which 1974 film stars Jack Nicholson as Jake Gittes?","Chinatown"],
+["Which 1976 film is about a television network and a mad prophet?","Network"]
+]},
+"Horror films":{area:"Screen",q:[
+["Which 1973 film is about a girl possessed by a demon?","The Exorcist"],
+["Which 1978 Carpenter film features an escaped killer in Haddonfield?","Halloween"],
+["Which 1968 Romero film is set in a farmhouse surrounded by the undead?","Night of the Living Dead"],
+["Which 1980 Kubrick film is set in the Overlook Hotel?","The Shining"],
+["Which 1974 film has a chainsaw-wielding family in Texas?","The Texas Chain Saw Massacre","texas chainsaw massacre"],
+["Which 1922 German film features the vampire Count Orlok?","Nosferatu"],
+["Which 1987 film features a puzzle box and Pinhead?","Hellraiser"],
+["Which 1968 Polanski film is about a woman carrying the devil's child?","Rosemary's Baby"],
+["Which 1979 film's tagline is 'In space no one can hear you scream'?","Alien"],
+["Which 1931 film introduced Bela Lugosi as a Transylvanian count?","Dracula"]
+]},
+"Musicals":{area:"Screen",q:[
+["Which musical features 'Somewhere Over the Rainbow'?","The Wizard of Oz","wizard of oz"],
+["Who composed West Side Story?","Leonard Bernstein","bernstein"],
+["Which musical is set behind a Paris barricade in 1832?","Les Misérables","les miserables|les mis"],
+["Which musical features the song 'Memory'?","Cats"],
+["Which Rodgers and Hammerstein musical is set in Siam?","The King and I","king and i"],
+["Which musical features a nanny who flies with an umbrella?","Mary Poppins"],
+["Which Lloyd Webber musical is based on T S Eliot's poems?","Cats"],
+["Which musical features 'Do-Re-Mi'?","The Sound of Music","sound of music"],
+["Which 1952 film musical stars Gene Kelly and Debbie Reynolds?","Singin' in the Rain","singing in the rain"],
+["Which musical is set at Rydell High with 'You're the One That I Want'?","Grease"]
+]},
+"Pantomime":{area:"Screen",q:[
+["What do audiences shout when a character is being followed?","He's behind you","hes behind you|behind you"],
+["Which pantomime has a boy who sells a cow for beans?","Jack and the Beanstalk"],
+["Which pantomime has a girl who loses a glass slipper?","Cinderella"],
+["Which pantomime has a boy who never grows up?","Peter Pan"],
+["In Aladdin, what is the name of the widow?","Widow Twankey"],
+["Which pantomime has a princess who sleeps for a hundred years?","Sleeping Beauty"],
+["Which pantomime has a wooden boy who comes to life?","Pinocchio"],
+["What is the traditional role of a woman playing the young hero called?","Principal boy"],
+["Which pantomime features a goose that lays golden eggs?","Mother Goose"],
+["Which pantomime is set in Sherwood Forest?","Babes in the Wood","robin hood"]
+]},
+"British sitcoms":{area:"Screen",q:[
+["Who played Basil Fawlty?","John Cleese"],
+["Which sitcom features Del Boy Trotter?","Only Fools and Horses","only fools"],
+["Which sitcom is set in Grace Brothers department store?","Are You Being Served"],
+["Which sitcom features Captain Mainwaring's Home Guard?","Dad's Army"],
+["Which sitcom features Edmund Blackadder and Baldrick?","Blackadder"],
+["Who played Hyacinth Bucket?","Patricia Routledge","routledge"],
+["Who played Sybil Fawlty?","Prunella Scales","scales"],
+["Which sitcom is set in a Slough paper merchants?","The Office"],
+["Who played the vicar of Dibley?","Dawn French"],
+["Which sitcom features Gary and Tony sharing a flat?","Men Behaving Badly"]
+]},
+"Science fiction":{area:"Screen",q:[
+["Who wrote Dune?","Frank Herbert","herbert"],
+["Who wrote Foundation?","Isaac Asimov","asimov"],
+["Which author created the Culture series?","Iain M Banks","iain banks"],
+["Who wrote The Left Hand of Darkness?","Ursula K Le Guin","le guin"],
+["Who wrote Nineteen Eighty-Four?","George Orwell","orwell"],
+["Who wrote Brave New World?","Aldous Huxley","huxley"],
+["Who wrote The War of the Worlds?","H G Wells","wells"],
+["Which Philip K Dick novel became Blade Runner?","Do Androids Dream of Electric Sheep"],
+["Who wrote Frankenstein?","Mary Shelley","shelley"],
+["Who wrote Rendezvous with Rama?","Arthur C Clarke","clarke"]
+]},
+"Fantasy":{area:"Screen",q:[
+["Who wrote The Lord of the Rings?","J R R Tolkien","tolkien"],
+["Who wrote The Chronicles of Narnia?","C S Lewis","cs lewis|lewis"],
+["What is the name of Bilbo's blade?","Sting"],
+["Who wrote A Game of Thrones?","George R R Martin","martin"],
+["What is the name of Pratchett's disc-shaped world?","Discworld"],
+["Who wrote The Name of the Wind?","Patrick Rothfuss","rothfuss"],
+["What is the name of Frodo's gardener?","Samwise Gamgee","sam gamgee|sam"],
+["Who wrote A Wizard of Earthsea?","Ursula K Le Guin","le guin"],
+["Which series features the character Kvothe?","The Kingkiller Chronicle","kingkiller"],
+["Who wrote The Once and Future King?","T H White","white"]
+]},
+"Animation":{area:"Screen",q:[
+["Which studio made Toy Story?","Pixar"],
+["What is the name of the snowman in Frozen?","Olaf"],
+["Who directed Spirited Away?","Hayao Miyazaki","miyazaki"],
+["Which Disney film features a lion cub called Simba?","The Lion King"],
+["What kind of fish is Nemo?","Clownfish"],
+["Which 1988 Japanese film is set in Neo-Tokyo?","Akira"],
+["Who created Wallace and Gromit?","Nick Park"],
+["Which 1937 Disney film was the first full-length animated feature?","Snow White and the Seven Dwarfs","snow white"],
+["What is the name of the rat who cooks in Ratatouille?","Remy"],
+["Which studio made My Neighbour Totoro?","Studio Ghibli","ghibli"]
+]},
+"Soap operas":{area:"Screen",q:[
+["Which soap is set in Albert Square?","EastEnders"],
+["Which soap is set in Weatherfield?","Coronation Street","corrie"],
+["Which soap is set in the village of Emmerdale?","Emmerdale"],
+["Which Australian soap is set in Summer Bay?","Home and Away"],
+["What is the name of the pub in Coronation Street?","The Rovers Return","rovers return"],
+["Which Australian soap is set in Ramsay Street?","Neighbours"],
+["Which soap is set in Chester?","Hollyoaks"],
+["Who has played Ken Barlow since 1960?","William Roache","roache"],
+["What is the name of the pub in EastEnders?","The Queen Victoria","queen vic"],
+["Which BBC soap is set in a Scottish village?","River City"]
+]},
+"Game shows":{area:"Screen",q:[
+["Which quiz show features a Chaser?","The Chase"],
+["Which game show has the line 'You are the weakest link, goodbye'?","The Weakest Link","weakest link"],
+["Who first hosted Who Wants to Be a Millionaire? in the UK?","Chris Tarrant","tarrant"],
+["Which show has letters and numbers rounds and a thirty-second clock?","Countdown"],
+["Which show seats contestants in a black chair?","Mastermind"],
+["Which quiz asks for the lowest unique answer?","Pointless"],
+["Who hosted darts quiz Bullseye?","Jim Bowen"],
+["Which quiz show did Jeremy Paxman host for twenty-eight years?","University Challenge"],
+["Which show's host says 'Our survey said'?","Family Fortunes"],
+["Which show's contestants ask 'Can I have a P please, Bob?'","Blockbusters"]
+]}
+});
+Object.assign(BANK,{
+"The Beatles":{area:"Music",q:[
+["Which city were the Beatles formed in?","Liverpool"],
+["Who drummed for the Beatles?","Ringo Starr","starr|richard starkey"],
+["Which 1967 album features 'A Day in the Life'?","Sgt Pepper's Lonely Hearts Club Band","sgt pepper|sergeant pepper"],
+["Who was the Beatles' bassist before McCartney?","Stuart Sutcliffe","sutcliffe"],
+["Who managed the Beatles until 1967?","Brian Epstein","epstein"],
+["Which 1970 album was recorded on a rooftop?","Let It Be"],
+["Which studio stands at 3 Abbey Road?","Abbey Road Studios","abbey road"],
+["Which Beatles song features Harrison playing sitar?","Norwegian Wood"],
+["In which year did the Beatles split?","1970"],
+["Which Hamburg club did they play in the early 1960s?","The Star Club","star club"]
+]},
+"The Rolling Stones":{area:"Music",q:[
+["Who sings lead for the Stones?","Mick Jagger","jagger"],
+["Which guitarist writes the songs with Jagger?","Keith Richards","richards"],
+["Which 1972 double album was recorded in the south of France?","Exile on Main St","exile on main street"],
+["Which 1965 single gave them their first number one?","Satisfaction","i cant get no satisfaction"],
+["Which original guitarist died in 1969?","Brian Jones","jones"],
+["Which 1968 album features 'Sympathy for the Devil'?","Beggars Banquet"],
+["Who drummed for the Stones from 1963 to 2021?","Charlie Watts","watts"],
+["Which 1971 album features 'Brown Sugar'?","Sticky Fingers"],
+["Which producer shaped their early sound?","Andrew Loog Oldham","oldham"],
+["What was the 1969 free concert in California called?","Altamont"]
+]},
+"David Bowie":{area:"Music",q:[
+["What was Bowie's real surname?","Jones"],
+["Which 1972 album introduced Ziggy Stardust?","The Rise and Fall of Ziggy Stardust","ziggy stardust"],
+["Which 1977 album was made in Berlin with Brian Eno?","Low"],
+["Who produced the Berlin trilogy with him?","Brian Eno","eno"],
+["Which character did he play in Labyrinth?","Jareth","the goblin king"],
+["Which band did he form in 1989?","Tin Machine"],
+["Which 1969 single became a UK number one in 1975?","Space Oddity"],
+["What was his final album called?","Blackstar"],
+["In which year did Bowie die?","2016"],
+["Which 1983 album features 'Let's Dance'?","Let's Dance"]
+]},
+"Queen":{area:"Music",q:[
+["Who sang lead for Queen?","Freddie Mercury","mercury"],
+["Who played guitar for Queen?","Brian May","may"],
+["Which 1975 album features 'Bohemian Rhapsody'?","A Night at the Opera"],
+["Which 1985 charity concert did Queen headline?","Live Aid"],
+["Who played bass for Queen?","John Deacon","deacon"],
+["Who drummed for Queen?","Roger Taylor","taylor"],
+["What was Freddie Mercury's birth name?","Farrokh Bulsara","bulsara"],
+["Which 1980 film did they write the soundtrack for?","Flash Gordon"],
+["Which 1995 album was completed after Mercury's death?","Made in Heaven"],
+["Which 1984 album features 'Radio Ga Ga'?","The Works"]
+]},
+"Punk rock":{area:"Music",q:[
+["Which New York club hosted the Ramones in 1976?","CBGB"],
+["Who managed the Sex Pistols?","Malcolm McLaren","mclaren"],
+["What is the Sex Pistols' only studio album?","Never Mind the Bollocks"],
+["Who fronted the Sex Pistols?","Johnny Rotten","john lydon|rotten"],
+["Which band released 'London Calling'?","The Clash"],
+["Which New York band sang 'Blitzkrieg Bop'?","The Ramones","ramones"],
+["In which year did punk break in Britain?","1976"],
+["Which band released the first UK punk single, 'New Rose'?","The Damned"],
+["Which 1979 film is set in the mod revival?","Quadrophenia"],
+["Who fronted Siouxsie and the Banshees?","Siouxsie Sioux","siouxsie"]
+]},
+"Hip hop":{area:"Music",q:[
+["Which Bronx DJ is credited with founding hip hop in 1973?","Kool Herc"],
+["Which group released 'Straight Outta Compton'?","N.W.A.","nwa"],
+["Who released 'The Marshall Mathers LP'?","Eminem"],
+["What is the Sugarhill Gang's 1979 hit called?","Rapper's Delight","rappers delight"],
+["Which New York borough gave birth to hip hop?","The Bronx","bronx"],
+["Who released 'Illmatic' in 1994?","Nas"],
+["Which duo released 'Paid in Full'?","Eric B and Rakim"],
+["Which label did Dr Dre co-found in 1991?","Death Row"],
+["Which musical tells the story of Alexander Hamilton in hip hop?","Hamilton"],
+["Who released 'The Miseducation of Lauryn Hill'?","Lauryn Hill"]
+]},
+"Reggae":{area:"Music",q:[
+["Who is the most famous reggae artist?","Bob Marley","marley"],
+["What is the name of Marley's backing band?","The Wailers","wailers"],
+["Which faith is central to reggae's origins?","Rastafari","rastafarian"],
+["Which 1973 album features 'I Shot the Sheriff'?","Burnin'"],
+["Which label did Chris Blackwell run?","Island Records","island"],
+["Which 1972 film stars Jimmy Cliff as a reggae singer?","The Harder They Come"],
+["In which year did Bob Marley die?","1981"],
+["Which 1977 album features 'Jamming'?","Exodus"],
+["Which Jamaican city is reggae's home?","Kingston"],
+["Which Jamaican music came before reggae?","Ska"]
+]},
+"Bob Dylan":{area:"Music",q:[
+["What was Bob Dylan's real name?","Robert Zimmerman","zimmerman"],
+["Which 1965 album includes 'Like a Rolling Stone'?","Highway 61 Revisited"],
+["Which 1963 song became a civil rights anthem?","Blowin' in the Wind"],
+["In which year did he go electric at Newport?","1965"],
+["Which 1975 album is about a marriage breaking up?","Blood on the Tracks"],
+["Which group did he tour with in 1965 and 1966?","The Band"],
+["Which Nobel Prize did he win in 2016?","Literature"],
+["Which 1966 double album features 'Sad Eyed Lady of the Lowlands'?","Blonde on Blonde"],
+["Which 2020 album did he release?","Rough and Rowdy Ways"],
+["Which 2003 film about him used six different actors?","I'm Not There"]
+]},
+"Jazz":{area:"Music",q:[
+["Which trumpeter made 'Kind of Blue'?","Miles Davis","davis"],
+["Which saxophonist made 'A Love Supreme'?","John Coltrane","coltrane"],
+["Which pianist led the quartet behind 'Take Five'?","Dave Brubeck","brubeck"],
+["Who was known as the First Lady of Song?","Ella Fitzgerald","fitzgerald"],
+["Which New Orleans trumpeter became the first jazz star?","Louis Armstrong","armstrong"],
+["Who composed 'Take the A Train'?","Billy Strayhorn","strayhorn"],
+["Which singer was known as Lady Day?","Billie Holiday","holiday"],
+["Which bandleader was known as the Duke?","Duke Ellington","ellington"],
+["Which 1959 Ornette Coleman album launched free jazz?","The Shape of Jazz to Come"],
+["Which New York club hosted bebop in the 1940s?","Minton's Playhouse","mintons"]
+]},
+"Opera":{area:"Music",q:[
+["Who composed The Magic Flute?","Mozart"],
+["Who composed La Traviata?","Verdi"],
+["How many operas are in Wagner's Ring Cycle?","Four"],
+["Which Puccini opera features 'Nessun Dorma'?","Turandot"],
+["Who composed Carmen?","Bizet"],
+["Which British composer wrote Peter Grimes?","Benjamin Britten","britten"],
+["Which Italian wrote The Barber of Seville?","Rossini"],
+["What is the highest male voice type?","Countertenor"],
+["Which opera house stands in Milan?","La Scala"],
+["Who composed The Marriage of Figaro?","Mozart"]
+]},
+"Ballet":{area:"Music",q:[
+["Who composed Swan Lake?","Tchaikovsky"],
+["Who composed The Rite of Spring?","Stravinsky"],
+["Which ballet features the Sugar Plum Fairy?","The Nutcracker"],
+["Which company did Diaghilev found in Paris?","Ballets Russes"],
+["Which dancer scandalised Paris at the Rite of Spring premiere?","Nijinsky"],
+["Which English company is based at the Royal Opera House?","The Royal Ballet","royal ballet"],
+["In which city did The Rite of Spring premiere in 1913?","Paris"],
+["Which ballet has a girl turned into a swan by a sorcerer?","Swan Lake"],
+["What is the French term for a dance for two?","Pas de deux"],
+["Which ballet tells of a girl who dies of a broken heart and returns as a spirit?","Giselle"]
+]},
+"Classical music":{area:"Music",q:[
+["Who composed the Ninth Symphony with 'Ode to Joy'?","Beethoven"],
+["Who composed The Four Seasons?","Vivaldi"],
+["How many symphonies did Beethoven complete?","Nine","9"],
+["Who composed the Brandenburg Concertos?","Bach"],
+["Who composed Messiah?","Handel"],
+["Who composed Boléro?","Ravel"],
+["Who composed the Enigma Variations?","Elgar"],
+["Who composed The Planets?","Holst"],
+["Which Austrian wrote more than six hundred songs?","Schubert"],
+["Who composed Rhapsody in Blue?","George Gershwin","gershwin"]
+]},
+"The blues":{area:"Music",q:[
+["Who was known as the King of the Delta Blues?","Robert Johnson","johnson"],
+["Which city is the home of the electric blues?","Chicago"],
+["Who recorded 'Hoochie Coochie Man'?","Muddy Waters","waters"],
+["Which singer was called the Empress of the Blues?","Bessie Smith"],
+["Which British band took its name from a Muddy Waters song?","The Rolling Stones"],
+["What is the standard blues chord pattern called?","Twelve bar blues","12 bar blues"],
+["What was B B King's guitar called?","Lucille"],
+["Which blues singer recorded 'Stormy Monday'?","T-Bone Walker"],
+["In which decade did the first Delta blues records appear?","1920s"],
+["Which blues guitarist had a hit with 'Bo Diddley'?","Bo Diddley"]
+]},
+"Soul and Motown":{area:"Music",q:[
+["Which label did Berry Gordy found in Detroit?","Motown"],
+["Which Detroit group featured Diana Ross?","The Supremes"],
+["Who sang 'What's Going On'?","Marvin Gaye","gaye"],
+["Who sang 'Respect' in 1967?","Aretha Franklin","franklin"],
+["Which Motown group featured Smokey Robinson?","The Miracles"],
+["Who sang 'My Girl'?","The Temptations"],
+["Which singer was the Godfather of Soul?","James Brown"],
+["What was Motown's house band called?","The Funk Brothers"],
+["Who recorded 'At Last' in 1961?","Etta James"],
+["Which Memphis label was Stax's great rival?","Stax"]
+]},
+"Heavy metal":{area:"Music",q:[
+["Which Birmingham band released 'Paranoid' in 1970?","Black Sabbath"],
+["Who sang for Led Zeppelin?","Robert Plant","plant"],
+["Which band released 'Master of Puppets'?","Metallica"],
+["Which singer is known as the Prince of Darkness?","Ozzy Osbourne","osbourne"],
+["Which band released 'The Number of the Beast'?","Iron Maiden"],
+["Which guitarist played 'Eruption'?","Eddie Van Halen","van halen"],
+["Which band released 'Back in Black' in 1980?","AC/DC"],
+["In which city did heavy metal begin?","Birmingham"],
+["Which Judas Priest singer is called the Metal God?","Rob Halford","halford"],
+["Which 1970 festival featured Black Sabbath and Jimi Hendrix?","Isle of Wight"]
+]},
+"Folk music":{area:"Music",q:[
+["Who wrote 'This Land Is Your Land'?","Woody Guthrie","guthrie"],
+["Which American singer was called the Queen of Folk?","Joan Baez","baez"],
+["In which town is the famous American folk festival held?","Newport"],
+["Which English group recorded 'Liege and Lief'?","Fairport Convention"],
+["Who collected English folk songs in the early 1900s?","Cecil Sharp"],
+["Which singer wrote 'Both Sides Now'?","Joni Mitchell","mitchell"],
+["Which Irish band recorded 'The Wild Rover'?","The Dubliners"],
+["Which Scottish song is about a loch near Ben Lomond?","Loch Lomond"],
+["Which folk instrument has a bellows and buttons?","Concertina"],
+["Which singer recorded 'Scarborough Fair' with Art Garfunkel?","Paul Simon","simon"]
+]},
+"Eurovision":{area:"Music",q:[
+["Which country has won Eurovision most often?","Ireland"],
+["Which Swedish group won in 1974 with Waterloo?","ABBA"],
+["Which city hosted in 2023 on Ukraine's behalf?","Liverpool"],
+["Who won for Italy in 2021 with 'Zitti e Buoni'?","Måneskin","maneskin"],
+["Which British act came second in 2022?","Sam Ryder"],
+["In which year did the UK last win?","1997"],
+["Which country won in 2019 with 'Arcade'?","The Netherlands","netherlands|duncan laurence"],
+["Which country won the first contest in 1956?","Switzerland"],
+["Which Irish singer won the contest three times?","Johnny Logan"],
+["What is the group of biggest funders called?","Big Five","big 5"]
+]},
+"The guitar":{area:"Music",q:[
+["How many strings does a standard guitar have?","Six","6"],
+["Which maker is associated with the Les Paul model?","Gibson"],
+["Which Spanish luthier gave his name to the modern classical guitar?","Torres"],
+["What does a capo do?","Changes the key"],
+["Which British firm makes the amps of rock?","Marshall"],
+["What does a tremolo arm do?","Changes the pitch"],
+["Which guitarist played 'Blackie', a Fender Stratocaster?","Eric Clapton","clapton"],
+["How many frets does a classical guitar usually have?","Nineteen","19"],
+["What is plucking with the fingers called?","Fingerpicking"],
+["Which guitar has a metal resonator cone?","Resonator"]
+]},
+"The piano":{area:"Music",q:[
+["How many keys does a standard piano have?","Eighty-eight","88"],
+["Who built the first piano around 1700?","Cristofori"],
+["How many black keys are on a piano?","Thirty-six","36"],
+["What is a piano with vertical strings called?","Upright"],
+["What does 'forte' mean?","Loud"],
+["What does 'pianissimo' mean?","Very soft"],
+["Who wrote the Well-Tempered Clavier?","Bach"],
+["Which country did the piano come from?","Italy"],
+["What is the wooden board that amplifies the strings called?","Soundboard"],
+["What is the left pedal on a grand piano called?","Soft pedal","una corda"]
+]},
+"Songwriting":{area:"Music",q:[
+["What is the repeated section of a song called?","Chorus"],
+["What is a contrasting middle section called?","The bridge","middle eight"],
+["What is the memorable part of a song called?","The hook"],
+["Which duo wrote 'Will You Love Me Tomorrow'?","Carole King and Gerry Goffin","goffin|carole king"],
+["Which 32-bar form uses four eight-bar sections?","AABA"],
+["Who wrote 'Yesterday'?","Paul McCartney","mccartney"],
+["What is a rhyme inside a single line called?","Internal rhyme"],
+["Which Swedish writer made hits for Britney and the Backstreet Boys?","Max Martin","martin"],
+["What is Nashville's street of songwriters called?","Music Row"],
+["What is the short opening of a song called?","The intro"]
+]}
+});
+Object.assign(BANK,{
+"French cuisine":{area:"Food and drink",q:[
+["Which fish stew from Provence is named after a Mediterranean port?","Bouillabaisse"],
+["What is the butter and flour base of the mother sauces called?","Roux"],
+["Which sauce is made from egg yolks and clarified butter?","Hollandaise"],
+["Which pastry is used for profiteroles?","Choux"],
+["Which vegetable dish from Nice is cooked slowly in olive oil?","Ratatouille"],
+["Which chef codified French haute cuisine in 1903?","Escoffier"],
+["Which cheese tops a classic French onion soup?","Gruyère","gruyere"],
+["Which two ingredients make a vinaigrette?","Oil and vinegar"],
+["Which meat is used in a blanquette?","Veal"],
+["Which beef stew is cooked in red wine?","Boeuf bourguignon","boeuf bourguignon"]
+]},
+"Italian cuisine":{area:"Food and drink",q:[
+["Which cheese goes on a Margherita pizza?","Mozzarella"],
+["What does 'al dente' mean?","Firm to the bite"],
+["Which rice is used for risotto?","Arborio"],
+["Which city is the home of ragù?","Bologna"],
+["Which three ingredients make a Caprese salad?","Tomato, mozzarella and basil"],
+["Which Italian dessert is coffee-soaked sponge with mascarpone?","Tiramisu"],
+["Which hard cheese is grated over pasta in Rome?","Pecorino"],
+["What is the cured ham from Parma called?","Prosciutto"],
+["Which region makes Chianti?","Tuscany"],
+["Which pasta is wide ribbons and means 'little rags'?","Pappardelle"]
+]},
+"Japanese cuisine":{area:"Food and drink",q:[
+["Which rice wine is used in Japanese cooking?","Sake"],
+["Which seaweed sheet wraps a sushi roll?","Nori"],
+["Which stock is made from dried bonito flakes?","Dashi"],
+["What is the Japanese name for sliced raw fish?","Sashimi"],
+["Which fermented soybean paste flavours miso soup?","Miso"],
+["Which Japanese noodle is made from buckwheat?","Soba"],
+["What is the name of the battered, deep-fried dish?","Tempura"],
+["Which Japanese dish is cooked at the table in a hot pot?","Sukiyaki"],
+["Which powdered green tea is used in the tea ceremony?","Matcha"],
+["What are Japanese grilled skewers called?","Yakitori"]
+]},
+"Indian cuisine":{area:"Food and drink",q:[
+["What is Indian clarified butter called?","Ghee"],
+["Which spice gives curry its yellow colour?","Turmeric"],
+["Which flatbread is cooked stuck to the wall of a tandoor?","Naan"],
+["Which spice blend means 'mixed spices'?","Garam masala"],
+["What is the lentil dish served with rice called?","Dal"],
+["Which Indian cheese is used in palak paneer?","Paneer"],
+["Which yoghurt dish is served with cucumber?","Raita"],
+["What is the clay oven of Indian cooking called?","Tandoor"],
+["Which spiced tea is made with milk and cardamom?","Masala chai"],
+["Which spirit is made from cashew or coconut in Goa?","Feni"]
+]},
+"Spanish cuisine":{area:"Food and drink",q:[
+["Which rice dish is cooked in a wide shallow pan?","Paella"],
+["Which cold soup is made from tomato and bread?","Gazpacho"],
+["What are small plates served in Spanish bars called?","Tapas"],
+["Which cured ham is Spain's most famous?","Jamón ibérico","iberico|jamon iberico"],
+["What is the Spanish potato omelette called?","Tortilla"],
+["Which spice gives paella its colour?","Saffron"],
+["What are the fried dough sticks eaten at breakfast called?","Churros"],
+["Which town gives its name to sherry?","Jerez"],
+["What is Spanish sparkling wine called?","Cava"],
+["Which Spanish dessert is a caramel custard?","Flan"]
+]},
+"Mexican cuisine":{area:"Food and drink",q:[
+["What is a folded tortilla filled with cheese called?","Quesadilla"],
+["Which dish is steamed inside a corn husk?","Tamale"],
+["Which spirit is distilled from blue agave?","Tequila"],
+["What is the avocado dip called?","Guacamole"],
+["Which chilli is smoked and dried?","Chipotle"],
+["What is the street food of meat in a tortilla called?","Taco"],
+["Which sauce is made from cocoa and chillies?","Mole"],
+["What is the green sauce made from tomatillos called?","Salsa verde"],
+["Which Mexican holiday honours the dead?","Day of the Dead"],
+["What is the Mexican sandwich roll called?","Torta"]
+]},
+"Chinese cuisine":{area:"Food and drink",q:[
+["Which dish is duck roasted and served with pancakes?","Peking duck"],
+["Which province gives its name to a hot, numbing cuisine?","Sichuan"],
+["Which sauce is made from fermented soybeans?","Soy sauce"],
+["What are the dumplings eaten at New Year called?","Jiaozi"],
+["What is the name of the soup dumpling?","Xiaolongbao"],
+["Which star-shaped spice dominates five spice?","Star anise"],
+["Which dish is diced chicken with dried chillies and cashews?","Kung pao chicken"],
+["Which Chinese cabbage is used in stir fries?","Bok choy"],
+["Which dynasty gives its name to fine porcelain?","Ming"],
+["What is the name of the wok-cooked rice dish?","Fried rice"]
+]},
+"Bread and baking":{area:"Food and drink",q:[
+["What makes bread rise?","Yeast"],
+["What is the French stick-shaped loaf called?","Baguette"],
+["Which gas does yeast produce?","Carbon dioxide"],
+["Which Italian flatbread is dimpled with olive oil?","Focaccia"],
+["Which Jewish bread is plaited?","Challah"],
+["What is letting dough rest and rise called?","Proving"],
+["Which pastry is made by folding butter into dough repeatedly?","Puff pastry"],
+["Which Indian flatbread is cooked dry in a pan?","Chapati"],
+["Which bread is made from maize flour?","Cornbread"],
+["What is the sourdough culture of flour and water called?","Starter","levain"]
+]},
+"Cheese":{area:"Food and drink",q:[
+["Which cheese is used in a classic fondue?","Gruyère","gruyere"],
+["Which blue cheese comes from Nottinghamshire?","Stilton"],
+["Which Italian cheese is used in tiramisu?","Mascarpone"],
+["Which cheese is stretched and eaten warm in Italy?","Mozzarella"],
+["Which Greek cheese is used in salad?","Feta"],
+["Which hard English cheese is the classic for cauliflower cheese?","Cheddar"],
+["Which Sardinian sheep's cheese is grated over pasta?","Pecorino"],
+["Which Spanish sheep's cheese is often smoked?","Manchego"],
+["Which soft white mould cheese comes from Normandy?","Camembert"],
+["Which Dutch cheese is sold in red wax?","Edam"]
+]},
+"Wine":{area:"Food and drink",q:[
+["Which grape makes red Burgundy?","Pinot noir"],
+["Which three grapes go into Champagne?","Chardonnay, pinot noir and pinot meunier"],
+["Which white grape makes Chablis?","Chardonnay"],
+["Which Italian wine is made from Sangiovese?","Chianti"],
+["Which sweet white wine comes from Bordeaux?","Sauternes"],
+["Which grape dominates Rioja?","Tempranillo"],
+["What does 'brut' mean on a Champagne label?","Dry"],
+["Which country is the world's largest wine producer?","Italy"],
+["Which grape makes Beaujolais?","Gamay"],
+["What is leaving juice in contact with skins called?","Maceration"]
+]},
+"Beer and brewing":{area:"Food and drink",q:[
+["What are the four ingredients of beer?","Water, malt, hops and yeast"],
+["Which dark beer style is brewed in Dublin?","Stout"],
+["What does IPA stand for?","India Pale Ale"],
+["What is the German beer purity law of 1516 called?","Reinheitsgebot"],
+["Which British beer is served from a hand pump?","Cask ale","real ale"],
+["Which Belgian beer ferments with wild yeast?","Lambic"],
+["Which beer style is named after a Czech city?","Pilsner"],
+["Which grain is used in most beer?","Barley"],
+["Which Munich festival is the world's largest beer festival?","Oktoberfest"],
+["What does ABV stand for?","Alcohol by volume"]
+]},
+"Coffee":{area:"Food and drink",q:[
+["Which coffee is espresso with steamed milk foam?","Cappuccino"],
+["Which country is the world's largest coffee producer?","Brazil"],
+["Which coffee species is prized for flavour?","Arabica"],
+["What is an espresso with a dash of milk called?","Macchiato"],
+["Which coffee is brewed by pouring water slowly through a filter?","Pour over"],
+["What is the Italian hob-top coffee maker called?","Moka pot"],
+["What is the foam on an espresso called?","Crema"],
+["Which roast is darker, French or cinnamon?","French"],
+["Which country produces Kopi Luwak?","Indonesia"],
+["What is a single shot of espresso roughly?","Thirty millilitres","30ml"]
+]},
+"Tea":{area:"Food and drink",q:[
+["Which country is the world's largest tea producer?","China"],
+["Which Indian region is famous for muscatel tea?","Darjeeling"],
+["What is the Japanese green tea called?","Sencha"],
+["Which tea is fermented, aged and pressed into cakes?","Pu-erh"],
+["Which fruit flavours Earl Grey tea?","Bergamot"],
+["Which tea is smoked over pinewood?","Lapsang souchong"],
+["Which powdered green tea is whisked in the Japanese ceremony?","Matcha"],
+["Which Indian tea is the base of a strong breakfast blend?","Assam"],
+["Which spiced milk tea comes from India?","Masala chai"],
+["Which tea is served cold with lemon in America?","Iced tea"]
+]},
+"Chocolate":{area:"Food and drink",q:[
+["Which country produces the most cocoa?","Ivory Coast","cote divoire"],
+["Which tree gives cocoa?","Cacao"],
+["Which chocolate has the highest cocoa content?","Dark"],
+["Which Swiss company is famous for milk chocolate?","Nestlé","nestle"],
+["What is the process of smoothing chocolate called?","Conching"],
+["Which country invented milk chocolate?","Switzerland"],
+["What two ingredients make ganache?","Cream and chocolate"],
+["What was the Aztec cocoa drink called?","Xocolatl"],
+["What are the two essential ingredients of chocolate?","Cocoa and sugar"],
+["Which British chocolate bar is made by Mars with caramel and nougat?","Mars bar"]
+]},
+"Spices":{area:"Food and drink",q:[
+["Which spice is the most expensive in the world by weight?","Saffron"],
+["Which spice is the bark of a tree?","Cinnamon"],
+["Which spice is the seed pod of a plant in the ginger family?","Cardamom"],
+["Which spice is a dried flower bud?","Clove"],
+["Which root spice is used in gingerbread?","Ginger"],
+["Which spice is made from dried ground peppers and colours paprika dishes red?","Paprika"],
+["Which dried berry flavours gin?","Juniper"],
+["Which star-shaped spice is used in Chinese five spice?","Star anise"],
+["Which nutmeg product is the lacy red covering of the seed?","Mace"],
+["Which spice is the most used in the world after salt?","Black pepper"]
+]},
+"Fish and seafood":{area:"Food and drink",q:[
+["Which fish is the traditional choice for fish and chips?","Cod"],
+["Which bivalve is farmed widely in Brittany?","Oyster"],
+["Which is the largest fish in the ocean?","Whale shark"],
+["Which fish is served as fugu and can be deadly?","Pufferfish"],
+["Which crab has the longest legs of the North Pacific?","King crab"],
+["Which shellfish is the classic base of a bisque?","Lobster"],
+["Which fish is smoked to make a kipper?","Herring"],
+["Which cephalopod is used for calamari?","Squid"],
+["Which fish is farmed in Scottish lochs and often smoked?","Salmon"],
+["Which flatfish is the classic for sole meunière?","Sole"]
+]},
+"Vegetables":{area:"Food and drink",q:[
+["Which brassica has tight green florets?","Broccoli"],
+["Which orange root is rich in beta carotene?","Carrot"],
+["Which vegetable is the flower bud of a thistle?","Artichoke"],
+["Which bulb makes you cry when you cut it?","Onion"],
+["Which leafy vegetable is the base of a Caesar salad?","Romaine","cos"],
+["Which vegetable is fermented to make sauerkraut?","Cabbage"],
+["Which sweet root vegetable makes borscht red?","Beetroot"],
+["Which nightshade has purple skin and is called eggplant in America?","Aubergine"],
+["Which long green fruit is eaten as a vegetable and called zucchini?","Courgette"],
+["Which vegetable is the flower head of a plant and comes in purple and white?","Cauliflower"]
+]},
+"Puddings":{area:"Food and drink",q:[
+["Which suet pudding is studded with raisins and served with custard?","Spotted dick"],
+["Which pudding is made from bread, butter and dried fruit?","Bread and butter pudding"],
+["Which dessert is meringue, cream and strawberries crushed together?","Eton mess"],
+["Which dessert is a baked custard with a caramelised top?","Crème brûlée","creme brulee"],
+["Which steamed sponge is drenched in golden syrup?","Treacle sponge"],
+["Which dessert is layers of sponge, fruit, custard and cream?","Trifle"],
+["Which Scottish dessert is oats, cream and whisky?","Cranachan"],
+["Which suet roll has jam running through it?","Jam roly poly"],
+["Which pudding is rice baked with milk and nutmeg?","Rice pudding"],
+["Which steamed dried fruit pudding is served at Christmas?","Christmas pudding"]
+]},
+"Breakfast":{area:"Food and drink",q:[
+["What is the black sausage of a full English breakfast?","Black pudding"],
+["Which country eats congee for breakfast?","China"],
+["Which Mexican breakfast dish is fried tortillas in salsa?","Chilaquiles"],
+["Which dish is poached eggs on muffins with hollandaise?","Eggs Benedict"],
+["Which soup is served at a Japanese breakfast?","Miso soup"],
+["Which grain makes Scottish porridge?","Oats"],
+["Which country did the croissant come from?","Austria"],
+["Which Indian breakfast is a steamed rice and lentil cake?","Idli"],
+["Which cured pork is the centre of a cooked breakfast?","Bacon"],
+["Which fruit is the classic breakfast juice?","Orange"]
+]},
+"Cocktails":{area:"Food and drink",q:[
+["Which cocktail is gin and vermouth with a lemon twist?","Martini"],
+["Which cocktail is rum, mint, lime and sugar?","Mojito"],
+["Which cocktail is tequila, lime and triple sec?","Margarita"],
+["Which cocktail is vodka, tomato juice and Worcestershire sauce?","Bloody Mary"],
+["Which cocktail is champagne and orange juice?","Mimosa"],
+["Which cocktail is whiskey, bitters and sugar?","Old Fashioned"],
+["Which cocktail is gin, Campari and sweet vermouth?","Negroni"],
+["Which cocktail is vodka, coffee liqueur and espresso?","Espresso martini"],
+["Which cocktail is brandy, lemon and sugar with a sugar rim?","Sidecar"],
+["Which cocktail is rum, pineapple and coconut?","Piña colada","pina colada"]
+]}
+});
+Object.assign(BANK,{
+"Cricket":{area:"Sport and games",q:[
+["How many players are in a cricket team?","Eleven","11"],
+["What is a score of zero called?","A duck","duck"],
+["How many balls are in an over?","Six","6"],
+["Which country won the first World Cup in 1975?","West Indies"],
+["What is the distance between the wickets?","Twenty-two yards","22 yards"],
+["Who holds the record for the highest individual Test score?","Brian Lara","lara"],
+["What is the name of the home of cricket?","Lord's"],
+["Which two countries contest the Ashes?","England and Australia"],
+["Which batsman has the most international runs?","Sachin Tendulkar","tendulkar"],
+["What is three wickets in three balls called?","A hat-trick","hat trick"]
+]},
+"Premier League football":{area:"Sport and games",q:[
+["Which club has won the most Premier League titles?","Manchester United"],
+["Who is the Premier League's all time top scorer?","Alan Shearer","shearer"],
+["Which club went unbeaten in 2003-04?","Arsenal"],
+["Which manager won the title with Blackburn in 1995?","Kenny Dalglish","dalglish"],
+["Which club plays at Anfield?","Liverpool"],
+["How many teams are in the Premier League?","Twenty","20"],
+["Which club is nicknamed the Toffees?","Everton"],
+["Which club did Arsène Wenger manage?","Arsenal"],
+["Which club won the title at 5000-1 in 2016?","Leicester City","leicester"],
+["Which club is nicknamed the Seagulls?","Brighton"]
+]},
+"Tennis":{area:"Sport and games",q:[
+["Which Grand Slam is played on grass in London?","Wimbledon"],
+["How many Grand Slam singles titles did Roger Federer win?","Twenty","20"],
+["Who holds the men's record for Grand Slam singles titles?","Novak Djokovic","djokovic"],
+["Which surface is the French Open played on?","Clay"],
+["Who was the last British man to win Wimbledon before Andy Murray?","Fred Perry"],
+["Which Grand Slam is played in New York?","US Open"],
+["What is a score of zero in tennis?","Love"],
+["Which two sisters dominated women's tennis from the 1990s?","Serena and Venus Williams","williams"],
+["What is the men's team competition called?","Davis Cup"],
+["Which Grand Slam is played in Melbourne?","Australian Open"]
+]},
+"Formula 1":{area:"Sport and games",q:[
+["Which two drivers share the record of seven world titles?","Schumacher and Hamilton"],
+["Which team has won the most constructors' titles?","Ferrari"],
+["Which circuit hosts the British Grand Prix?","Silverstone"],
+["Which driver died at Imola in 1994?","Ayrton Senna","senna"],
+["How many points does a race winner score?","Twenty-five","25"],
+["Which team did Lewis Hamilton join in 2025?","Ferrari"],
+["What colour flag ends a race?","Chequered flag","checkered flag"],
+["In which city is the Australian Grand Prix held?","Melbourne"],
+["Which company has supplied the tyres since 2011?","Pirelli"],
+["Which British team is based in Milton Keynes?","Red Bull"]
+]},
+"The Olympics":{area:"Sport and games",q:[
+["Which city hosted the first modern Games in 1896?","Athens"],
+["How often are the Summer Games held?","Every four years"],
+["Which city hosts the 2028 Summer Games?","Los Angeles"],
+["Who won four golds in Berlin in 1936?","Jesse Owens","owens"],
+["Which athlete has won the most Olympic golds?","Michael Phelps","phelps"],
+["What do the five rings represent?","The continents"],
+["Which city hosted the 2012 Games?","London"],
+["Which sport made Usain Bolt an eight-time champion?","Athletics","sprinting"],
+["Which country has hosted the Summer Games most often?","United States","usa"],
+["What is the Olympic motto in Latin?","Citius, Altius, Fortius"]
+]},
+"Rugby":{area:"Sport and games",q:[
+["How many players are in a rugby union team?","Fifteen","15"],
+["Which country won the first World Cup in 1987?","New Zealand"],
+["What is the name of England's rugby stadium?","Twickenham"],
+["How many points is a try worth?","Five","5"],
+["Which trophy do England and Scotland play for?","Calcutta Cup"],
+["Which country has won the most Rugby World Cups?","South Africa"],
+["How many players are in a rugby league team?","Thirteen","13"],
+["What is the prize for finishing last in the Six Nations?","The wooden spoon","wooden spoon"],
+["Which Welsh scrum half scored the try of the century in 1973?","Gareth Edwards"],
+["How many points is a conversion worth?","Two","2"]
+]},
+"Golf":{area:"Sport and games",q:[
+["How many holes are in a standard round?","Eighteen","18"],
+["Which tournament is played at Augusta?","The Masters"],
+["Which golfer has won the most majors?","Jack Nicklaus","nicklaus"],
+["What is the Open Championship trophy called?","Claret Jug"],
+["What is two under par called?","An eagle","eagle"],
+["What is one under par called?","A birdie","birdie"],
+["Which country did Samuel Ryder come from?","England"],
+["Which course at St Andrews hosts the Open?","The Old Course"],
+["Which European has won the most majors?","Nick Faldo","faldo"],
+["What is three under par called?","An albatross","albatross|double eagle"]
+]},
+"Snooker":{area:"Sport and games",q:[
+["How many red balls are on the table?","Fifteen","15"],
+["What is the maximum break?","One hundred and forty-seven","147"],
+["What is the world championship venue?","The Crucible"],
+["Who won seven world titles in the modern era?","Stephen Hendry","hendry"],
+["Which ball is worth seven points?","Black"],
+["How many points is the blue ball worth?","Five","5"],
+["Which player is nicknamed the Rocket?","Ronnie O'Sullivan","o'sullivan|osullivan"],
+["What is the minimum foul penalty?","Four points","4"],
+["Which London venue hosts the Masters?","Alexandra Palace"],
+["Which ball is worth two points?","Yellow"]
+]},
+"Boxing":{area:"Sport and games",q:[
+["How many rounds in a modern world title fight?","Twelve","12"],
+["Who was the first man to beat Muhammad Ali?","Joe Frazier","frazier"],
+["What was the 1974 fight in Kinshasa called?","Rumble in the Jungle"],
+["Which champion retired undefeated at 49 and 0?","Rocky Marciano","marciano"],
+["Which weight class sits above lightweight?","Welterweight"],
+["How many seconds does a floored boxer have to rise?","Ten","10"],
+["Who was heavyweight champion from 1937 to 1949?","Joe Louis"],
+["Which British boxer won the heavyweight title in 2015?","Tyson Fury","fury"],
+["What was the 1975 Ali and Frazier fight called?","Thrilla in Manila"],
+["Which weight class is below heavyweight?","Cruiserweight"]
+]},
+"Chess":{area:"Sport and games",q:[
+["How many squares are on a chessboard?","Sixty-four","64"],
+["Which piece moves only diagonally?","Bishop"],
+["What is the move swapping king and rook called?","Castling"],
+["Who was world champion for twenty-seven years from 1894?","Emanuel Lasker","lasker"],
+["Which piece is worth nine points?","Queen"],
+["What is the fastest possible checkmate called?","Fool's mate","fools mate"],
+["Who was world champion from 1975 to 1985?","Anatoly Karpov","karpov"],
+["What is a draw with no legal move called?","Stalemate"],
+["Which computer beat Kasparov in 1997?","Deep Blue"],
+["What is moving a pawn to the last rank called?","Promotion"]
+]},
+"Poker":{area:"Sport and games",q:[
+["How many cards does each player get in Texas Hold'em?","Two","2"],
+["What is the best possible hand called?","A royal flush","royal flush"],
+["How many community cards are dealt?","Five","5"],
+["What is the final betting round called?","The river"],
+["What beats a full house?","Four of a kind"],
+["Which Las Vegas series is the game's biggest tournament?","World Series of Poker","wsop"],
+["What is betting all your chips called?","All in"],
+["How many suits are in a deck?","Four","4"],
+["Which blind is posted to the dealer's left?","The small blind","small blind"],
+["What is the fourth community card called?","The turn"]
+]},
+"Bridge":{area:"Sport and games",q:[
+["How many players are in a bridge game?","Four","4"],
+["How many cards does each player hold?","Thirteen","13"],
+["What is the auction before play called?","Bidding"],
+["What is the highest possible bid?","Seven no trumps","7NT|seven no trump"],
+["How many tricks are in a hand?","Thirteen","13"],
+["What is the dummy's hand?","Declarer's partner's hand","declarers partner"],
+["Who plays the dummy's cards?","The declarer"],
+["What is a bid of no trumps shortened to?","NT"],
+["How many players are in a partnership?","Two","2"],
+["What is the term for winning the first six tricks?","The book","book"]
+]},
+"Board games":{area:"Sport and games",q:[
+["How many squares are on a Monopoly board?","Forty","40"],
+["What is the most expensive property in Monopoly?","Mayfair"],
+["How many pieces does each side start with in chess?","Sixteen","16"],
+["Which game uses a doubling cube?","Backgammon"],
+["How many counters does each player have in Ludo?","Four","4"],
+["Which game uses letter tiles with point values?","Scrabble"],
+["How many properties are in a Monopoly colour set?","Three","3"],
+["Which game is played with black and white stones on a grid?","Go"],
+["Which game is about settling the island of Catan?","Catan","settlers of catan"],
+["How many dominoes are in a double-six set?","Twenty-eight","28"]
+]},
+"Darts":{area:"Sport and games",q:[
+["What is the highest score with three darts?","One hundred and eighty","180"],
+["What is the outer double ring called?","The double"],
+["How many points is the bullseye?","Fifty","50"],
+["Which player is nicknamed the Power?","Phil Taylor","taylor"],
+["What is the world championship venue nicknamed?","Ally Pally","alexandra palace"],
+["What is the highest possible checkout?","One hundred and seventy","170"],
+["How many numbers are on a dartboard?","Twenty","20"],
+["What is treble twenty worth?","Sixty","60"],
+["Which country has dominated world darts?","England"],
+["What is a score of one hundred and forty called?","A ton forty","ton forty"]
+]},
+"Athletics":{area:"Sport and games",q:[
+["How long is a marathon in miles?","Twenty-six point two","26.2"],
+["Who holds the men's 100m world record?","Usain Bolt","bolt"],
+["How many hurdles in a 110m hurdles race?","Ten","10"],
+["Which country hosts the 2025 World Championships?","Japan"],
+["What is the men's ten-event competition called?","The decathlon","decathlon"],
+["How many events are in a decathlon?","Ten","10"],
+["What is the women's seven-event competition called?","The heptathlon","heptathlon"],
+["What is the standard track length?","Four hundred metres","400m"],
+["How many laps is the 10,000m on a standard track?","Twenty-five","25"],
+["What is the field event using a metal ball called?","Shot put"]
+]},
+"Cycling":{area:"Sport and games",q:[
+["How many stages are in the Tour de France?","Twenty-one","21"],
+["What colour jersey does the Tour leader wear?","Yellow"],
+["Which country hosts the Giro d'Italia?","Italy"],
+["How many riders share the record of five Tour wins?","Four"],
+["What pattern is the climb leader's jersey?","Polka dot"],
+["Which Belgian is the greatest classics rider?","Eddy Merckx","merckx"],
+["What is the main group of riders called?","The peloton","peloton"],
+["Which British rider won the Tour in 2012?","Bradley Wiggins","wiggins"],
+["What is the world governing body called?","UCI"],
+["What is the race against the clock called?","Time trial"]
+]},
+"Sailing":{area:"Sport and games",q:[
+["What is the America's Cup?","A yacht race"],
+["What is the front of a boat called?","The bow","bow"],
+["What is the left side of a boat called?","Port"],
+["What is the sail at the front called?","The jib","jib"],
+["What is sailing into the wind called?","Close hauled"],
+["Which race goes round the world non-stop alone?","Vendée Globe","vendee globe"],
+["What does a knot measure?","Speed"],
+["What is turning through the wind called?","Tacking"],
+["How many sail a Laser dinghy?","One","1"],
+["Which country won the first America's Cup?","United States","usa"]
+]},
+"Mountaineering":{area:"Sport and games",q:[
+["How high is Everest in metres?","Eight thousand eight hundred and forty-nine","8849|8848"],
+["Who made the first ascent of Everest?","Edmund Hillary and Tenzing Norgay","hillary|tenzing"],
+["Which is the second highest mountain?","K2"],
+["What is the highest mountain in Europe?","Elbrus"],
+["What is the highest peak in Wales?","Snowdon"],
+["Who was the first woman to climb Everest?","Junko Tabei","tabei"],
+["What is the highest mountain in Scotland?","Ben Nevis"],
+["Which African peak is one of the Seven Summits?","Kilimanjaro"],
+["What is a crack in a glacier called?","A crevasse","crevasse"],
+["What is the highest mountain in England?","Scafell Pike"]
+]},
+"Horse racing":{area:"Sport and games",q:[
+["Which race is run at Aintree?","The Grand National","grand national"],
+["Which racecourse hosts the Derby?","Epsom"],
+["What is a furlong in yards?","Two hundred and twenty","220"],
+["Which horse won the Grand National three times?","Red Rum"],
+["Which Cheltenham race is the championship chase?","The Gold Cup","gold cup"],
+["Which flat Classic ends the season?","St Leger"],
+["What is the minimum age for a racehorse?","Two","2"],
+["Which racecourse hosts Royal Ascot?","Ascot"],
+["What is a horse's parentage called?","Pedigree"],
+["Which jockey rode Red Rum to his third Grand National in 1977?","Tommy Stack"]
+]},
+"Table tennis":{area:"Sport and games",q:[
+["How many points win a game?","Eleven","11"],
+["What is the paddle called?","A bat","bat"],
+["What is the diameter of the ball in millimetres?","Forty","40"],
+["Which country dominates the sport?","China"],
+["How many serves does each player have?","Two","2"],
+["What is the world governing body called?","ITTF"],
+["What colour is a standard table?","Blue"],
+["What is a serve touching the net called?","A let","let"],
+["How many players in a doubles team?","Two","2"],
+["What is the height of the net in centimetres?" ,"Fifteen point two five","15.25"]
+]}
+});
+Object.assign(BANK,{
+"Astronomy":{area:"Science and nature",q:[
+["Which planet is closest to the sun?","Mercury"],
+["Which is the largest planet?","Jupiter"],
+["Which planet is called the Red Planet?","Mars"],
+["How many moons does Earth have?","One","1"],
+["What is our galaxy called?","The Milky Way"],
+["What is the brightest star in the night sky?","Sirius"],
+["Which planet has the most prominent rings?","Saturn"],
+["What is a light year a measure of?","Distance"],
+["Which planet was reclassified as a dwarf planet in 2006?","Pluto"],
+["What is the nearest star to the sun called?","Proxima Centauri"]
+]},
+"Space exploration":{area:"Science and nature",q:[
+["Who was the first man in space?","Yuri Gagarin","gagarin"],
+["Who was the first man on the moon?","Neil Armstrong","armstrong"],
+["What was the Apollo 11 lander called?","Eagle"],
+["Which agency ran the Apollo programme?","NASA"],
+["What was the first artificial satellite?","Sputnik"],
+["Who was the first woman in space?","Valentina Tereshkova","tereshkova"],
+["Which telescope was launched in 1990?","Hubble"],
+["Which rover landed on Mars in 2021?","Perseverance"],
+["In which year did Apollo 11 land?","1969"],
+["What was the name of the first dog sent into orbit?","Laika"]
+]},
+"Dinosaurs":{area:"Science and nature",q:[
+["Which dinosaur's name means tyrant lizard king?","Tyrannosaurus rex","t rex|tyrannosaurus"],
+["Which period came between the Triassic and the Cretaceous?","Jurassic"],
+["Which dinosaur had three horns?","Triceratops"],
+["Which flying reptile is often mistaken for a dinosaur?","Pterodactyl"],
+["What is the study of dinosaurs called?","Palaeontology"],
+["Which dinosaur had a row of plates along its back?","Stegosaurus"],
+["Which carnivore was larger than T rex?","Spinosaurus"],
+["What is the extinction event 66 million years ago called?","Cretaceous-Paleogene","k pg"],
+["Which long-necked dinosaur was among the largest?","Brachiosaurus"],
+["Which dinosaur was the first to be named, in 1824?","Megalosaurus"]
+]},
+"The human body":{area:"Science and nature",q:[
+["How many bones are in an adult human?","Two hundred and six","206"],
+["What is the largest organ?","The skin"],
+["How many chambers does the heart have?","Four","4"],
+["What is the longest bone in the body?","Femur"],
+["Which organ produces insulin?","Pancreas"],
+["How many teeth does an adult have?","Thirty-two","32"],
+["What is the windpipe called?","Trachea"],
+["Which blood cells carry oxygen?","Red blood cells"],
+["What is the smallest bone in the body?","Stapes"],
+["How many pairs of ribs do humans have?","Twelve","12"]
+]},
+"Chemistry":{area:"Science and nature",q:[
+["What is the chemical symbol for gold?","Au"],
+["What is the most abundant gas in the atmosphere?","Nitrogen"],
+["What is the pH of pure water?","Seven","7"],
+["Who created the periodic table?","Mendeleev"],
+["What is the chemical formula for water?","H2O"],
+["What is the atomic number of carbon?","Six","6"],
+["Which gas do plants absorb?","Carbon dioxide"],
+["What is the hardest natural substance?","Diamond"],
+["Which element has the symbol Fe?","Iron"],
+["What is a solid turning straight to gas called?","Sublimation"]
+]},
+"Physics":{area:"Science and nature",q:[
+["Who formulated general relativity?","Einstein"],
+["What is the speed of light in metres per second?","Three hundred million","299792458"],
+["What is the unit of force?","Newton"],
+["Who is said to have dropped balls from the tower of Pisa?","Galileo"],
+["What is the unit of electrical resistance?","Ohm"],
+["What does E equals mc squared describe?","Mass and energy"],
+["Which particle was discovered at CERN in 2012?","Higgs boson"],
+["What is absolute zero in Celsius?","Minus 273","-273"],
+["Who wrote the Principia?","Newton"],
+["What is the unit of frequency?","Hertz"]
+]},
+"Mathematics":{area:"Science and nature",q:[
+["What is pi to two decimal places?","Three point one four","3.14"],
+["How many sides has a hexagon?","Six","6"],
+["What is the square root of 144?","Twelve","12"],
+["Who is famous for the theorem about right-angled triangles?","Pythagoras"],
+["What is a number that cannot be written as a fraction called?","Irrational"],
+["How many degrees in a triangle?","One hundred and eighty","180"],
+["What is the next prime number after seven?","Eleven","11"],
+["What is the sequence 1, 1, 2, 3, 5, 8 called?","Fibonacci"],
+["What is the sum of the angles in a quadrilateral?","Three hundred and sixty","360"],
+["Who proved Fermat's Last Theorem?","Andrew Wiles","wiles"]
+]},
+"Medicine":{area:"Science and nature",q:[
+["Who discovered penicillin?","Alexander Fleming","fleming"],
+["What does NHS stand for?","National Health Service"],
+["Which vaccine protects against tuberculosis?","BCG"],
+["Which blood group is the universal donor?","O negative","o neg"],
+["What is the medical term for high blood pressure?","Hypertension"],
+["Who developed the first polio vaccine?","Jonas Salk","salk"],
+["What does MRI stand for?","Magnetic resonance imaging"],
+["Which organ does hepatitis affect?","The liver"],
+["What is the oath doctors take called?","The Hippocratic oath","hippocratic"],
+["What does CPR stand for?","Cardiopulmonary resuscitation"]
+]},
+"Weather":{area:"Science and nature",q:[
+["What instrument measures air pressure?","Barometer"],
+["What is a tornado over water called?","A waterspout","waterspout"],
+["Which scale measures hurricane strength?","Saffir-Simpson"],
+["Which cloud brings thunderstorms?","Cumulonimbus"],
+["What is the hot wind from the Sahara to Europe called?","Sirocco"],
+["What is the boundary between air masses called?","A front"],
+["What does a Beaufort number measure?","Wind speed"],
+["What is rain containing pollutants called?","Acid rain"],
+["Which continent is the coldest on Earth?","Antarctica"],
+["What instrument measures rainfall?","Rain gauge"]
+]},
+"Trees and plants":{area:"Science and nature",q:[
+["What is the process by which plants make food?","Photosynthesis"],
+["Which pigment makes leaves green?","Chlorophyll"],
+["Which tree produces acorns?","Oak"],
+["Which is the tallest species of tree?","Redwood"],
+["Which part of a plant absorbs water?","The roots"],
+["What is the study of plants called?","Botany"],
+["Which tree is known for its white bark?","Birch"],
+["Which pine is the oldest living tree species?","Bristlecone pine"],
+["Which plant family does lavender belong to?","Mint"],
+["What is the male part of a flower called?","Stamen"]
+]},
+"Ancient Egypt":{area:"History and places",q:[
+["Which river was central to ancient Egypt?","The Nile"],
+["Which boy king's tomb was found in 1922?","Tutankhamun"],
+["What is the Egyptian writing system called?","Hieroglyphics"],
+["Which queen is famous for a painted bust?","Nefertiti"],
+["What were Egyptian kings called?","Pharaohs"],
+["Which wonder at Giza still stands?","The Great Pyramid"],
+["Who found Tutankhamun's tomb?","Howard Carter","carter"],
+["Which sun god was chief among the gods?","Ra"],
+["What is preserving a body called?","Mummification"],
+["Which stone allowed hieroglyphs to be read?","The Rosetta Stone","rosetta stone"]
+]},
+"Roman Empire":{area:"History and places",q:[
+["In which year was Rome traditionally founded?","753 BC"],
+["Who was the first Roman emperor?","Augustus"],
+["Which emperor built a wall across Britain?","Hadrian"],
+["What language did the Romans speak?","Latin"],
+["Which city was buried by Vesuvius in 79 AD?","Pompeii"],
+["Who was assassinated on the Ides of March?","Julius Caesar","caesar"],
+["What was a Roman soldier called?","A legionary","legionary"],
+["Which emperor converted to Christianity?","Constantine"],
+["What is the Roman peace called?","Pax Romana"],
+["Which Roman town in Britain is now Bath?","Aquae Sulis"]
+]},
+"The Tudors":{area:"History and places",q:[
+["Which 1485 battle began the Tudor era?","Bosworth"],
+["How many wives did Henry VIII have?","Six","6"],
+["Which wife gave Henry his only legitimate son?","Jane Seymour"],
+["Which Tudor queen was known as Bloody Mary?","Mary I","mary tudor"],
+["In which year did the Spanish Armada sail?","1588"],
+["Who was Elizabeth I's spymaster?","Francis Walsingham","walsingham"],
+["What was Henry VIII's flagship that sank in 1545?","The Mary Rose","mary rose"],
+["Which Tudor monarch reigned for forty-four years?","Elizabeth I"],
+["Who wrote Utopia in 1516?","Thomas More","more"],
+["Which archbishop annulled Henry's first marriage?","Thomas Cranmer","cranmer"]
+]},
+"Vikings":{area:"History and places",q:[
+["From which region did the Vikings come?","Scandinavia"],
+["What was the Norse assembly called?","The Thing","thing"],
+["Which monastery was raided in 793?","Lindisfarne"],
+["What was a Norse poet called?","A skald","skald"],
+["Which Norseman reached Newfoundland?","Leif Erikson","erikson"],
+["What was the Norse writing system called?","Runes"],
+["Which Danish king conquered England in 1016?","Cnut","canute"],
+["What was the warriors' afterlife called?","Valhalla"],
+["Which god wielded the hammer Mjolnir?","Thor"],
+["In which year was the Battle of Hastings?","1066"]
+]},
+"World War II":{area:"History and places",q:[
+["In which year did war begin in Europe?","1939"],
+["Which country was invaded on 1 September 1939?","Poland"],
+["What was the Dunkirk evacuation called?","Operation Dynamo"],
+["Who became Prime Minister in 1940?","Winston Churchill","churchill"],
+["What was the D-Day landings' code name?","Operation Overlord"],
+["Which city was hit by an atomic bomb in August 1945?","Hiroshima"],
+["What was the German air force called?","The Luftwaffe","luftwaffe"],
+["Which Soviet city was besieged in 1942 and 1943?","Stalingrad"],
+["What was Enigma?","A German cipher machine","cipher machine"],
+["In which year did the war end?","1945"]
+]},
+"The Cold War":{area:"History and places",q:[
+["Which two superpowers led the Cold War?","The USA and the USSR","usa and ussr"],
+["What was the 1948 operation to supply Berlin called?","The Berlin Airlift","berlin airlift"],
+["Which wall was built in 1961?","The Berlin Wall","berlin wall"],
+["What was the 1962 crisis over missiles called?","The Cuban Missile Crisis","cuban missile crisis"],
+["Which doctrine promised aid against communism?","The Truman Doctrine","truman"],
+["What was NATO's rival alliance?","The Warsaw Pact","warsaw pact"],
+["Which Soviet leader introduced glasnost?","Mikhail Gorbachev","gorbachev"],
+["In which year did the Berlin Wall fall?","1989"],
+["What was the US policy towards communism called?","Containment"],
+["Which Asian war did the US fight through the 1960s?","The Vietnam War","vietnam"]
+]},
+"London":{area:"History and places",q:[
+["Which river runs through London?","The Thames"],
+["What is the monarch's London residence?","Buckingham Palace"],
+["What is the clock tower at Westminster called?","Elizabeth Tower","big ben"],
+["Which cathedral did Christopher Wren design?","St Paul's"],
+["Which park hosts Speakers' Corner?","Hyde Park"],
+["What is the oldest royal palace in London?","The Tower of London","tower of london"],
+["Which south London market is famous for food?","Borough Market"],
+["Which bridge opens to let ships through?","Tower Bridge"],
+["Which London station is the terminus for Eurostar?","St Pancras"],
+["Which museum in South Kensington is free and full of dinosaurs?","Natural History Museum"]
+]},
+"Geography":{area:"History and places",q:[
+["What is the longest river in the world?","The Nile","nile|amazon"],
+["What is the largest desert?","Antarctica"],
+["Which country has the largest population?","India"],
+["What is the highest waterfall?","Angel Falls"],
+["Which continent is the Sahara in?","Africa"],
+["What is the smallest country in the world?","Vatican City","vatican"],
+["Which ocean is the deepest?","The Pacific"],
+["What is the capital of Australia?","Canberra"],
+["Which mountains separate Europe from Asia?","The Urals"],
+["What is the largest island in the world?","Greenland"]
+]},
+"Pirates":{area:"History and places",q:[
+["What was Blackbeard's ship called?","Queen Anne's Revenge"],
+["Who was the most famous female pirate?","Anne Bonny"],
+["What is a pirate flag called?","The Jolly Roger","jolly roger"],
+["Which pirate was killed at Ocracoke in 1718?","Blackbeard"],
+["What was the pirate code called?","The Articles"],
+["Which Welsh pirate took a Portuguese treasure ship in 1695?","Henry Every"],
+["What is the punishment of walking off a ship called?","Walking the plank"],
+["Which Bahamian island was a pirate haven?","Nassau"],
+["What was Captain Kidd's ship called?","Adventure Galley"],
+["Who wrote Treasure Island?","Robert Louis Stevenson","stevenson"]
+]},
+"Greek mythology":{area:"History and places",q:[
+["Who was king of the Greek gods?","Zeus"],
+["Which hero completed twelve labours?","Heracles","hercules"],
+["Who ferried the dead across the river Styx?","Charon"],
+["Who was the goddess of wisdom?","Athena"],
+["Which creature had snakes for hair?","Medusa"],
+["Which epic poem tells of the Trojan War?","The Iliad"],
+["Who flew too close to the sun?","Icarus"],
+["Who was the god of the underworld?","Hades"],
+["What was the maze at Knossos called?","The Labyrinth","labyrinth"],
+["Which mountain was home to the gods?","Mount Olympus","olympus"]
+]}
+});
+</script>
+<script>
+(function(){
+  "use strict";
+  var CATS = Object.keys(BANK);
+  var $ = function(id){ return document.getElementById(id); };
+  var store = {
+    get: function(k,d){ try{ var v=localStorage.getItem("genial."+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+    set: function(k,v){ try{ localStorage.setItem("genial."+k,JSON.stringify(v)); }catch(e){} }
+  };
+  var PAL=[["#2b3a55","#8fb8d8"],["#3a2b45","#c9a6e0"],["#1f3b32","#7fd6a8"],["#4a2f22","#e8b06a"],
+           ["#22303f","#7fc4d6"],["#3d2233","#e08fb0"],["#2f3320","#c3d67f"],["#3a3520","#e2b64c"],
+           ["#241f3a","#9f8fe0"],["#3a2320","#d98a72"],["#1e3238","#79c7b8"],["#33301f","#d9c47a"]];
+  function avatarSVG(i,size){
+    var p=PAL[i%PAL.length], s=size||64, k=i%4;
+    var g='';
+    if(k===0) g='<rect x="22" y="22" width="20" height="20" fill="'+p[1]+'" transform="rotate(45 32 32)"/>';
+    if(k===1) g='<circle cx="32" cy="32" r="11" fill="none" stroke="'+p[1]+'" stroke-width="3"/>';
+    if(k===2) g='<path d="M32 18 L46 44 L18 44 Z" fill="'+p[1]+'"/>';
+    if(k===3) g='<rect x="18" y="28" width="28" height="4" fill="'+p[1]+'"/><rect x="18" y="38" width="18" height="4" fill="'+p[1]+'"/>';
+    return '<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" class="ava" aria-hidden="true">'
+      +'<rect width="64" height="64" fill="'+p[0]+'"/>'+g+'</svg>';
+  }
+  var avatar = store.get("avatar", null);
+  function paintAvatar(el){ if(el && avatar!==null){ el.innerHTML = avatarSVG(avatar,64); } }
+
+  /* ---------- home ---------- */
+  var areas = [];
+  CATS.forEach(function(c){ if(areas.indexOf(BANK[c].area)<0) areas.push(BANK[c].area); });
+  var filter = "All", term = "";
+  function ratings(){ return store.get("ratings", {}); }
+  function drawChips(){
+    var el=$("chips"); el.innerHTML="";
+    ["All"].concat(areas).forEach(function(a){
+      var b=document.createElement("div");
+      b.className="chip"+(a===filter?" on":""); b.textContent=a;
+      b.onclick=function(){ filter=a; drawChips(); drawList(); };
+      el.appendChild(b);
+    });
+  }
+  function drawList(){
+    var el=$("list"); el.innerHTML="";
+    var rt=ratings();
+    var shown=CATS.filter(function(c){
+      var okA = filter==="All" || BANK[c].area===filter;
+      var okT = !term || c.toLowerCase().indexOf(term)>=0;
+      return okA && okT;
+    });
+    var lastArea=null;
+    shown.forEach(function(c){
+      if(filter==="All" && BANK[c].area!==lastArea){
+        lastArea=BANK[c].area;
+        var h=document.createElement("div"); h.className="sect"; h.textContent=lastArea;
+        h.style.fontSize="11px";h.style.letterSpacing=".18em";h.style.textTransform="uppercase";
+        h.style.color="var(--dim)";h.style.margin="22px 0 0";
+        el.appendChild(h);
+        var g=document.createElement("div"); g.className="grid"; el.appendChild(g);
+      }
+      var grid = el.lastChild && el.lastChild.className==="grid" ? el.lastChild : (function(){
+        var g=document.createElement("div"); g.className="grid"; el.appendChild(g); return g; })();
+      var t=document.createElement("div"); t.className="tile";
+      var r=rt[c];
+      t.innerHTML='<span class="gem dia"></span><b>'+c+'</b><i>'+
+        (r? '<span class="rt">'+r+'</span>' : '10 questions')+'</i>';
+      t.onclick=function(){ start(c); };
+      grid.appendChild(t);
+    });
+    if(!shown.length){ el.innerHTML='<p class="tag" style="margin-top:20px">Nothing by that name.</p>'; }
+  }
+  $("search").addEventListener("input", function(e){ term=e.target.value.toLowerCase().trim(); drawList(); });
+
+  /* ---------- avatars ---------- */
+  function drawAgrid(){
+    var el=$("agrid"); el.innerHTML="";
+    for(var i=0;i<12;i++){
+      (function(i){
+        var b=document.createElement("button");
+        b.innerHTML=avatarSVG(i,96);
+        if(i===avatar) b.className="on";
+        b.onclick=function(){ avatar=i; store.set("avatar",i); drawAgrid(); paintAvatar($("myavatar")); };
+        el.appendChild(b);
+      })(i);
+    }
+  }
+  $("myavatar").onclick=function(){ drawAgrid(); $("sheet").hidden=false; };
+  $("avdone").onclick=function(){ $("sheet").hidden=true; if(avatar===null){ avatar=0; store.set("avatar",0);} paintAvatar($("myavatar")); };
+
+  /* ---------- marking ---------- */
+  function norm(s){
+    return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()
+      .replace(/^(the|a|an) /,"");
+  }
+  function lev(a,b){
+    if(a===b) return 0;
+    var m=a.length,n=b.length,prev=[],i,j;
+    for(j=0;j<=n;j++) prev[j]=j;
+    for(i=1;i<=m;i++){
+      var cur=[i];
+      for(j=1;j<=n;j++){
+        cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+      }
+      prev=cur;
+    }
+    return prev[n];
+  }
+  function isRight(given, q){
+    var g=norm(given).replace(/ /g,"");
+    if(!g) return false;
+    var answers=[q[1]].concat((q[2]&&q[2]!=="skip")?q[2].split("|"):[]);
+    for(var i=0;i<answers.length;i++){
+      var a=norm(answers[i]).replace(/ /g,"");
+      if(!a) continue;
+      if(g===a) return true;
+      if(a.length>=4 && (g.indexOf(a)>=0 || a.indexOf(g)>=0) && Math.min(g.length,a.length)>=4) return true;
+      var tol=Math.max(1,Math.floor(a.length/6));
+      if(Math.abs(g.length-a.length)<=tol+1 && lev(g,a)<=tol) return true;
+    }
+    return false;
+  }
+
+  /* ---------- play ---------- */
+  var S={};
+  var CLOCK=20;
+  function tierOf(i){ return i<3?"low":i<6?"medium":i<9?"hard":"genial"; }
+  var TIER={low:1,medium:2,hard:3,genial:5};
+
+  function start(cat){
+    S={cat:cat, i:0, score:0, correct:0, fastest:null, answered:false, results:[]};
+    $("home").hidden=true; $("end").hidden=true; $("play").hidden=false;
+    $("cat").textContent=cat;
+    var p=$("pips"); p.innerHTML="";
+    for(var i=0;i<10;i++){ var d=document.createElement("i"); p.appendChild(d); }
+    ask();
+  }
+  function ask(){
+    S.answered=false;
+    var q=BANK[S.cat].q[S.i];
+    $("count").textContent=(S.i+1)+" / 10";
+    $("q").textContent=q[0];
+    var t=tierOf(S.i), el=$("tier");
+    el.className="tier "+t; el.innerHTML="<span>"+t+"</span>";
+    $("feedback").innerHTML=""; $("answerbox").hidden=false;
+    $("next").hidden=true;
+    var inp=$("answer"); inp.value=""; inp.disabled=false;
+    setTimeout(function(){ inp.focus(); },60);
+    paintPips();
+    startClock();
+  }
+  function paintPips(){
+    var p=$("pips").children;
+    for(var i=0;i<p.length;i++){
+      p[i].className="";
+      if(i<S.i) p[i].className=S.results[i]?"done":"miss";
+      else if(i===S.i) p[i].className="now";
+    }
+  }
+  var tick=null, t0=0;
+  function startClock(){
+    clearInterval(tick); t0=Date.now();
+    $("clockbar").style.width="100%";
+    tick=setInterval(function(){
+      var el=Date.now()-t0, left=Math.max(0,CLOCK-el/1000);
+      $("clockbar").style.width=(left/CLOCK*100)+"%";
+      if(left<=0){ clearInterval(tick); if(!S.answered) judge(null,true); }
+    },100);
+  }
+  function mult(secs){ return secs<CLOCK/3?1.5:secs<CLOCK*2/3?1:0.5; }
+  function judge(given, timedOut){
+    if(S.answered) return;
+    S.answered=true; clearInterval(tick);
+    var secs=Math.min(CLOCK,(Date.now()-t0)/1000);
+    var q=BANK[S.cat].q[S.i];
+    var ok = given!==null && isRight(given,q);
+    var pts = ok ? +(TIER[tierOf(S.i)]*mult(secs)).toFixed(1) : 0;
+    S.score+=pts; if(ok) S.correct++;
+    S.results[S.i]=ok;
+    if(ok && (S.fastest===null || secs<S.fastest)) S.fastest=secs;
+    $("answerbox").hidden=true;
+    $("feedback").innerHTML='<div class="fb '+(ok?"ok":"no")+'">'+
+      '<span class="pts">'+(ok?"+"+pts:"0")+'</span>'+
+      '<b>'+(ok?"Correct":"No")+'</b>'+
+      (ok? "" : "The answer is <strong>"+q[1]+"</strong>.")+
+      (timedOut? " Time.":"")+'</div>';
+    $("next").hidden=false;
+    $("next").textContent = S.i===9 ? "See the result" : "Next";
+    paintPips();
+  }
+  $("submit").onclick=function(){ judge($("answer").value,false); };
+  $("answer").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); judge($("answer").value,false); } });
+  $("pass").onclick=function(){ judge(null,false); };
+  $("next").onclick=function(){ if(S.i<9){ S.i++; ask(); } else { finish(); } };
+
+  function finish(){
+    clearInterval(tick);
+    $("play").hidden=true; $("end").hidden=false;
+    var pct=Math.round(S.score/(3*1+3*2+3*3+5)*10); // max without speed = 23
+    var rt=ratings(); var before=rt[S.cat]||1000;
+    var ratio=S.correct/10;
+    var delta=Math.round((ratio-0.5)*60);
+    var after=Math.max(600,before+delta);
+    rt[S.cat]=after; store.set("ratings",rt);
+    $("endcat").textContent=S.cat;
+    $("endpct").textContent="of 34.5 with speed";
+    $("score").textContent=S.score.toFixed(1);
+    $("correct").textContent=S.correct+" / 10";
+    $("fastest").textContent=S.fastest!==null?S.fastest.toFixed(1)+"s":"–";
+    $("rating").textContent=after;
+    $("delta").textContent=(delta>=0?"+":"")+delta;
+    $("verdict").textContent = S.correct>=9?"Genial. That is the top table.":
+      S.correct>=7?"Strong. The ladder notices.":
+      S.correct>=4?"Respectable, not specialist.":"That subject is not yours yet.";
+    paintAvatar($("myavatar"));
+  }
+  $("again").onclick=function(){ start(S.cat); };
+  $("home2").onclick=function(){ $("end").hidden=true; $("home").hidden=false; drawList(); };
+
+  /* ---------- boot ---------- */
+  drawChips(); drawList();
+  if(avatar===null){ drawAgrid(); $("sheet").hidden=false; } else { paintAvatar($("myavatar")); }
+  $("cat").textContent="";
+})();
+</script>
+</body>
+</html>
