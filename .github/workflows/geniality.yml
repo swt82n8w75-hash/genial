@@ -70,16 +70,24 @@ jobs:
             CODE_SIGN_STYLE=Automatic \
             MARKETING_VERSION=1.0.0 \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
-      - name: Package the IPA
+      - name: Export the IPA for the App Store
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           cd ios/App
-          APP=$(ls -d build/App.xcarchive/Products/Applications/*.app | head -1)
-          echo "app: $APP"
-          codesign -dv --verbose=2 "$APP" 2>&1 | head -6
-          rm -rf build/export && mkdir -p build/export/Payload
-          cp -R "$APP" build/export/Payload/
-          cd build/export && zip -qry App.ipa Payload
-          unzip -l App.ipa | tail -3
+          xcodebuild -exportArchive \
+            -archivePath "$PWD/build/App.xcarchive" \
+            -exportOptionsPlist "$GITHUB_WORKSPACE/ExportOptions_geniality.plist" \
+            -exportPath "$PWD/build/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          ls -la build/export
+          codesign -dv --verbose=2 build/export/*.ipa 2>/dev/null | head -3 || true
+          unzip -p build/export/*.ipa "Payload/*.app/embedded.mobileprovision" > /tmp/p.mobileprovision || true
+          strings /tmp/p.mobileprovision | grep -iE "distribution|get-task-allow" | head -3 || true
       - uses: actions/upload-artifact@v4
         with:
           name: Geniality-ipa
