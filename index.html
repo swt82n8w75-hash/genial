@@ -173,6 +173,39 @@
   .climb{height:3px;background:#1b2130;border-radius:2px;overflow:hidden}
   .climbbar{height:100%;width:0;background:linear-gradient(90deg,#8a6b1e,#e2b64c);transition:width .4s}
   .climbtxt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:7px 0 4px}
+  .buzz{position:fixed;inset:0;z-index:110;background:linear-gradient(170deg,#0a1119 0%,#060b11 100%);
+    display:flex;align-items:flex-start;justify-content:center;padding:16px 14px 24px;overflow-y:auto}
+  .buzz[hidden]{display:none}
+  .bzwrap{width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px}
+  .bzhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .bzname{font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:#9fb4cc}
+  .bzquit{border:1px solid rgba(255,255,255,.16);background:transparent;color:#cbd8e6;border-radius:999px;
+    padding:9px 14px;font-size:12px;min-height:36px}
+  .bzscore{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    border:1px solid rgba(226,182,76,.28);border-radius:16px;padding:12px 14px;background:rgba(255,255,255,.03)}
+  .bzside{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+  .bzside.them{align-items:flex-end}
+  .bzside b{font-size:13px;color:#eef4fb;font-weight:600}
+  .bzside span{font-family:Georgia,serif;font-size:26px;line-height:1;color:#e8bd55}
+  .bzmid{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#7f92a8}
+  .bzclock{height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bzbar{height:100%;width:100%;background:linear-gradient(90deg,#e8bd55,#f4dda0);transition:width .1s linear}
+  .bzsubj{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8fa0b8}
+  .bzsubj b{color:#e8bd55;letter-spacing:.06em}
+  .bzq{font-family:Georgia,serif;font-size:21px;line-height:1.32;color:#f2f6fb;min-height:84px}
+  .bzopts{display:flex;flex-direction:column;gap:9px}
+  .bzopt{display:flex;align-items:center;gap:10px;text-align:left;min-height:52px;padding:12px 14px;
+    border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
+    color:#eef4fb;font-size:15px;line-height:1.3}
+  .bzopt .ltr{flex:0 0 22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:#0a1119;background:#c9d6e4}
+  .bzopt.right{border-color:#3fbf7f;background:rgba(63,191,127,.16)}
+  .bzopt.wrong{border-color:#d8604a;background:rgba(216,96,74,.16)}
+  .bzopt.dim{opacity:.45}
+  .bzmsg{min-height:22px;font-size:13.5px;color:#b9c8d8}
+  .bzbuzz{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:16px 24px;border-radius:14px;
+    background:rgba(226,182,76,.94);color:#0a1119;font-size:14px;letter-spacing:.2em;text-transform:uppercase;
+    font-weight:700;box-shadow:0 16px 40px rgba(0,0,0,.5)}
   .vhint{margin-top:10px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8fa0b8}
   .groundnote{margin:10px 16px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(226,182,76,.35);
     background:rgba(226,182,76,.08);color:#f0d79a;font-size:12px;line-height:1.5;letter-spacing:.02em}
@@ -456,6 +489,25 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
     </div>
   </div>
 </div>
+<div class="buzz" id="buzz" hidden>
+  <div class="bzwrap">
+    <div class="bzhead">
+      <span class="bzname">Head to head · buzzing round</span>
+      <button class="bzquit" id="bzquit">leave</button>
+    </div>
+    <div class="bzscore">
+      <div class="bzside me"><b id="bzme">You</b><span id="bzmepts">0</span></div>
+      <div class="bzmid">first to 4</div>
+      <div class="bzside them"><b id="bzthem">Them</b><span id="bzthempts">0</span></div>
+    </div>
+    <div class="bzclock"><div class="bzbar" id="bzbar"></div></div>
+    <div class="bzsubj" id="bzsubj"></div>
+    <div class="bzq" id="bzq"></div>
+    <div class="bzopts" id="bzopts"></div>
+    <div class="bzmsg" id="bzmsg"></div>
+    <div class="bzbuzz" id="bzbuzz" hidden>they buzzed</div>
+  </div>
+</div>
 <div class="portal" id="portal" hidden>
   <div class="pdoor">
     <div class="pglow"></div>
@@ -472,6 +524,7 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
       <span class="hbtns">
         <button class="snd" id="zoomout" aria-label="Zoom out">−</button>
         <button class="snd" id="zoomin" aria-label="Zoom in">+</button>
+        <button class="snd" id="tobuzz">head to head</button>
         <button class="snd" id="tosq">the square</button>
         <button class="snd" id="toars">arsenal</button>
         <button class="snd" id="tolist">subjects</button>
@@ -2995,6 +3048,163 @@ function bestRating(){
   };
 
   /* ---------- voice ---------- */
+
+  /* ---------- head to head: both sets of categories in one pot, fastest finger ---------- */
+  var BZ={on:false,qs:[],i:0,me:0,them:0,timer:null,deadline:0,answered:false,oppTimer:null,done:false};
+  function bzPool(){
+    var mine=heldList().slice();
+    if(!mine.length){
+      var played=Object.keys(playsBook()).filter(function(c){ return BANK[c]; });
+      mine=played.length?played.slice(0,3):["Films","Football","Rock music"].filter(function(c){ return BANK[c]; });
+    }
+    mine=mine.filter(function(c){ return BANK[c]&&BANK[c].q&&BANK[c].q.length>=4; });
+    var all=Object.keys(BANK).filter(function(c){ return BANK[c].q&&BANK[c].q.length>=4&&mine.indexOf(c)<0; });
+    var theirs=[];
+    for(var k=0;k<3&&all.length;k++){
+      theirs.push(all.splice(Math.floor(Math.random()*all.length),1)[0]);
+    }
+    return {mine:mine,theirs:theirs};
+  }
+  function bzBuild(){
+    var pool=bzPool();
+    BZ.pool=pool;
+    var bag=pool.mine.map(function(c){ return {cat:c,mine:true}; })
+      .concat(pool.theirs.map(function(c){ return {cat:c,mine:false}; }));
+    bag=bag.filter(function(x){ return BANK[x.cat]&&BANK[x.cat].q&&BANK[x.cat].q.length>=4; });
+    if(!bag.length){
+      var any=Object.keys(BANK).filter(function(c){ return BANK[c].q&&BANK[c].q.length>=4; });
+      bag=any.slice(0,6).map(function(c){ return {cat:c,mine:false}; });
+    }
+    var order=[];
+    while(order.length<7){
+      var round=bag.slice();
+      for(var i=round.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var s=round[i]; round[i]=round[j]; round[j]=s; }
+      order=order.concat(round);
+    }
+    BZ.qs=order.slice(0,7).map(function(slot){
+      return {cat:slot.cat,mine:slot.mine,qi:nextIndex(slot.cat,currentLevelFloor())};
+    });
+  }
+  function bzOpen(){
+    if(!me||!me.name){ $("buzz").hidden=true; return; }
+    BZ.on=true; BZ.i=0; BZ.me=0; BZ.them=0; BZ.done=false;
+    bzBuild();
+    var opp=makeOpponent();
+    BZ.oppName=opp.name; BZ.oppAv=opp.avatar;
+    BZ.skill=Math.max(0.42,Math.min(0.86,0.62+(opp.rating-1000)/1800));
+    $("bzme").textContent=me.name; $("bzthem").textContent=opp.name;
+    $("bzmepts").textContent="0"; $("bzthempts").textContent="0";
+    $("buzz").hidden=false; $("mapwrap").hidden=true;
+    try{ ac(); musicStart("round"); }catch(e){}
+    bzAsk();
+  }
+  function bzClose(){
+    BZ.on=false; BZ.done=true;
+    clearInterval(BZ.timer); clearTimeout(BZ.oppTimer);
+    $("buzz").hidden=true; $("bzbuzz").hidden=true;
+    try{ musicStart("map"); }catch(e){}
+    showMap();
+  }
+  function bzAsk(){
+    if(BZ.done) return;
+    if(BZ.i>=BZ.qs.length||BZ.me>=4||BZ.them>=4){ return bzEnd(); }
+    BZ.answered=false;
+    var item=BZ.qs[BZ.i], bank=BANK[item.cat];
+    if(!bank||!bank.q[item.qi]){ BZ.i++; return bzAsk(); }
+    var q=bank.q[item.qi];
+    $("bzsubj").innerHTML='<b>'+item.cat+'</b> · '+(item.mine?'yours':'theirs');
+    $("bzq").textContent=q[0];
+    $("bzmsg").textContent="";
+    $("bzbuzz").hidden=true;
+    var built=buildOptions(item.cat,item.qi,4);
+    BZ.built=built; BZ.item=item;
+    var box=$("bzopts"); box.innerHTML="";
+    built.options.forEach(function(o,ix){
+      var b=document.createElement("button");
+      b.className="bzopt";
+      b.innerHTML='<span class="ltr">'+"ABCD".charAt(ix)+'</span>'+o;
+      b.onclick=function(){ bzAnswer(ix); };
+      box.appendChild(b);
+    });
+    // the clock: eight seconds, and the opponent buzzes somewhere inside it
+    BZ.deadline=Date.now()+8000;
+    clearInterval(BZ.timer);
+    BZ.timer=setInterval(function(){
+      var left=Math.max(0,BZ.deadline-Date.now());
+      $("bzbar").style.width=(left/80)+"%";
+      if(left<=0){ clearInterval(BZ.timer); if(!BZ.answered) bzTimeout(); }
+    },80);
+    $("bzbar").style.width="100%";
+    var delay=1400+Math.random()*4200;
+    clearTimeout(BZ.oppTimer);
+    BZ.oppTimer=setTimeout(function(){ if(!BZ.answered) bzOppBuzz(); },delay);
+  }
+  function bzMark(ix,cls){
+    var kids=$("bzopts").children;
+    for(var i=0;i<kids.length;i++){
+      if(i===ix) kids[i].classList.add(cls);
+      else kids[i].classList.add("dim");
+    }
+  }
+  function bzAnswer(ix){
+    if(BZ.answered||BZ.done) return;
+    BZ.answered=true;
+    clearInterval(BZ.timer); clearTimeout(BZ.oppTimer);
+    var ok=ix===BZ.built.correct;
+    bzMark(ix,ok?"right":"wrong");
+    if(ok){ BZ.me++; $("bzmepts").textContent=BZ.me; $("bzmsg").textContent="Taken. That is yours."; }
+    else {
+      BZ.them++; $("bzthempts").textContent=BZ.them;
+      $("bzmsg").textContent=BZ.oppName+" had it. The point is theirs.";
+      var kids=$("bzopts").children; if(kids[BZ.built.correct]) kids[BZ.built.correct].classList.add("right");
+    }
+    BZ.i++;
+    setTimeout(function(){ if(BZ.on) bzAsk(); },1500);
+  }
+  function bzOppBuzz(){
+    if(BZ.answered||BZ.done) return;
+    BZ.answered=true;
+    clearInterval(BZ.timer);
+    $("bzbuzz").hidden=false;
+    var got=Math.random()<BZ.skill;
+    setTimeout(function(){
+      $("bzbuzz").hidden=true;
+      bzMark(BZ.built.correct,got?"right":"wrong");
+      if(got){ BZ.them++; $("bzthempts").textContent=BZ.them; $("bzmsg").textContent=BZ.oppName+" buzzed first and had it."; }
+      else { BZ.me++; $("bzmepts").textContent=BZ.me; $("bzmsg").textContent=BZ.oppName+" buzzed first and got it wrong. Point to you."; }
+      BZ.i++;
+      setTimeout(function(){ if(BZ.on) bzAsk(); },1600);
+    },700);
+  }
+  function bzTimeout(){
+    if(BZ.answered||BZ.done) return;
+    BZ.answered=true; clearTimeout(BZ.oppTimer);
+    bzMark(BZ.built.correct,"right");
+    BZ.them++; $("bzthempts").textContent=BZ.them;
+    $("bzmsg").textContent="Out of time. "+BZ.oppName+" takes it.";
+    BZ.i++;
+    setTimeout(function(){ if(BZ.on) bzAsk(); },1500);
+  }
+  function bzEnd(){
+    if(BZ.done) return;
+    BZ.done=true; clearInterval(BZ.timer); clearTimeout(BZ.oppTimer);
+    var win=BZ.me>BZ.them, draw=BZ.me===BZ.them;
+    var pts=win?30:draw?12:4;
+    store.set("climb",+(climbPts()+pts).toFixed(1));
+    $("bzsubj").innerHTML="";
+    $("bzq").textContent=(win?"You took the buzzer":draw?"Level pegging":BZ.oppName+" took the buzzer")+
+      " · "+BZ.me+" to "+BZ.them;
+    $("bzopts").innerHTML="";
+    $("bzmsg").textContent=(win?"That is "+pts+" climb points.":draw?"Twelve climb points for the draw.":"Four climb points for turning up.");
+    var again=document.createElement("button");
+    again.className="bzopt"; again.style.justifyContent="center"; again.textContent="Another buzzing round";
+    again.onclick=function(){ $("buzz").hidden=false; bzOpen(); };
+    $("bzopts").appendChild(again);
+    var out=document.createElement("button");
+    out.className="bzopt"; out.style.justifyContent="center"; out.textContent="Back to the map";
+    out.onclick=bzClose;
+    $("bzopts").appendChild(out);
+  }
   /* ---------- voice: turn the microphone on and it starts every round ---------- */
   var voiceOn=store.get("voice",false);
   var STARTWORDS=["go","begin","start","ready","play","yes","lets go","let's go","go on"];
@@ -4195,6 +4405,8 @@ function bestRating(){
   if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
   rebuildTiers();
   voicePill();
+  if($("tobuzz")) $("tobuzz").onclick=function(){ bzOpen(); };
+  if($("bzquit")) $("bzquit").onclick=bzClose;
   ladderButton();
   doorsButton();
   runGate();
