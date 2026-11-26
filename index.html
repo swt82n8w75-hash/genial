@@ -173,6 +173,21 @@
   .climb{height:3px;background:#1b2130;border-radius:2px;overflow:hidden}
   .climbbar{height:100%;width:0;background:linear-gradient(90deg,#8a6b1e,#e2b64c);transition:width .4s}
   .climbtxt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:7px 0 4px}
+  .world{position:fixed;inset:0;z-index:112;background:linear-gradient(170deg,#0a1119 0%,#060b11 100%);
+    display:flex;align-items:flex-start;justify-content:center;padding:16px 14px 28px;overflow-y:auto}
+  .world[hidden]{display:none}
+  .wzwrap{width:100%;max-width:540px;display:flex;flex-direction:column;gap:14px}
+  .wzline{font-size:12.5px;color:#b9c8d8}
+  .wzsec{border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px 14px;background:rgba(255,255,255,.03)}
+  .wzsec h4{margin:0 0 8px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#e8bd55;font-weight:600}
+  .wzrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.07)}
+  .wzrow:first-of-type{border-top:0}
+  .wzrow .nm{flex:1;font-size:14px;color:#eef4fb}
+  .wzrow .nm small{display:block;font-size:11px;color:#8fa0b8;letter-spacing:.04em}
+  .wzrow button{border:1px solid rgba(226,182,76,.45);background:rgba(226,182,76,.1);color:#f4dda0;
+    border-radius:999px;padding:9px 13px;font-size:12px;min-height:36px}
+  .wzsim{opacity:.85}
+  .wzsim .nm small{color:#d8a24a}
   .buzz{position:fixed;inset:0;z-index:110;background:linear-gradient(170deg,#0a1119 0%,#060b11 100%);
     display:flex;align-items:flex-start;justify-content:center;padding:16px 14px 24px;overflow-y:auto}
   .buzz[hidden]{display:none}
@@ -478,6 +493,10 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
       <h2 class="gh" style="margin-top:22px">Pick a face</h2>
       <div class="agrid" id="gfaces"></div>
       <button class="btn" id="gnamego" style="margin-top:18px">That is me</button>
+      <div class="groundnote" id="gnamenote" style="margin-top:10px"></div>
+      <input type="text" id="gkeyin" placeholder="Your six-letter key" maxlength="8" autocomplete="off"
+             style="margin-top:10px" hidden>
+      <button class="btn" id="gkeygo" style="margin-top:10px" hidden>Sign in with my key</button>
     </div>
     <div class="gstep" id="grules" hidden>
       <h2 class="gh">How it works</h2>
@@ -485,8 +504,19 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
       <div class="grule"><b>2</b> Tap one to play. Five questions, twelve seconds each, three right and it is yours. Some rounds are true or false, some are a ladder you can bank or lose.</div>
       <div class="grule"><b>3</b> Every win pays climb points. Enough of them and you go up a level, and the questions get harder. There are fifty levels and twelve sections.</div>
       <div class="grule"><b>4</b> Hold ten subjects at most. Anyone who beats you takes one, and a knockback costs you climb points, so the top is a long haul, not an evening.</div>
+      <div class="groundnote" id="gkeyline" style="margin-top:14px"></div>
       <button class="btn" id="grulesgo" style="margin-top:18px">Start at the rim</button>
     </div>
+  </div>
+</div>
+<div class="world" id="world" hidden>
+  <div class="wzwrap">
+    <div class="bzhead">
+      <span class="bzname">The world · real players</span>
+      <button class="bzquit" id="wzquit">close</button>
+    </div>
+    <div class="wzline" id="wzline">finding people…</div>
+    <div id="wzbody"></div>
   </div>
 </div>
 <div class="buzz" id="buzz" hidden>
@@ -525,6 +555,7 @@ input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,25
         <button class="snd" id="zoomout" aria-label="Zoom out">−</button>
         <button class="snd" id="zoomin" aria-label="Zoom in">+</button>
         <button class="snd" id="tobuzz">head to head</button>
+        <button class="snd" id="toworld">the world</button>
         <button class="snd" id="tosq">the square</button>
         <button class="snd" id="toars">arsenal</button>
         <button class="snd" id="tolist">subjects</button>
@@ -2277,7 +2308,32 @@ function bestRating(){
       if(n.length<1){ $("gnamein").focus(); $("gnamein").placeholder="A name, any name"; return; }
       me.name=n; me.avatar=(GPICK===null?(me.avatar===null?0:me.avatar):GPICK);
       store.set("name",me.name); store.set("avatar",me.avatar);
-      paintMe(); gateStep("grules");
+      paintMe();
+      var note=$("gnamenote");
+      if(note) note.textContent="";
+      if(!myToken()){
+        signUp(me.name,me.avatar,function(err,taken){
+          if(err){
+            if(note) note.textContent=err;
+            if(taken){ $("gkeyin").hidden=false; $("gkeygo").hidden=false; $("gkeyin").focus(); }
+            return;
+          }
+          showKeyLine(); gateStep("grules");
+        });
+      } else { showKeyLine(); gateStep("grules"); }
+    };
+    $("gkeygo").onclick=function(){
+      var n=($("gnamein").value||"").trim().slice(0,14), code=($("gkeyin").value||"").trim().toUpperCase();
+      var note=$("gnamenote");
+      if(!code){ if(note) note.textContent="Put in the six-letter key you were given."; return; }
+      api("login",{username:n,code:code}).then(function(r){
+        if(r&&r.ok){
+          store.set("gtoken",r.token); store.set("gid",r.player.id); store.set("gcode",r.code||code);
+          me.name=n; store.set("name",n);
+          if(note) note.textContent="";
+          showKeyLine(); gateStep("grules");
+        } else if(note){ note.textContent=(r&&r.error)||"That did not work."; }
+      });
     };
     $("grulesgo").onclick=function(){
       store.set("onboarded",true);
@@ -2647,9 +2703,8 @@ function bestRating(){
   /* ---------- play ---------- */
   var S={}, CLOCK=12, tick=null, t0=0, MODE='solo', PENDING=null;
   var PRICES={
-    entry:{price:"\u00a32",  label:"the entry level",   blurb:"the whole ground floor, all 25 subjects and everything above them as you climb"},
-    square:{price:"\u00a32.99", label:"versus everybody", blurb:"the square, where everyone plays the same question at once"},
-    live:{price:"\u00a32.99", label:"versus live",      blurb:"the race, where the faster correct answer takes the point"}
+    trial:{price:"\u00a30.99", label:"try it",            blurb:"the ground floor and everything you can climb in a week"},
+    life: {price:"\u00a34.99 once", label:"own it for good",  blurb:"all levels unlocked straight away, kept forever, nothing monthly"}
   };
   function eggs(){ return store.get("eggs",0); }
   function addEgg(n){ store.set("eggs",eggs()+(n||1)); }
@@ -3049,6 +3104,40 @@ function bestRating(){
 
   /* ---------- voice ---------- */
 
+
+  /* ---------- the server: real accounts, real people, real challenges ---------- */
+  var API="https://lyra-efe3d7bc.base44.app/functions/genialityApi";
+  function api(op,data){
+    var body={op:op}; body.token=store.get("gtoken","");
+    if(data) for(var k in data) body[k]=data[k];
+    return fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+      .then(function(r){ return r.json(); })
+      .catch(function(){ return {ok:false,error:"offline"}; });
+  }
+  function myToken(){ return store.get("gtoken",""); }
+  function syncMe(){
+    if(!myToken()) return;
+    api("sync",{climb:+climbPts(),level:currentLevel(),held:heldList(),rating:ratings()["Geniality"]||1000,
+      iq:(typeof myIQ==="function"?myIQ():0)});
+  }
+  function signUp(name,avatar,done){
+    api("signup",{username:name,avatar_index:avatar}).then(function(r){
+      if(r&&r.ok){
+        store.set("gtoken",r.token); store.set("gid",r.player.id); store.set("gcode",r.code||"");
+        done(null);
+      }
+      else if(r&&r.taken){ done(r.error||"That name is taken.",true); }
+      else { done(null); }   // offline: play locally, sign up next time
+    });
+  }
+  function showKeyLine(){
+    var el=$("gkeyline"); if(!el) return;
+    var code=store.get("gcode","");
+    el.innerHTML=code
+      ? 'Your key is <b style="color:#e8bd53;letter-spacing:.18em">'+code+'</b>. Write it down: it is how you get back to this name on another phone.'
+      : '';
+  }
+
   /* ---------- head to head: both sets of categories in one pot, fastest finger ---------- */
   var BZ={on:false,qs:[],i:0,me:0,them:0,timer:null,deadline:0,answered:false,oppTimer:null,done:false};
   function bzPool(){
@@ -3191,6 +3280,7 @@ function bestRating(){
     var win=BZ.me>BZ.them, draw=BZ.me===BZ.them;
     var pts=win?30:draw?12:4;
     store.set("climb",+(climbPts()+pts).toFixed(1));
+    if(BZ.me>BZ.them) store.set("lastscore",BZ.me);
     $("bzsubj").innerHTML="";
     $("bzq").textContent=(win?"You took the buzzer":draw?"Level pegging":BZ.oppName+" took the buzzer")+
       " · "+BZ.me+" to "+BZ.them;
@@ -3205,6 +3295,94 @@ function bestRating(){
     out.onclick=bzClose;
     $("bzopts").appendChild(out);
   }
+
+  /* ---------- the world: who is real, and who is only a simulation ---------- */
+  function wzRow(name,sub,avatar,gradeN,actionLabel,onAction,sim){
+    var row=document.createElement("div");
+    row.className="wzrow"+(sim?" wzsim":"");
+    row.innerHTML=avatarSVG(avatar,30,gradeN||0)+'<span class="nm">'+name+'<small>'+sub+'</small></span>';
+    if(actionLabel){
+      var b=document.createElement("button");
+      b.textContent=actionLabel; b.onclick=onAction; row.appendChild(b);
+    }
+    return row;
+  }
+  function worldOpen(){
+    $("world").hidden=false; $("mapwrap").hidden=true;
+    $("wzline").textContent="finding people…";
+    $("wzbody").innerHTML="";
+    if(!myToken()){
+      $("wzline").textContent="You are playing as a guest. Take a name on the way in and you get an account.";
+    }
+    Promise.all([api("roster",{level:currentLevel()}),api("challengeList",{})]).then(function(res){
+      var roster=res[0]||{}, ch=res[1]||{};
+      var body=$("wzbody"); body.innerHTML="";
+      var real=(roster.near||[]).length;
+      $("wzline").textContent = (roster.ok
+        ? (real? real+" player"+(real===1?"":"s")+" within two levels of you, and "+(roster.real_count||0)+" in all."
+              : "No other real players yet. Everything below marked simulated is a placeholder.")
+        : "The server is not answering, so this is the local game only.");
+
+      var inc=(ch.incoming||[]);
+      if(inc.length){
+        var sec=document.createElement("div"); sec.className="wzsec";
+        sec.innerHTML="<h4>challenges waiting for you</h4>";
+        inc.forEach(function(m){
+          sec.appendChild(wzRow(m.from_name,m.category+" · beat "+m.from_score.toFixed(1),3,0,"play",function(){
+            api("challengeOpen",{match_id:m.id}).then(function(r){
+              if(!r||!r.ok) return;
+              $("world").hidden=true;
+              PENDING={cat:r.match.category,qs:(r.match.questions&&r.match.questions.length?r.match.questions:[0,1,2,3,4]),
+                score:r.match.from_score,name:r.match.from_name,matchId:r.match.id};
+              if(!BANK[PENDING.cat]) PENDING.cat=Object.keys(BANK)[0];
+              start(PENDING.cat,false,0);
+            });
+          }));
+        });
+        body.appendChild(sec);
+      }
+
+      var secReal=document.createElement("div"); secReal.className="wzsec";
+      secReal.innerHTML="<h4>real players you can challenge</h4>";
+      if(!real) secReal.innerHTML+='<div class=\'groundnote\'>Nobody yet. As soon as someone else signs up they appear here, and a challenge reaches them when they next open the game.</div>';
+      (roster.near||[]).forEach(function(p){
+        secReal.appendChild(wzRow(p.username,"level "+p.level+" · rating "+p.rating, p.avatar_index,0,"challenge",function(){
+          var cat=heldList()[0]||S.cat||"Films";
+          if(!BANK[cat]) cat=Object.keys(BANK)[0];
+          var qs=[]; for(var i=0;i<5;i++) qs.push(nextIndex(cat,currentLevelFloor()));
+          var score=+((store.get("lastscore",0))||0);
+          if(!(score>0)) score=5;   // a challenge has to carry something worth beating
+          api("challengeCreate",{to_player:p.id,category:cat,score:score,questions:qs}).then(function(r){
+            $("wzline").textContent=(r&&r.ok)
+              ? "Challenge sent to "+p.username+" in "+cat+". They will see it next time they open the game."
+              : ((r&&r.error)||"Could not send that challenge.");
+          });
+        }));
+      });
+      body.appendChild(secReal);
+
+      var secBoard=document.createElement("div"); secBoard.className="wzsec";
+      secBoard.innerHTML="<h4>the genius board · real players</h4>";
+      api("leaderboard",{level:currentLevel()}).then(function(lb){
+        if(lb&&lb.ok&&(lb.rows||[]).length){
+          lb.rows.slice(0,8).forEach(function(p,ix){
+            secBoard.appendChild(wzRow((ix+1)+". "+p.username,p.level+" · "+Math.round(p.climb)+" points · rating "+p.rating,p.avatar_index,0));
+          });
+        } else {
+          secBoard.innerHTML+='<div class=\'groundnote\'>Only you so far.</div>';
+        }
+      });
+      body.appendChild(secBoard);
+
+      var secSim=document.createElement("div"); secSim.className="wzsec";
+      secSim.innerHTML="<h4>simulations</h4><div class='groundnote' style='margin-bottom:6px'>These are not people. They are stand-ins so the world is not empty before anyone joins, and they are labelled as simulations everywhere they appear.</div>";
+      (roster.simulated||[]).slice(0,8).forEach(function(p){
+        secSim.appendChild(wzRow(p.username,"simulated · level "+p.level+" · rating "+p.rating,p.avatar_index,0,null,null,true));
+      });
+      body.appendChild(secSim);
+    });
+  }
+
   /* ---------- voice: turn the microphone on and it starts every round ---------- */
   var voiceOn=store.get("voice",false);
   var STARTWORDS=["go","begin","start","ready","play","yes","lets go","let's go","go on"];
@@ -3365,6 +3543,18 @@ function bestRating(){
     $("rating").textContent=after;
     $("delta").textContent=(delta>=0?"+":"")+delta;
     var beat=S.score>S.opp.score;
+    if(PENDING&&PENDING.matchId&&myToken()){
+      api("challengeSettle",{match_id:PENDING.matchId,score:+S.score.toFixed(1)}).then(function(r){
+        if(r&&r.ok){
+          var line=document.createElement("div");
+          line.className="groundnote";
+          line.textContent=(r.won?"Taken from "+PENDING.name+". ":r.drew?"Level with "+PENDING.name+". ":PENDING.name+" held it. ")+
+            (r.rating_delta?(r.rating_delta>0?"Rating +"+r.rating_delta:"Rating "+r.rating_delta):"Rating unchanged.");
+          var box=$("end"); if(box) box.appendChild(line);
+        }
+      });
+      PENDING.matchId=null;
+    }
     if(S.target!==null&&S.target!==undefined){
       $("verdict").textContent = S.score>S.target ? "You beat "+S.opp.name+"'s "+S.target.toFixed(1)+"."
         : S.score===S.target ? "Level with "+S.opp.name+"'s "+S.target.toFixed(1)+"."
@@ -4261,17 +4451,16 @@ function bestRating(){
     var box=$("arslist");
     $("arsh").textContent="The doors";
     box.innerHTML="";
-    [["entry","The whole field, solo, forever"],["square","Everyone on one question at once"],
-     ["live","Live rounds, fastest finger"]].forEach(function(row){
+    [["trial","99p to try it"],["life","One payment, everything open, nothing monthly"]].forEach(function(row){
       var k=row[0], p=PRICES[k];
       if(!p) return;
       var el=document.createElement("div");
       el.className="arsrow";
-      el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+row[1]+'</small></span><em>'+p.price+'</em>';
+      el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+p.blurb+'</small></span><em>'+p.price+'</em>';
       box.appendChild(el);
     });
-    $("arsnote").innerHTML='<b style="color:#e8bd53">Everything is open while you try it.</b> '+
-      'In the store version these are one-off purchases, paid once and kept for good.';
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Both ways are open while you try it.</b> '+
+      'In the store version: 99p buys the trial and \u00a34.99 buys every level for good. There is no subscription.';
     $("ars").hidden=false;
   }
   function doorsButton(){
@@ -4323,17 +4512,16 @@ function bestRating(){
     var box=$("arslist");
     $("arsh").textContent="The doors";
     box.innerHTML="";
-    [["entry","The whole field, solo, forever"],["square","Everyone on one question at once"],
-     ["live","Live rounds, fastest finger"]].forEach(function(row){
+    [["trial","99p to try it"],["life","One payment, everything open, nothing monthly"]].forEach(function(row){
       var k=row[0], p=PRICES[k];
       if(!p) return;
       var el=document.createElement("div");
       el.className="arsrow";
-      el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+row[1]+'</small></span><em>'+p.price+'</em>';
+      el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+p.blurb+'</small></span><em>'+p.price+'</em>';
       box.appendChild(el);
     });
-    $("arsnote").innerHTML='<b style="color:#e8bd53">Everything is open while you try it.</b> '+
-      'In the store version these are one-off purchases, paid once and kept for good.';
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Both ways are open while you try it.</b> '+
+      'In the store version: 99p buys the trial and \u00a34.99 buys every level for good. There is no subscription.';
     $("ars").hidden=false;
   }
   function doorsButton(){
@@ -4406,6 +4594,8 @@ function bestRating(){
   rebuildTiers();
   voicePill();
   if($("tobuzz")) $("tobuzz").onclick=function(){ bzOpen(); };
+  if($("toworld")) $("toworld").onclick=worldOpen;
+  if($("wzquit")) $("wzquit").onclick=function(){ $("world").hidden=true; showMap(); };
   if($("bzquit")) $("bzquit").onclick=bzClose;
   ladderButton();
   doorsButton();
