@@ -245,6 +245,109 @@
   .vs{margin:6px 0}
 }
 </style>
+
+<style>
+/* ---------- refinement layer: type, depth, restraint ---------- */
+:root{
+  --gold:#e2b64c; --gold2:#f4dda0; --cream:#f5f1e8; --dim:#93a0b6;
+  --card:#161c27; --card2:#1b2230; --line:#27303f; --line2:#333e50;
+  --r:12px;
+}
+html{background:#070a0f}
+body{
+  background:
+    radial-gradient(120% 70% at 50% -10%, #16202f 0%, rgba(9,13,20,0) 62%),
+    radial-gradient(90% 60% at 80% 110%, #141b26 0%, rgba(7,10,15,0) 60%),
+    #070a0f;
+  background-attachment:fixed;
+  font-feature-settings:"kern" 1,"liga" 1;
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:.004em;
+}
+/* header */
+.brandbar{padding:12px 16px 10px;border-bottom:1px solid rgba(226,182,76,.10)}
+.brandbar img{width:28px;height:28px;border-radius:8px;box-shadow:0 0 22px rgba(232,189,85,.22)}
+.wordmark{font-size:12.5px;letter-spacing:.42em;color:#dfe7f2}
+/* map header */
+.maphead{align-items:flex-start;gap:10px;padding:14px 16px 0}
+.lvlname{font-family:Georgia,serif;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:#c3cfe0;line-height:1.5;max-width:52%}
+.hbtns{gap:5px}
+.snd{
+  padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.035);color:#b8c5d8;font-size:10.5px;
+  letter-spacing:.11em;text-transform:uppercase;line-height:1;backdrop-filter:blur(6px);
+}
+.snd:active{background:rgba(226,182,76,.16);border-color:rgba(226,182,76,.5);color:var(--gold2)}
+/* climb */
+.climb{height:6px;border-radius:99px;background:rgba(255,255,255,.055);overflow:hidden;margin:12px 16px 0}
+.climbbar{height:100%;border-radius:99px;background:linear-gradient(90deg,#8a6b1e,var(--gold) 60%,var(--gold2));box-shadow:0 0 14px rgba(226,182,76,.45)}
+.climbtxt{font-size:11.5px;letter-spacing:.05em;color:#8d9bb1;padding:7px 16px 0}
+/* mode row */
+.modes{gap:6px;padding:12px 16px 0}
+.modes button{
+  padding:8px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.09);
+  background:transparent;color:#8fa0b8;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+}
+.modes button.on{background:rgba(226,182,76,.14);border-color:rgba(226,182,76,.55);color:var(--gold2);font-weight:600}
+.modehint{font-size:11.5px;color:#7d8ba1;padding:8px 16px 0;letter-spacing:.03em}
+/* the round */
+.q{font-size:23px;line-height:1.34;letter-spacing:-.005em;margin:16px 0 18px;color:#f7f4ec}
+.tier{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase}
+.pips i{height:5px;border-radius:99px;border:0;background:rgba(255,255,255,.10)}
+.opt{
+  border-radius:var(--r);border:1px solid rgba(255,255,255,.075);
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012)),var(--card);
+  font-size:15px;line-height:1.3;transition:transform .12s ease,border-color .12s ease,background .12s ease;
+}
+.opt:active{transform:scale(.988);border-color:rgba(226,182,76,.5);background:rgba(226,182,76,.10)}
+.opt .ltr{
+  border-radius:8px;background:rgba(255,255,255,.07);color:#cfdaea;
+  font-size:10.5px;letter-spacing:.06em;font-weight:600;
+}
+.opt.right{border-color:rgba(79,180,119,.75);background:rgba(79,180,119,.14)}
+.opt.wrong{border-color:rgba(212,96,79,.75);background:rgba(212,96,79,.13)}
+.fb{border-radius:var(--r);border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045);letter-spacing:.01em}
+.fb.ok{border-color:rgba(79,180,119,.4);background:rgba(79,180,119,.10)}
+.fb.no{border-color:rgba(212,96,79,.4);background:rgba(212,96,79,.09)}
+.btn{
+  border-radius:var(--r);padding:15px;font-size:14.5px;letter-spacing:.05em;font-weight:650;
+  background:linear-gradient(180deg,#f0cd77,#dcae43);color:#1a1206;
+  box-shadow:0 8px 22px rgba(226,182,76,.20),inset 0 1px 0 rgba(255,255,255,.35);
+}
+.btn:active{transform:translateY(1px);box-shadow:0 4px 12px rgba(226,182,76,.18)}
+.btn.ghost{background:transparent;color:#a9b7ca;border:1px solid rgba(255,255,255,.12);box-shadow:none;font-weight:500}
+.mic{border-radius:var(--r);border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);color:#a9b7ca}
+/* panels */
+.sheet{backdrop-filter:blur(14px)}
+.sheet .inner,.intro,.arsenal{
+  border-radius:18px;border:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(180deg,#151b26,#10151e);
+  box-shadow:0 28px 70px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.ik{font-family:Georgia,serif;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#8e9db4}
+.is{font-size:12.5px;color:#93a1b6;line-height:1.5}
+.kv{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.055);font-size:12.5px}
+.arsrow{border-bottom:1px solid rgba(255,255,255,.055);padding:11px 0}
+.arsrow button{border-radius:999px;border:1px solid rgba(226,182,76,.45);background:rgba(226,182,76,.12);color:var(--gold2);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:7px 12px}
+.note{border-left:2px solid rgba(226,182,76,.35);color:#8b99ae;font-size:12px;line-height:1.6;padding-left:12px}
+/* gate */
+.gate{background:radial-gradient(120% 80% at 50% -5%,#172131 0%,#0a0e15 55%,#06090e 100%)}
+.gh{font-size:20px;letter-spacing:.01em}
+.grule{border-left:2px solid rgba(226,182,76,.30);color:#c3cfdf;font-size:13px;line-height:1.6;padding-left:13px}
+.grule b{color:var(--gold2);font-weight:600}
+input[type=text],.gate input{border-radius:var(--r);border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+.agrid button{border-radius:11px;overflow:hidden;border:1px solid transparent}
+.agrid button.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(226,182,76,.22)}
+/* chips and tiles */
+.chip{border-radius:999px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);font-size:12px;letter-spacing:.03em}
+.chip.on{background:rgba(226,182,76,.16);border-color:rgba(226,182,76,.55);color:var(--gold2);font-weight:600}
+.tile{border-radius:10px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,#18202c,#141a24)}
+.tile b{font-size:14.5px;letter-spacing:.005em}
+.tile i{font-size:11px;letter-spacing:.03em;color:#8695ab}
+/* end screen */
+.big{font-family:Georgia,serif;font-size:52px;letter-spacing:-.02em;color:#f7f4ec;text-shadow:0 0 30px rgba(226,182,76,.22)}
+.tag{color:#8b99ae;font-size:13px;letter-spacing:.02em}
+</style>
 </head>
 <body>
   <div class="brandbar">
