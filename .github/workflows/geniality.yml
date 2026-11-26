@@ -68,7 +68,6 @@ jobs:
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             DEVELOPMENT_TEAM=3GU37GL28P \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
             MARKETING_VERSION=1.0.0 \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
       - name: Package the IPA
