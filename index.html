@@ -162,6 +162,9 @@
   .tfclaim{grid-column:1/-1;background:#141a24;border:1px solid #2a3444;border-left:2px solid #e8bd55;
     padding:14px 14px;font-size:17px;line-height:1.35;color:#f0f3f8;margin-bottom:2px}
   .opt.tf{justify-content:center;font-size:16px;letter-spacing:.04em}
+  .sqfield{display:flex;align-items:baseline;gap:8px;justify-content:center;margin:2px 0 0}
+  .sqfield b{font-family:Georgia,serif;font-size:22px;color:#e8bd55}
+  .sqfield span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#8fa3c0}
   .intro{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:8px;background:radial-gradient(circle at 50% 38%,#13223c 0%,#05070b 72%);z-index:6;text-align:center;padding:26px;
     animation:introin .35s ease-out}
@@ -220,6 +223,7 @@
       <span class="hbtns">
         <button class="snd" id="zoomout" aria-label="Zoom out">−</button>
         <button class="snd" id="zoomin" aria-label="Zoom in">+</button>
+        <button class="snd" id="tosq">the square</button>
         <button class="snd" id="toars">arsenal</button>
         <button class="snd" id="tolist">subjects</button>
       </span>
@@ -2436,6 +2440,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     judge(-1,false);
   };
   $("next").onclick=function(){
+    if(SQ&&(SQ.out||SQ.i>=10)){ SQ=null; showMap(); return; }
+    if(SQ&&SQ.i>0){ sqAsk(); return; }
     if(S.kind==="ladder"){ if(S.lpot){ askLadder(); } else { finish(); } return; }
     if(S.i<4){ S.i++; ask(); } else { finish(); }
   };
@@ -2639,15 +2645,31 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   $("again").onclick=function(){ start(S.cat); };
   $("home2").onclick=function(){
     $("end").hidden=true;
-    if(S.map){ showMap(); } else { $("home").hidden=false; drawList(); }
+    if(SQ){ SQ=null; showMap(); return; }
+    if(S&&S.map){ showMap(); } else { $("home").hidden=false; drawList(); }
   };
 
   /* ---------- the map: three lattices, each its own metal ---------- */
-  var TIERS=[
-    {level:1, list:CATS.slice(0,25),  rows:5, cols:5,  s:40, opens:0,  name:"The Ground"},
-    {level:2, list:CATS.slice(25,75), rows:5, cols:10, s:20, opens:25, name:"The Ascent"},
-    {level:3, list:CATS.slice(75),    rows:5, cols:10, s:20, opens:60, name:"The High Table"}
-  ];
+  var TIERS=[];
+  function rebuildTiers(){
+    var entry=[], spec=[], i, k;
+    CATS=Object.keys(BANK);
+    for(i=0;i<CATS.length;i++){
+      k=CATS[i];
+      if((BANK[k].area||"")==="Entry level") entry.push(k); else spec.push(k);
+    }
+    // the ground floor takes the entry subjects; the specialists split above it
+    var half=Math.ceil(spec.length/2);
+    var tiers=[];
+    tiers.push({level:1, list:entry.length?entry:CATS.slice(0,25), cols:5, s:40, opens:0, name:"The Ground"});
+    if(spec.length){
+      tiers.push({level:2, list:spec.slice(0,half), cols:10, s:20, opens:25, name:"The Ascent"});
+      if(spec.length>half) tiers.push({level:3, list:spec.slice(half), cols:10, s:20, opens:60, name:"The High Table"});
+    }
+    tiers.forEach(function(T){ T.rows=Math.max(3,Math.ceil(T.list.length/T.cols)); });
+    TIERS=tiers;
+  }
+  rebuildTiers();
   var GAP=54, ZOOM=1;
   var LEVELINK={
     1:{name:"The Ground",    reach:"#4a5a78", held:"#8fb4e8", fill:"#161d2b", hfill:"#17243a", ink:"#9db6dd"},
@@ -2832,6 +2854,13 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       cells.forEach(function(c,i){
         var cx=c.c*w+(c.r%2?w/2:0)+w/2+4, cy=c.r*1.5*T.s+T.s+ys[ti];
         var name=T.list[i];
+        if(!name){
+          // the edge of the world: space the next pack will fill
+          var epts=[[0,-T.s],[T.s*0.866,-T.s/2],[T.s*0.866,T.s/2],[0,T.s],[-T.s*0.866,T.s/2],[-T.s*0.866,-T.s/2]]
+            .map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
+          parts.push('<polygon points="'+epts+'" fill="#080b10" stroke="#101620" stroke-width="0.6" opacity="0.6"/>');
+          return;
+        }
         var isHeld=held.indexOf(name)>=0;
         var isReach=reach.hasOwnProperty(gkey(c));
         var cls="hx"+(isHeld?" held":isReach?" reach":"");
@@ -2988,6 +3017,125 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     paintMe();
   }
 
+  /* ---------- the square: everyone at once, and the field thins ---------- */
+  var SQ=null, sqTick=null;
+  function squareStart(){
+    ac();
+    var lvl=currentLevel(), pool=[];
+    TIERS.forEach(function(T){ if(T.level<=lvl) pool=pool.concat(T.list); });
+    var field=800+Math.floor(Math.random()*700);
+    SQ={field:field,start:field,i:0,out:false,correct:0,lvl:lvl,pool:pool};
+    $("home").hidden=true; $("end").hidden=true; $("mapwrap").hidden=true; $("sheet").hidden=true; $("play").hidden=false;
+    $("pips").innerHTML=""; $("stake").hidden=false;
+    sqAsk();
+  }
+  function sqAsk(){
+    var cat=SQ.pool[Math.floor(Math.random()*SQ.pool.length)];
+    var qi=nextIndex(cat);
+    SQ.cat=cat; SQ.qi=qi;
+    var q=BANK[cat].q[qi], t="medium";
+    $("cat").textContent=cat;
+    $("count").textContent="question "+(SQ.i+1)+" of 10";
+    $("q").textContent=q[0];
+    var el=$("tier"); el.className="tier medium"; el.innerHTML="<span>the square</span>";
+    $("stake").innerHTML='<span class="sqfield"><b id="sqleft">'+SQ.field+'</b><span>players standing</span></span>';
+    $("feedback").innerHTML=""; $("next").hidden=true; $("heard").textContent=""; $("pass").hidden=true;
+    $("vs").innerHTML='';
+    SQ.built=buildOptions(cat,qi,COUNT[t]);
+    var box=$("options"); box.innerHTML=""; box.className="opts n"+COUNT[t];
+    SQ.built.options.forEach(function(o,ix){
+      var b=document.createElement("button");
+      b.className="opt";
+      b.innerHTML='<span class="ltr">'+"ABCDEFGHIJ".charAt(ix)+'</span>'+o;
+      b.onclick=function(){ sqJudge(ix); };
+      box.appendChild(b);
+    });
+    SQ.t0=Date.now();
+    startClock();
+  }
+  function sqJudge(pick){
+    if(SQ.out) return;
+    clearInterval(tick);
+    var ok=pick===SQ.built.correct;
+    var btns=$("options").querySelectorAll(".opt");
+    for(var i=0;i<btns.length;i++){
+      btns[i].disabled=true;
+      if(i===SQ.built.correct) btns[i].className="opt right";
+      else if(i===pick) btns[i].className="opt wrong";
+    }
+    chime(ok);
+    if(!ok){
+      SQ.out=true;
+      $("feedback").innerHTML='<div class="fb no"><span class="pts">out</span><b>You are out</b>'+
+        'The answer is <strong>'+primary(BANK[SQ.cat].q[SQ.qi][1])+'</strong>. '+SQ.field+' still standing.</div>';
+      $("next").hidden=false; $("next").textContent="Back to the map";
+      return;
+    }
+    SQ.correct++;
+    SQ.field=Math.max(2,Math.round(SQ.field*(0.50+Math.random()*0.14)));
+    SQ.i++;
+    var pct=Math.max(1,Math.round(SQ.field/SQ.start*100));
+    if(SQ.i>=10||SQ.field<=2){
+      sqWin();
+      return;
+    }
+    $("feedback").innerHTML='<div class="fb ok"><span class="pts">'+pct+'%</span><b>'+SQ.field+' left</b>'+
+      'You are in the top '+pct+' per cent of the square.</div>';
+    $("next").hidden=false; $("next").textContent="Next question";
+  }
+  function sqWin(){
+    var bonus=15+Math.round(SQ.correct*2);
+    store.set("climb",+(climbPts()+bonus).toFixed(1));
+    $("play").hidden=true; $("end").hidden=false;
+    $("endcat").textContent="The square";
+    $("endpct").textContent="ten questions, the field thinning";
+    $("endvs").innerHTML="";
+    $("score").textContent=SQ.correct;
+    $("correct").textContent=SQ.correct+" / 10";
+    $("fastest").textContent="–";
+    $("rating").textContent=Math.round(climbPts());
+    $("delta").textContent="+"+bonus;
+    $("verdict").textContent="Last one standing out of "+SQ.start+". That is "+bonus+" on the climb.";
+    $("home2").textContent="Back to the map";
+    paintMe();
+  }
+  $("tosq").onclick=function(){ squareStart(); };
+
+  /* ---------- packs: the world grows without a rebuild ---------- */
+  function mergePack(p){
+    if(!p||!p.subjects) return 0;
+    var added=0;
+    p.subjects.forEach(function(s){
+      if(!s||!s.name||!s.questions||!s.questions.length) return;
+      if(!BANK[s.name]){ BANK[s.name]={area:s.area||"Specialist", q:[]}; }
+      var have={}, i;
+      for(i=0;i<BANK[s.name].q.length;i++) have[String(BANK[s.name].q[i][0]).toLowerCase()]=1;
+      s.questions.forEach(function(row){
+        if(!row||!row[0]||!row[1]) return;
+        var k=String(row[0]).toLowerCase();
+        if(have[k]) return;
+        have[k]=1; BANK[s.name].q.push(row); added++;
+      });
+    });
+    return added;
+  }
+  function loadPacks(){
+    if(!window.fetch) return Promise.resolve(0);
+    return fetch("packs/manifest.json",{cache:"no-store"})
+      .then(function(r){ if(!r.ok) throw new Error("no manifest"); return r.json(); })
+      .then(function(list){
+        if(!Array.isArray(list)) return 0;
+        return Promise.all(list.map(function(f){
+          return fetch("packs/"+f,{cache:"no-store"}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; });
+        })).then(function(packs){
+          var n=0; packs.forEach(function(p){ n+=mergePack(p); });
+          if(n) rebuildTiers();
+          return n;
+        });
+      })
+      .catch(function(){ return 0; });
+  }
+
   /* ---------- boot ---------- */
   document.querySelector("#home .tag").textContent = CATS.length+
     " subjects, entry level upwards. Four options at the bottom, ten at the top.";
@@ -2995,6 +3143,13 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   if(!me.name||me.avatar===null){
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
+  loadPacks().then(function(n){
+    if(!n) return;
+    document.querySelector("#home .tag").textContent = CATS.length+
+      " subjects, entry level upwards. Four options at the bottom, ten at the top.";
+    drawChips(); drawList();
+    if(!$("mapwrap").hidden) drawMap();
+  });
   mapButton();
   PENDING=parseChallenge();
   if(PENDING&&me.name&&me.avatar!==null){ start(PENDING.cat,false,0); }
