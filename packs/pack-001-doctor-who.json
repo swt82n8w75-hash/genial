@@ -1,0 +1,58 @@
+{
+ "pack": "001",
+ "subjects": [
+  {
+   "name": "Doctor Who (classic)",
+   "area": "Specialist",
+   "questions": [
+    [
+     "Which actor played the First Doctor?",
+     "William Hartnell"
+    ],
+    [
+     "Which Doctor had a long scarf?",
+     "The Fourth Doctor",
+     "Tom Baker"
+    ],
+    [
+     "What is the name of the Doctor's time machine?",
+     "The TARDIS"
+    ],
+    [
+     "Which enemy race are the Doctor's oldest foes?",
+     "The Daleks"
+    ],
+    [
+     "Which companion was played by Elisabeth Sladen?",
+     "Sarah Jane Smith"
+    ]
+   ]
+  },
+  {
+   "name": "Doctor Who (modern)",
+   "area": "Specialist",
+   "questions": [
+    [
+     "Which actor played the Ninth Doctor?",
+     "Christopher Eccleston"
+    ],
+    [
+     "Who played the Eleventh Doctor?",
+     "Matt Smith"
+    ],
+    [
+     "Which companion is played by Billie Piper?",
+     "Rose Tyler"
+    ],
+    [
+     "What is the Doctor's home planet called?",
+     "Gallifrey"
+    ],
+    [
+     "Which 2005 episode featured the first appearance of the gas-mask zombies?",
+     "The Empty Child"
+    ]
+   ]
+  }
+ ]
+}
