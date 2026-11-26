@@ -19,6 +19,16 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--ink);color:var(--cream)}
+  .gate{position:fixed;inset:0;z-index:80;background:radial-gradient(120% 90% at 50% 0%,#101722,#070a0f 70%);
+        display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}
+  .gate[hidden]{display:none}
+  .gatein{width:100%;max-width:420px;text-align:center}
+  .gstep[hidden]{display:none}
+  .gh{font-family:Georgia,serif;font-size:19px;letter-spacing:.02em;margin:0 0 12px;font-weight:400}
+  .grule{text-align:left;color:#c9d3e2;font-size:13.5px;line-height:1.55;margin:0 0 12px;
+         border-left:2px solid #2a3142;padding-left:12px}
+  .grule b{color:#e8bd55;margin-right:8px}
+  .gate .agrid{max-height:38vh;overflow:auto}
   .hbtns{display:flex;flex-wrap:wrap;gap:6px;max-width:100%}
   .brandbar{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
   .brandbar img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 18px rgba(232,189,85,.28)}
@@ -141,6 +151,16 @@
   .climbtxt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:7px 0 4px}
   .hexstage{margin:6px -14px 0;overflow:auto;-webkit-overflow-scrolling:touch}
   .hexstage svg{transition:width .18s}
+  .gate{position:fixed;inset:0;z-index:80;background:radial-gradient(120% 90% at 50% 0%,#101722,#070a0f 70%);
+        display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}
+  .gate[hidden]{display:none}
+  .gatein{width:100%;max-width:420px;text-align:center}
+  .gstep[hidden]{display:none}
+  .gh{font-family:Georgia,serif;font-size:19px;letter-spacing:.02em;margin:0 0 12px;font-weight:400}
+  .grule{text-align:left;color:#c9d3e2;font-size:13.5px;line-height:1.55;margin:0 0 12px;
+         border-left:2px solid #2a3142;padding-left:12px}
+  .grule b{color:#e8bd55;margin-right:8px}
+  .gate .agrid{max-height:38vh;overflow:auto}
   .hbtns{display:flex;gap:5px;align-items:center}
   .chalbar{display:flex;gap:10px;align-items:center;justify-content:space-between;background:#1b1408;
     border:1px solid #6a4f14;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:13px;color:#f0e2c0}
@@ -231,6 +251,30 @@
     <img id="mark" src="logo.png" alt="Geniality">
     <span class="wordmark">GENIAL<span>ITY</span></span>
   </div>
+<div class="gate" id="gate">
+  <div class="gatein">
+    <div class="gstep" id="gsplash">
+      <img src="logo.png" alt="" style="width:96px;height:96px;border-radius:22px;box-shadow:0 0 44px rgba(232,189,85,.35)">
+      <h1 class="mark" style="font-size:30px;margin:18px 0 6px">Geniality</h1>
+      <p class="tag" style="letter-spacing:.28em;font-size:11px;text-transform:uppercase">a field of subjects</p>
+    </div>
+    <div class="gstep" id="gname" hidden>
+      <h2 class="gh">What shall we call you?</h2>
+      <input type="text" id="gnamein" placeholder="Your name" autocomplete="off" maxlength="14">
+      <h2 class="gh" style="margin-top:22px">Pick a face</h2>
+      <div class="agrid" id="gfaces"></div>
+      <button class="btn" id="gnamego" style="margin-top:18px">That is me</button>
+    </div>
+    <div class="gstep" id="grules" hidden>
+      <h2 class="gh">How it works</h2>
+      <div class="grule"><b>1</b> The field is hexagons. You can only take one that touches a hexagon you hold, so you always start at the rim and work inward.</div>
+      <div class="grule"><b>2</b> Tap one to play. Five questions, twelve seconds each, three right and it is yours. Some rounds are true or false, some are a ladder you can bank or lose.</div>
+      <div class="grule"><b>3</b> Every win pays climb points. Enough of them and you go up a level, and the questions get harder. There are fifty levels and twelve sections.</div>
+      <div class="grule"><b>4</b> Hold ten subjects at most. Anyone who beats you takes one, and a knockback costs you climb points, so the top is a long haul, not an evening.</div>
+      <button class="btn" id="grulesgo" style="margin-top:18px">Start at the rim</button>
+    </div>
+  </div>
+</div>
 <div class="wrap">
 
   <section id="mapwrap" hidden>
@@ -1912,6 +1956,46 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   }
   function grade(){ var b=bestRating(); return b<1050?0:b<1120?1:b<1200?2:b<1320?3:4; }
 
+  /* ---------- first run: the mark, your name, your face, the rules ---------- */
+  var GPICK=null;
+  function gateFaces(){
+    var el=$("gfaces"); if(!el) return;
+    el.innerHTML="";
+    for(var i=0;i<72;i++){
+      (function(i){
+        var b=document.createElement("button");
+        b.innerHTML=avatarSVG(i,84,grade());
+        if(i===(GPICK===null?(me.avatar===null?0:me.avatar):GPICK)) b.className="on";
+        b.onclick=function(){ GPICK=i; gateFaces(); };
+        el.appendChild(b);
+      })(i);
+    }
+  }
+  function gateStep(which){
+    ["gsplash","gname","grules"].forEach(function(id){
+      var el=$(id); if(el) el.hidden=(id!==which);
+    });
+  }
+  function runGate(){
+    var g=$("gate");
+    if(!g) return;
+    if(store.get("onboarded",false)){ g.hidden=true; return; }
+    g.hidden=false; gateStep("gsplash");
+    setTimeout(function(){ gateStep("gname"); gateFaces(); $("gnamein").value=me.name||""; },1500);
+    $("gnamego").onclick=function(){
+      var n=($("gnamein").value||"").trim().slice(0,14);
+      if(n.length<1){ $("gnamein").focus(); $("gnamein").placeholder="A name, any name"; return; }
+      me.name=n; me.avatar=(GPICK===null?(me.avatar===null?0:me.avatar):GPICK);
+      store.set("name",me.name); store.set("avatar",me.avatar);
+      paintMe(); gateStep("grules");
+    };
+    $("grulesgo").onclick=function(){
+      store.set("onboarded",true);
+      g.hidden=true;
+      musicStart("map");
+      if(PENDING){ start(PENDING.cat,false,0); } else { showMap(); }
+    };
+  }
   function paintMe(){
     var el=$("myavatar");
     if(me.avatar!==null) el.innerHTML=avatarSVG(me.avatar,64,grade());
@@ -2204,7 +2288,10 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     }
     box.innerHTML='<div class="ik">the ladder</div>'+
       '<div class="is">fewer can stand on each step, and the last step holds one</div>'+
-      '<div style="max-height:46vh;overflow:auto;margin:10px 0">'+rows+'</div>'+
+      '<div style="max-height:40vh;overflow:auto;margin:10px 0">'+rows+'</div>'+
+      '<div class="note" style="margin:0 0 12px">A good round pays about thirty climb points. The fiftieth level needs '+
+        levelOpens(TOP).toLocaleString("en-GB")+', so it is roughly '+Math.round(levelOpens(TOP)/30)+
+        ' clean wins with nothing lost on the way, and a knockback takes twenty-five back. Months, at best, for anyone who gets there.</div>'+
       '<button class="btn" id="ladderdone">Close</button>';
     document.body.appendChild(box);
     box.querySelector("#ladderdone").onclick=function(){ box.remove(); };
@@ -2259,7 +2346,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     return FIELD.cells.filter(function(c){ return c.egg; });
   }
   function ownedBook(){ return store.get("owned",{}); }
-  function owns(k){ var o=ownedBook(); return !!o[k]; }
+  var FREE_BUILD=true;   // the web build charges nothing and walls nothing; the store build sells the doors
+  function owns(k){ if(FREE_BUILD) return true; var o=ownedBook(); return !!o[k]; }
   function unlock(k){ var o=ownedBook(); o[k]=true; store.set("owned",o); }
   function paywall(k,then){
     var p=PRICES[k], box=$("arslist");
@@ -3284,6 +3372,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   function showMap(){
     if(!owns("entry")){ paywall("entry",function(){ showMap(); }); return; }
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=true;
+    $("sheet").hidden=true; $("handsheet").hidden=true;
     $("mapwrap").hidden=false; drawMap();
   }
   $("tolist").onclick=function(){ $("mapwrap").hidden=true; $("home").hidden=false; drawList(); };
@@ -3583,6 +3672,29 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     b.onclick=hatchPanel;
     var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
   }
+  function doorsPanel(){
+    var box=$("arslist");
+    $("arsh").textContent="The doors";
+    box.innerHTML="";
+    [["entry","The whole field, solo, forever"],["square","Everyone on one question at once"],
+     ["live","Live rounds, fastest finger"]].forEach(function(row){
+      var k=row[0], p=PRICES[k];
+      if(!p) return;
+      var el=document.createElement("div");
+      el.className="arsrow";
+      el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+row[1]+'</small></span><em>'+p.price+'</em>';
+      box.appendChild(el);
+    });
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Nothing is charged in this build.</b> '+
+      'Every door is open so you can test the whole game. In the released app these are Apple in-app purchases, paid once and kept.';
+    $("ars").hidden=false;
+  }
+  function doorsButton(){
+    var b=document.createElement("button");
+    b.className="snd"; b.textContent="the doors"; b.id="todoors";
+    b.onclick=doorsPanel;
+    var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
+  }
   function ladderButton(){
     var b=document.createElement("button");
     b.className="snd"; b.textContent="the ladder"; b.id="toladder";
@@ -3620,6 +3732,29 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     var b=document.createElement("button");
     b.className="snd"; b.textContent="genius board"; b.id="toboard";
     b.onclick=function(){ geniusBoard(); };
+    var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
+  }
+  function doorsPanel(){
+    var box=$("arslist");
+    $("arsh").textContent="The doors";
+    box.innerHTML="";
+    [["entry","The whole field, solo, forever"],["square","Everyone on one question at once"],
+     ["live","Live rounds, fastest finger"]].forEach(function(row){
+      var k=row[0], p=PRICES[k];
+      if(!p) return;
+      var el=document.createElement("div");
+      el.className="arsrow";
+      el.innerHTML='<span>'+p.label+'<small style="display:block;color:#7f8ea6;font-size:11px">'+row[1]+'</small></span><em>'+p.price+'</em>';
+      box.appendChild(el);
+    });
+    $("arsnote").innerHTML='<b style="color:#e8bd53">Nothing is charged in this build.</b> '+
+      'Every door is open so you can test the whole game. In the released app these are Apple in-app purchases, paid once and kept.';
+    $("ars").hidden=false;
+  }
+  function doorsButton(){
+    var b=document.createElement("button");
+    b.className="snd"; b.textContent="the doors"; b.id="todoors";
+    b.onclick=doorsPanel;
     var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
   }
   function ladderButton(){
@@ -3668,12 +3803,16 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   document.querySelector("#home .tag").textContent = CATS.length+
     " subjects, entry level upwards. Four options at the bottom, ten at the top.";
   drawChips(); drawList(); paintMe();
-  if(!me.name||me.avatar===null){
+  if(!store.get("onboarded",false)){
+    $("sheet").hidden=true;
+  } else if(!me.name||me.avatar===null){
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
   if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
   rebuildTiers();
   ladderButton();
+  doorsButton();
+  runGate();
   mapButton();
   eggButton();
   loadOwnCats();
