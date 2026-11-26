@@ -2111,12 +2111,13 @@ Object.assign(BANK,{
     for(var i=0;i<5;i++){ p.appendChild(document.createElement("i")); }
     paintVs();
     if(S.map){
-      var cells=gridCells(R1,C1), mine=null;
-      cells.forEach(function(c,i){ if(ENTRY[i]===S.cat) mine=c; });
+      var lvl2=SPECIAL.indexOf(S.cat)>=0;
+      var cells=gridCells(lvl2?R2:R1,lvl2?C2:C1), list=lvl2?SPECIAL:ENTRY, mine=null;
+      cells.forEach(function(c,i){ if(list[i]===S.cat) mine=c; });
       var nb=0;
-      if(mine) nb=gN(mine,R1,C1).filter(function(x){
+      if(mine) nb=gN(mine,lvl2?R2:R1,lvl2?C2:C1).filter(function(x){
         var ix=-1; cells.forEach(function(c,i){ if(gkey(c)===gkey(x)) ix=i; });
-        return ix>=0 && heldList().indexOf(ENTRY[ix])<0;
+        return ix>=0 && heldList().indexOf(list[ix])<0;
       }).length;
       $("stake").hidden=false;
       $("stake").innerHTML='Win this to hold <b>'+S.cat+'</b>'+(nb?' and open '+nb+' more':'')+
@@ -2424,6 +2425,19 @@ Object.assign(BANK,{
 
     var heldCells={};
     cells1.forEach(function(c,i){ if(held.indexOf(ENTRY[i])>=0) heldCells[gkey(c)]=i; });
+    var heldCells2={};
+    cells2.forEach(function(c,i){ if(held.indexOf(SPECIAL[i])>=0) heldCells2[gkey(c)]=i; });
+    var reach2={};
+    if(open){
+      if(!Object.keys(heldCells2).length){
+        cells2.forEach(function(c,i){ if(c.r===R2-1 && c.c>3 && c.c<C2-3) reach2[gkey(c)]=i; });
+      } else {
+        cells2.forEach(function(c,i){
+          if(held.indexOf(SPECIAL[i])>=0) return;
+          if(gN(c,R2,C2).some(function(nb){ return heldCells2.hasOwnProperty(gkey(nb)); })) reach2[gkey(c)]=i;
+        });
+      }
+    }
     var reach={};
     if(!Object.keys(heldCells).length){
       cells1.forEach(function(c,i){ if(c.r===R1-1 && c.c>0 && c.c<C1-1) reach[gkey(c)]=i; });
@@ -2442,12 +2456,12 @@ Object.assign(BANK,{
     function cell(c,i,s,w,oy,list,level){
       var xy=pos(c,s,w,oy), cx=xy[0], cy=xy[1], name=list[i];
       var isHeld=held.indexOf(name)>=0;
-      var isReach=level===1 && reach.hasOwnProperty(gkey(c));
+      var isReach=(level===1?reach:reach2).hasOwnProperty(gkey(c));
       var cls="hx"+(isHeld?" held":isReach?" reach":"");
       var fill=isHeld?"#2a2312":isReach?"#161d2b":"#0c1017";
       var stroke=isHeld?"#e8bd55":isReach?"#5b6884":"#171d28";
       var sw=isHeld?2:isReach?1.4:0.8;
-      var fl=floorFor(c.r,level===1?R1:R2);
+      var fl=level===1?floorFor(c.r,R1):(c.r>=R2-2?2:3);
       var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+fl+'">'+
             '<polygon points="'+hex(cx,cy,s)+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
       if(isHeld||isReach){
