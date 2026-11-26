@@ -2438,8 +2438,6 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     S.streak=ok?(S.streak||0)+1:0;
     if(S.kind==="streak"){ S.run=ok?(S.run||0)+1:0; }
     if(ok&&(S.fastest===null||secs<S.fastest)) S.fastest=secs;
-    recordAnswer(t,ok,secs);
-    if(S.cellKind==="mystery") $("cat").textContent=S.cat;
     var their=S.opp.res[S.i]||{ok:false,pts:0};
     if(S.mode==="live"){ if(ok){ S.opp.res[S.i]={ok:false,pts:0}; } else { S.opp.score+=2; S.opp.got++; } }
     else { S.opp.score+=their.pts; if(their.ok) S.opp.got++; }
