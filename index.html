@@ -2193,6 +2193,22 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       [220,329.63,440,659.25,880].forEach(function(f,j){ note(f,0.14,2.2,"triangle",t+j*0.11); });
     }
   }
+  function showLadder(){
+    var box=document.createElement("div");
+    box.className="intro"; box.id="ladderbox";
+    var lv=currentLevel(), rows="";
+    for(var n=Math.min(TOP,Math.max(1,lv));n<=TOP;n++){
+      var c=seats(n), mine=(n===lv);
+      rows+='<div class="kv" style="'+(mine?"color:#e8bd55":"")+'"><span>Level '+n+(n>=TOP?" \u00b7 THE THRONE":"")+'</span><span>'+
+        (n>=TOP?"1 seat, one player, forever":c.toLocaleString("en-GB")+" seats")+'</span></div>';
+    }
+    box.innerHTML='<div class="ik">the ladder</div>'+
+      '<div class="is">fewer can stand on each step, and the last step holds one</div>'+
+      '<div style="max-height:46vh;overflow:auto;margin:10px 0">'+rows+'</div>'+
+      '<button class="btn" id="ladderdone">Close</button>';
+    document.body.appendChild(box);
+    box.querySelector("#ladderdone").onclick=function(){ box.remove(); };
+  }
   function kindLabel(){
     return S.kind==="truefalse" ? "true or false" : S.kind==="ladder" ? "the ladder"
       : S.kind==="streak" ? "three in a row" : "five questions";
@@ -2988,6 +3004,16 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   var SECTIONS=["The Ground","The Threshold","The Ascent","The Terrace","The High Table",
     "The Gallery","The Crystal","The Spire","The Snow","The Summit","The Red","The Crown"];
   function sectionOf(n){ return Math.max(1,Math.min(12,Math.ceil(n/50*12))); }
+  var SEATBASE=200000;
+  function seats(n){
+    if(n>=TOP) return 1;
+    return Math.max(1, Math.round(SEATBASE*Math.pow(1/SEATBASE,(n-1)/(TOP-1))));
+  }
+  function seatLine(n){
+    var c=seats(n);
+    if(n>=TOP) return "1 seat \u00b7 THE THRONE";
+    return c.toLocaleString("en-GB")+(c===1?" seat":" seats");
+  }
   function sectionFloor(s){ return levelOpens(Math.max(1,Math.ceil((s-1)*50/12)+1)); }
   function badgeOf(cat){
     var i=0, k;
@@ -3121,10 +3147,10 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       var from=levelOpens(lv), to=levelOpens(lv+1);
       var pct=Math.max(0,Math.min(100,(climb-from)/Math.max(1,to-from)*100));
       $("climbbar").style.width=pct+"%";
-      $("climbtxt").textContent=climb+" of "+to+" to Level "+(lv+1)+" \u00b7 "+inkForLevel(lv+1).name;
+      $("climbtxt").textContent=climb+" of "+to+" to Level "+(lv+1)+" \u00b7 "+seatLine(lv+1);
     } else {
       $("climbbar").style.width="100%";
-      $("climbtxt").textContent=climb+" points \u00b7 the fiftieth, the top of the world";
+      $("climbtxt").textContent=climb+" points \u00b7 the fiftieth, one seat, and it is yours";
     }
 
     var reach={};
@@ -3480,6 +3506,12 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     b.onclick=hatchPanel;
     var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
   }
+  function ladderButton(){
+    var b=document.createElement("button");
+    b.className="snd"; b.textContent="the ladder"; b.id="toladder";
+    b.onclick=function(){ showLadder(); };
+    var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
+  }
   function loadOwnCats(){
     var oc=ownCats(), k;
     for(k in oc){
@@ -3511,6 +3543,12 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     var b=document.createElement("button");
     b.className="snd"; b.textContent="genius board"; b.id="toboard";
     b.onclick=function(){ geniusBoard(); };
+    var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
+  }
+  function ladderButton(){
+    var b=document.createElement("button");
+    b.className="snd"; b.textContent="the ladder"; b.id="toladder";
+    b.onclick=function(){ showLadder(); };
     var h=document.querySelector(".hbtns"); if(h) h.insertBefore(b,h.firstChild);
   }
 
@@ -3558,6 +3596,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   }
   if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
   rebuildTiers();
+  ladderButton();
   mapButton();
   eggButton();
   loadOwnCats();
