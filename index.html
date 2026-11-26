@@ -135,8 +135,11 @@
   .hx text{font-family:"Helvetica Neue",Arial,sans-serif;fill:#7c8699;font-size:9px;text-anchor:middle}
   .hx.held text{fill:#f2efe6;font-weight:600}
   .hx.reach text{fill:#d9d3c2}
-  .hexstage svg .hx.held polygon{filter:drop-shadow(0 0 7px rgba(232,189,85,.5))}
-  .hexstage svg .hx.reach polygon{filter:drop-shadow(0 0 5px rgba(110,145,205,.4))}
+  .hexstage svg .hx.held polygon{filter:drop-shadow(0 0 8px rgba(220,230,245,.45))}
+  .hexstage svg .hx.reach polygon{filter:drop-shadow(0 0 5px rgba(120,155,215,.38))}
+  .hexstage svg .hx.held[data-level="2"] polygon{filter:drop-shadow(0 0 9px rgba(228,232,238,.5))}
+  .hexstage svg .hx.held[data-level="3"] polygon{filter:drop-shadow(0 0 10px rgba(242,205,99,.55))}
+  .hexstage svg .hx.held[data-level="4"] polygon{filter:drop-shadow(0 0 11px rgba(240,117,106,.55))}
   .streak{color:var(--gold);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
   .legend{display:flex;gap:14px;margin:14px 0 0;font-size:10.5px;color:var(--dim);letter-spacing:.04em}
   .legend span{display:flex;align-items:center;gap:5px}
@@ -2111,11 +2114,11 @@ Object.assign(BANK,{
     for(var i=0;i<5;i++){ p.appendChild(document.createElement("i")); }
     paintVs();
     if(S.map){
-      var lvl2=SPECIAL.indexOf(S.cat)>=0;
-      var cells=gridCells(lvl2?R2:R1,lvl2?C2:C1), list=lvl2?SPECIAL:ENTRY, mine=null;
+      var T=tierOfCat(S.cat);
+      var cells=gridCells(T.rows,T.cols), list=T.list, mine=null;
       cells.forEach(function(c,i){ if(list[i]===S.cat) mine=c; });
       var nb=0;
-      if(mine) nb=gN(mine,lvl2?R2:R1,lvl2?C2:C1).filter(function(x){
+      if(mine) nb=gN(mine,T.rows,T.cols).filter(function(x){
         var ix=-1; cells.forEach(function(c,i){ if(gkey(c)===gkey(x)) ix=i; });
         return ix>=0 && heldList().indexOf(list[ix])<0;
       }).length;
@@ -2373,7 +2376,7 @@ Object.assign(BANK,{
         if(h.indexOf(S.cat)<0) h.push(S.cat);
         store.set("held",h);
       }
-      if(cl>=25) store.set("lvl2",true);
+
       $("home2").textContent="Back to the map";
     } else { $("home2").textContent="Subjects"; }
     paintMe(); renderSafe();
@@ -2384,9 +2387,25 @@ Object.assign(BANK,{
     if(S.map){ showMap(); } else { $("home").hidden=false; drawList(); }
   };
 
-  /* ---------- the map: a honeycomb of subjects ---------- */
-  var ENTRY=CATS.slice(0,25), SPECIAL=CATS.slice(25);
-  var R1=5,C1=5,R2=10,C2=10,S1=40,S2=20,GAP=64;
+  /* ---------- the map: three lattices, each its own metal ---------- */
+  var TIERS=[
+    {level:1, list:CATS.slice(0,25),  rows:5, cols:5,  s:40, opens:0,  name:"The Ground"},
+    {level:2, list:CATS.slice(25,75), rows:5, cols:10, s:20, opens:25, name:"The Ascent"},
+    {level:3, list:CATS.slice(75),    rows:5, cols:10, s:20, opens:60, name:"The High Table"}
+  ];
+  var GAP=54;
+  var LEVELINK={
+    1:{name:"The Ground",    reach:"#4a5a78", held:"#8fb4e8", fill:"#161d2b", hfill:"#17243a", ink:"#9db6dd"},
+    2:{name:"The Ascent",    reach:"#6f7683", held:"#e4e8ee", fill:"#1a1d23", hfill:"#24282f", ink:"#dfe5ee"},
+    3:{name:"The High Table",reach:"#8a6b1e", held:"#f2cd63", fill:"#1d1809", hfill:"#2b2210", ink:"#f2cd63"},
+    4:{name:"The Red",       reach:"#7d2f2f", held:"#f0756a", fill:"#1e1010", hfill:"#2d1616", ink:"#f0756a"}
+  };
+  function inkFor(l){ return LEVELINK[l]||LEVELINK[1]; }
+  function tierByLevel(l){ for(var i=0;i<TIERS.length;i++) if(TIERS[i].level===l) return TIERS[i]; return TIERS[0]; }
+  function tierOfCat(name){
+    for(var i=0;i<TIERS.length;i++) if(TIERS[i].list.indexOf(name)>=0) return TIERS[i];
+    return TIERS[0];
+  }
   function gridCells(rows,cols){ var o=[],r,c; for(r=0;r<rows;r++){for(c=0;c<cols;c++) o.push({r:r,c:c});} return o; }
   function gkey(c){ return c.c+","+c.r; }
   function gN(c,rows,cols){
@@ -2397,7 +2416,8 @@ Object.assign(BANK,{
   }
   function heldList(){ return store.get("held",[]); }
   function climbPts(){ return store.get("climb",0); }
-  function lvl2Open(){ return store.get("lvl2",false); }
+  function tierOpen(l){ if(l===1) return true; return climbPts()>=tierByLevel(l).opens; }
+  function currentLevel(){ var c=climbPts(), l=1; TIERS.forEach(function(t){ if(c>=t.opens) l=t.level; }); return l; }
   function wrapName(n,max){
     var w=n.split(" "),lines=[],cur="";
     w.forEach(function(x){
@@ -2409,108 +2429,93 @@ Object.assign(BANK,{
   }
   function floorFor(r,rows){ return r>=rows-2?1:r>=1?2:3; }
   function drawMap(){
-    var held=heldList(), climb=climbPts(), open=lvl2Open();
-    $("lvlname").textContent = open ? "Level 2 \u00b7 The Ascent" : "Level 1 \u00b7 The Ground";
-    $("climbbar").style.width=Math.min(100,climb/25*100)+"%";
-    $("climbtxt").textContent = open ? "Level 2 open \u00b7 "+climb+" points"
-      : climb+" of 25 to Level 2";
-
-    var cells1=gridCells(R1,C1), cells2=gridCells(R2,C2);
-    var w1=Math.sqrt(3)*S1, h1=1.5*S1*(R1-1)+2*S1;
-    var w2=Math.sqrt(3)*S2, h2=1.5*S2*(R2-1)+2*S2;
-    var W=Math.max(w1*C1+w1/2, w2*C2+w2/2)+8, H=h1+h2+GAP+8;
-    var off1=h2+GAP+4;
-
-    function pos(c,s,w,oy){ return [ c.c*w + (c.r%2?w/2:0) + w/2 + 4, c.r*1.5*s + s + oy ]; }
-
-    var heldCells={};
-    cells1.forEach(function(c,i){ if(held.indexOf(ENTRY[i])>=0) heldCells[gkey(c)]=i; });
-    var heldCells2={};
-    cells2.forEach(function(c,i){ if(held.indexOf(SPECIAL[i])>=0) heldCells2[gkey(c)]=i; });
-    var reach2={};
-    if(open){
-      if(!Object.keys(heldCells2).length){
-        cells2.forEach(function(c,i){ if(c.r===R2-1 && c.c>3 && c.c<C2-3) reach2[gkey(c)]=i; });
-      } else {
-        cells2.forEach(function(c,i){
-          if(held.indexOf(SPECIAL[i])>=0) return;
-          if(gN(c,R2,C2).some(function(nb){ return heldCells2.hasOwnProperty(gkey(nb)); })) reach2[gkey(c)]=i;
-        });
-      }
-    }
-    var reach={};
-    if(!Object.keys(heldCells).length){
-      cells1.forEach(function(c,i){ if(c.r===R1-1 && c.c>0 && c.c<C1-1) reach[gkey(c)]=i; });
+    var held=heldList(), climb=climbPts();
+    var lv=currentLevel(), pal=inkFor(lv);
+    var nxt=null;
+    for(var i=0;i<TIERS.length;i++) if(climb<TIERS[i].opens) { nxt=TIERS[i]; break; }
+    $("lvlname").textContent="Level "+lv+" \u00b7 "+pal.name;
+    $("lvlname").style.color=pal.ink;
+    $("climbbar").style.background="linear-gradient(90deg,"+pal.reach+","+pal.held+")";
+    if(nxt){
+      var prev=nxt.opens===25?0:25;
+      var pct=Math.max(0,Math.min(100,(climb-prev)/(nxt.opens-prev)*100));
+      $("climbbar").style.width=pct+"%";
+      $("climbtxt").textContent=climb+" of "+nxt.opens+" to Level "+nxt.level+" \u00b7 "+inkFor(nxt.level).name;
     } else {
-      cells1.forEach(function(c,i){
-        if(held.indexOf(ENTRY[i])>=0) return;
-        if(gN(c,R1,C1).some(function(nb){ return heldCells.hasOwnProperty(gkey(nb)); })) reach[gkey(c)]=i;
-      });
+      $("climbbar").style.width="100%";
+      $("climbtxt").textContent=climb+" points \u00b7 the top of the world so far";
     }
 
-    var out=[];
-    function hex(cx,cy,s){
-      var p=[[0,-s],[s*0.866,-s/2],[s*0.866,s/2],[0,s],[-s*0.866,s/2],[-s*0.866,-s/2]];
-      return p.map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
+    // geometry, top tier first
+    var ys=[], y=0, maxW=0;
+    for(var k=TIERS.length-1;k>=0;k--){
+      var T=TIERS[k], w=Math.sqrt(3)*T.s, h=1.5*T.s*(T.rows-1)+2*T.s;
+      ys[k]=y; y+=h+GAP;
+      maxW=Math.max(maxW, w*T.cols+w/2);
     }
-    function cell(c,i,s,w,oy,list,level){
-      var xy=pos(c,s,w,oy), cx=xy[0], cy=xy[1], name=list[i];
-      var isHeld=held.indexOf(name)>=0;
-      var isReach=(level===1?reach:reach2).hasOwnProperty(gkey(c));
-      var cls="hx"+(isHeld?" held":isReach?" reach":"");
-      var fill=isHeld?"#2a2312":isReach?"#161d2b":"#0c1017";
-      var stroke=isHeld?"#e8bd55":isReach?"#5b6884":"#171d28";
-      var sw=isHeld?2:isReach?1.4:0.8;
-      var fl=level===1?floorFor(c.r,R1):(c.r>=R2-2?2:3);
-      var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+fl+'">'+
-            '<polygon points="'+hex(cx,cy,s)+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
-      if(isHeld||isReach){
-        var lines=wrapName(name,10), fs=level===1?11:7, lh=fs+2.6;
-        var y0=cy-(lines.length-1)*lh/2+fs*0.35;
-        lines.forEach(function(ln,ix){
-          g+='<text x="'+cx.toFixed(1)+'" y="'+(y0+ix*lh).toFixed(1)+'" style="font-size:'+fs+'px">'+ln+'</text>';
-        });
+    var W=maxW+8, H=y-GAP+8;
+    var parts=[];
+    TIERS.forEach(function(T,ti){
+      var w=Math.sqrt(3)*T.s, cells=gridCells(T.rows,T.cols), open=tierOpen(T.level);
+      var heldCells={};
+      cells.forEach(function(c,i){ if(held.indexOf(T.list[i])>=0) heldCells[gkey(c)]=i; });
+      var reach={};
+      if(open){
+        if(!Object.keys(heldCells).length){
+          var mid=Math.floor(T.cols/2);
+          cells.forEach(function(c,i){
+            if(c.r===T.rows-1 && (c.c===mid-1||c.c===mid||c.c===mid+1)) reach[gkey(c)]=i;
+          });
+        } else {
+          cells.forEach(function(c,i){
+            if(held.indexOf(T.list[i])>=0) return;
+            if(gN(c,T.rows,T.cols).some(function(nb){ return heldCells.hasOwnProperty(gkey(nb)); })) reach[gkey(c)]=i;
+          });
+        }
       }
-      return g+"</g>";
-    }
-    cells2.forEach(function(c,i){ out.push(cell(c,i,S2,w2,0,SPECIAL,2)); });
-    cells1.forEach(function(c,i){ out.push(cell(c,i,S1,w1,off1,ENTRY,1)); });
+      var p=inkFor(T.level);
+      cells.forEach(function(c,i){
+        var cx=c.c*w+(c.r%2?w/2:0)+w/2+4, cy=c.r*1.5*T.s+T.s+ys[ti];
+        var name=T.list[i];
+        var isHeld=held.indexOf(name)>=0;
+        var isReach=reach.hasOwnProperty(gkey(c));
+        var cls="hx"+(isHeld?" held":isReach?" reach":"");
+        var fill=isHeld?p.hfill:isReach?p.fill:"#0b0e14";
+        var stroke=isHeld?p.held:isReach?p.reach:"#161c26";
+        var sw=isHeld?2:isReach?1.4:0.7;
+        var fl=T.level===1?floorFor(c.r,T.rows):(c.r>=T.rows-2?2:3);
+        var pts=[[0,-T.s],[T.s*0.866,-T.s/2],[T.s*0.866,T.s/2],[0,T.s],[-T.s*0.866,T.s/2],[-T.s*0.866,-T.s/2]]
+          .map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
+        var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+fl+'" data-level="'+T.level+'">'+
+              '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+        if(isHeld||isReach){
+          var lines=wrapName(name,T.s>30?10:8), fs=T.s>30?11:7.4, lh=fs+2.6;
+          var y0=cy-(lines.length-1)*lh/2+fs*0.35;
+          lines.forEach(function(ln,ix){
+            g+='<text x="'+cx.toFixed(1)+'" y="'+(y0+ix*lh).toFixed(1)+'" style="font-size:'+fs+'px;fill:'+(isHeld?p.held:"#b9c2d2")+'">'+ln+'</text>';
+          });
+        }
+        parts.push(g+"</g>");
+      });
+      // a quiet band naming each tier
+      parts.push('<text x="6" y="'+(ys[ti]+10)+'" style="font-size:9px;letter-spacing:.18em;fill:'+p.ink+';opacity:.75">'+
+        T.level+" \u00b7 "+p.name.toUpperCase()+(open?"":" \u00b7 LOCKED")+'</text>');
+    });
 
-    $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet">'
-      +out.join("")+"</svg>";
+    $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet">'+parts.join("")+'</svg>';
     var ns=$("hexstage").querySelectorAll(".hx.reach");
-    for(var i2=0;i2<ns.length;i2++){
+    for(var j=0;j<ns.length;j++){
       (function(nd){
         nd.addEventListener("click",function(){
           var cat=nd.getAttribute("data-cat");
           if(cat) start(cat,true,+nd.getAttribute("data-floor")||0);
         });
-      })(ns[i2]);
+      })(ns[j]);
     }
   }
   function showMap(){
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=true;
     $("mapwrap").hidden=false; drawMap();
-  }
-  var MODEHINT={solo:"Five questions, twelve seconds each. Your score against theirs.",
-    live:"A race. Whoever answers first takes the point. Miss it and they take it.",
-    send:"Play five, then send the challenge. They have to beat your score."};
-  var modeBtns=$("modes").querySelectorAll("button");
-  for(var mb=0;mb<modeBtns.length;mb++){
-    (function(bn){
-      bn.onclick=function(){
-        MODE=bn.getAttribute("data-mode"); store.set("mode",MODE);
-        for(var k=0;k<modeBtns.length;k++) modeBtns[k].className=modeBtns[k]===bn?"on":"";
-        $("modehint").textContent=MODEHINT[MODE];
-      };
-    })(modeBtns[mb]);
-  }
-  MODE=store.get("mode","solo");
-  for(var mb2=0;mb2<modeBtns.length;mb2++){
-    if(modeBtns[mb2].getAttribute("data-mode")===MODE){
-      modeBtns[mb2].className="on";
-      $("modehint").textContent=MODEHINT[MODE];
-    } else modeBtns[mb2].className="";
   }
   $("tolist").onclick=function(){ $("mapwrap").hidden=true; $("home").hidden=false; drawList(); };
   function mapButton(){
