@@ -128,8 +128,11 @@
   .climb{height:3px;background:#1b2130;border-radius:2px;overflow:hidden}
   .climbbar{height:100%;width:0;background:linear-gradient(90deg,#8a6b1e,#e2b64c);transition:width .4s}
   .climbtxt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:7px 0 4px}
-  .hexstage{margin:6px -14px 0}
-  .hexstage svg{display:block;width:100%;height:auto}
+  .hexstage{margin:6px -14px 0;overflow:auto;-webkit-overflow-scrolling:touch}
+  .hexstage svg{transition:width .18s}
+  .hbtns{display:flex;gap:5px;align-items:center}
+  .hbtns .snd{padding:6px 9px;font-size:12px}
+  .hexstage svg{display:block;width:100%;height:auto;max-width:none}
   .hx{cursor:default}
   .hx.reach{cursor:pointer}
   .hx text{font-family:"Helvetica Neue",Arial,sans-serif;fill:#7c8699;font-size:9px;text-anchor:middle}
@@ -187,7 +190,11 @@
   <section id="mapwrap" hidden>
     <div class="maphead">
       <span class="lvlname" id="lvlname">Level 1 · The Ground</span>
-      <button class="snd" id="tolist">subjects</button>
+      <span class="hbtns">
+        <button class="snd" id="zoomout" aria-label="Zoom out">−</button>
+        <button class="snd" id="zoomin" aria-label="Zoom in">+</button>
+        <button class="snd" id="tolist">subjects</button>
+      </span>
     </div>
     <div class="climb"><div class="climbbar" id="climbbar"></div></div>
     <div class="climbtxt" id="climbtxt">0 of 25 to Level 2</div>
@@ -2354,6 +2361,18 @@ Object.assign(BANK,{
         (S.correct>=5?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
         : (S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it.");
     }
+    var oldGate=$("gategate"); if(oldGate) oldGate.remove();
+    if(S.map&&S.correct>=3){
+      var T=tierOfCat(S.cat), idx=T.list.indexOf(S.cat);
+      if(isGate(T,idx)&&!store.get("gate"+T.level,false)){
+        var gb=document.createElement("button");
+        gb.id="gategate"; gb.className="btn"; gb.style.marginTop="10px";
+        gb.style.background="#8a6b1e"; gb.textContent="A gate has opened \u00b7 take it";
+        gb.onclick=function(){ chalStart(T.level); };
+        $("end").insertBefore(gb,$("home2"));
+        $("verdict").textContent="That hexagon was a gate. "+S.opp.name+" never saw it coming.";
+      }
+    }
     var oldSend=$("sendchal"); if(oldSend) oldSend.remove();
     if(S.mode==="send" && (S.target===null||S.target===undefined)){
       var link=location.origin+location.pathname+"#c="+encodeURIComponent(S.cat)+
@@ -2393,7 +2412,7 @@ Object.assign(BANK,{
     {level:2, list:CATS.slice(25,75), rows:5, cols:10, s:20, opens:25, name:"The Ascent"},
     {level:3, list:CATS.slice(75),    rows:5, cols:10, s:20, opens:60, name:"The High Table"}
   ];
-  var GAP=54;
+  var GAP=54, ZOOM=1;
   var LEVELINK={
     1:{name:"The Ground",    reach:"#4a5a78", held:"#8fb4e8", fill:"#161d2b", hfill:"#17243a", ink:"#9db6dd"},
     2:{name:"The Ascent",    reach:"#6f7683", held:"#e4e8ee", fill:"#1a1d23", hfill:"#24282f", ink:"#dfe5ee"},
@@ -2427,6 +2446,13 @@ Object.assign(BANK,{
     if(cur) lines.push(cur);
     return lines.slice(0,3);
   }
+  function gateCell(T){
+    var cells=gridCells(T.rows,T.cols), pick=Math.floor(cells.length*0.42);
+    var guard=0;
+    while(cells[pick].r>=T.rows-1 && guard++<cells.length) pick=(pick+1)%cells.length;
+    return pick;
+  }
+  function isGate(T,i){ return i===gateCell(T); }
   function floorFor(r,rows){ return r>=rows-2?1:r>=1?2:3; }
   function drawMap(){
     var held=heldList(), climb=climbPts();
@@ -2488,6 +2514,10 @@ Object.assign(BANK,{
           .map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
         var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+fl+'" data-level="'+T.level+'">'+
               '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+        if((isHeld||isReach)&&isGate(T,i)){
+          g+='<text x="'+cx.toFixed(1)+'" y="'+(cy-T.s*0.62).toFixed(1)+'" style="font-size:'+(T.s>30?11:8)+
+             'px;fill:'+p.held+'">\u25c6</text>';
+        }
         if(isHeld||isReach){
           var lines=wrapName(name,T.s>30?10:8), fs=T.s>30?11:7.4, lh=fs+2.6;
           var y0=cy-(lines.length-1)*lh/2+fs*0.35;
@@ -2502,7 +2532,8 @@ Object.assign(BANK,{
         T.level+" \u00b7 "+p.name.toUpperCase()+(open?"":" \u00b7 LOCKED")+'</text>');
     });
 
-    $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet">'+parts.join("")+'</svg>';
+    $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet" '+
+      'style="width:'+(ZOOM*100).toFixed(0)+'%">'+parts.join("")+'</svg>';
     var ns=$("hexstage").querySelectorAll(".hx.reach");
     for(var j=0;j<ns.length;j++){
       (function(nd){
@@ -2513,6 +2544,13 @@ Object.assign(BANK,{
       })(ns[j]);
     }
   }
+  function setZoom(z){
+    ZOOM=Math.max(1,Math.min(3,Math.round(z*10)/10));
+    store.set("zoom",ZOOM); drawMap();
+  }
+  $("zoomin").onclick=function(){ setZoom(ZOOM+0.5); };
+  $("zoomout").onclick=function(){ setZoom(ZOOM-0.5); };
+  ZOOM=store.get("zoom",1);
   function showMap(){
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=true;
     $("mapwrap").hidden=false; drawMap();
@@ -2524,6 +2562,94 @@ Object.assign(BANK,{
     b.onclick=function(){ showMap(); };
     var head=document.querySelector("#home .head");
     if(head) head.appendChild(b);
+  }
+
+  /* ---------- the gate: twenty in a minute ---------- */
+  var CH=null, chTick=null;
+  function chalStart(tier){
+    ac();
+    var T=tierByLevel(tier), qs=[], i;
+    for(i=0;i<20;i++){
+      var cat=T.list[Math.floor(Math.random()*T.list.length)];
+      qs.push({cat:cat,qi:Math.floor(Math.random()*BANK[cat].q.length)});
+    }
+    CH={qs:qs,i:0,correct:0,need:15,secs:60,tier:tier,t0:Date.now()};
+    $("home").hidden=true; $("end").hidden=true; $("mapwrap").hidden=true; $("sheet").hidden=true; $("play").hidden=false;
+    $("stake").hidden=false;
+    $("stake").innerHTML='<b>The gate.</b> Twenty questions, sixty seconds, fifteen right.';
+    var p=$("pips"); p.innerHTML="";
+    paintChal();
+  }
+  function paintChal(){
+    var q=CH.qs[CH.i], qq=BANK[q.cat].q[q.qi], t="medium";
+    $("cat").textContent=q.cat;
+    $("count").textContent=(CH.i+1)+" / 20 \u00b7 "+CH.correct+" right";
+    $("q").textContent=qq[0];
+    var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>gate</span>";
+    $("feedback").innerHTML=""; $("next").hidden=true; $("heard").textContent=""; $("pass").hidden=true;
+    $("vs").innerHTML='<span class="who"><b>The gate</b><span class="sc">'+
+      Math.max(0,CH.secs-Math.floor((Date.now()-CH.t0)/1000))+'s</span></span>';
+    var built=buildOptions(q.cat,q.qi,COUNT[t]);
+    CH.built=built;
+    var box=$("options"); box.innerHTML=""; box.className="opts n"+COUNT[t];
+    built.options.forEach(function(o,ix){
+      var b=document.createElement("button");
+      b.className="opt";
+      b.innerHTML='<span class="ltr">'+"ABCDEFGHIJ".charAt(ix)+'</span>'+o;
+      b.onclick=function(){ chalJudge(ix); };
+      box.appendChild(b);
+    });
+    clearInterval(chTick);
+    chTick=setInterval(function(){
+      var left=CH.secs-(Date.now()-CH.t0)/1000;
+      $("clockbar").style.width=Math.max(0,left/CH.secs*100)+"%";
+      var el2=$("vs").querySelector(".sc");
+      if(el2) el2.textContent=Math.max(0,Math.ceil(left))+"s";
+      if(left<=0){ clearInterval(chTick); chalEnd(); }
+    },100);
+  }
+  function chalJudge(pick){
+    var q=CH.qs[CH.i], ok=pick===CH.built.correct;
+    if(ok) CH.correct++;
+    var btns=$("options").querySelectorAll(".opt");
+    for(var i=0;i<btns.length;i++){
+      btns[i].disabled=true;
+      if(i===CH.built.correct) btns[i].className="opt right";
+      else if(i===pick) btns[i].className="opt wrong";
+    }
+    chime(ok);
+    setTimeout(function(){
+      if(CH.correct>=CH.need){ chalEnd(); return; }
+      if(Date.now()-CH.t0>=CH.secs*1000){ chalEnd(); return; }
+      CH.i++;
+      if(CH.i>=CH.qs.length){ chalEnd(); return; }
+      paintChal();
+    },ok?260:420);
+  }
+  function chalEnd(){
+    clearInterval(chTick);
+    var passed=CH.correct>=CH.need, T=tierByLevel(CH.tier);
+    if(passed){
+      var climb=climbPts(), nxt=null;
+      TIERS.forEach(function(x){ if(climb<x.opens) nxt=x; });
+      var target=nxt?nxt.opens+5:climb+35;
+      store.set("climb",+target.toFixed(1));
+      store.set("gate"+CH.tier,true);
+    }
+    $("play").hidden=true; $("end").hidden=false;
+    $("endcat").textContent="The gate \u00b7 Level "+CH.tier;
+    $("endpct").textContent=CH.need+" needed in sixty seconds";
+    $("endvs").innerHTML="";
+    $("score").textContent=CH.correct;
+    $("correct").textContent=CH.correct+" / 20";
+    $("fastest").textContent=((Date.now()-CH.t0)/1000).toFixed(0)+"s";
+    $("rating").textContent=Math.round(climbPts());
+    $("delta").textContent=passed?"up":"\u2013";
+    $("verdict").textContent=passed?
+      "The gate opened. You are up to Level "+currentLevel()+".":
+      CH.correct+" of twenty. The gate stays shut.";
+    $("home2").textContent="Back to the map";
+    paintMe();
   }
 
   /* ---------- boot ---------- */
