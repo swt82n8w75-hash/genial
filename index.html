@@ -135,6 +135,12 @@
   .hx text{font-family:"Helvetica Neue",Arial,sans-serif;fill:#7c8699;font-size:9px;text-anchor:middle}
   .hx.held text{fill:#f2efe6;font-weight:600}
   .hx.reach text{fill:#d9d3c2}
+  .modes{display:flex;gap:6px;margin:10px 0 0}
+  .modes button{flex:1;background:transparent;border:1px solid var(--line);color:var(--dim);
+    padding:9px 6px;border-radius:2px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    font-family:inherit;cursor:pointer}
+  .modes button.on{border-color:var(--gold);color:var(--gold);background:#1a1608}
+  .modehint{font-size:11.5px;color:var(--dim);margin:8px 0 0;line-height:1.5}
   .stake{font-size:11.5px;color:var(--gold);margin:9px 0 0;letter-spacing:.02em}
   .stake b{font-weight:600}
   .vs{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 0;
@@ -161,7 +167,13 @@
       <button class="snd" id="tolist">subjects</button>
     </div>
     <div class="climb"><div class="climbbar" id="climbbar"></div></div>
-    <div class="climbtxt" id="climbtxt">0 of 50 to Level 2</div>
+    <div class="climbtxt" id="climbtxt">0 of 25 to Level 2</div>
+    <div class="modes" id="modes">
+      <button data-mode="solo" class="on">computer</button>
+      <button data-mode="live">live</button>
+      <button data-mode="send">challenge</button>
+    </div>
+    <div class="modehint" id="modehint">Five questions, twelve seconds each.</div>
     <div class="hexstage" id="hexstage"></div>
     <p class="note">The lattice. You can only take a hexagon that touches one you hold. Win it and the ones around it open. Fifty points opens Level 2 above you.</p>
   </section>
@@ -2006,10 +2018,10 @@ Object.assign(BANK,{
   $("sound").className="snd"+(soundOn?"":" off");
 
   /* ---------- play ---------- */
-  var S={}, CLOCK=20, tick=null, t0=0;
+  var S={}, CLOCK=12, tick=null, t0=0, MODE='solo', PENDING=null;
   var COUNT={low:4,medium:6,hard:8,genial:10};
   var TIER={low:1,medium:2,hard:3,genial:5};
-  function tierOf(i){ return i<3?"low":i<6?"medium":i<9?"hard":"genial"; }
+  function tierOf(i){ return i<1?"low":i<3?"medium":i<4?"hard":"genial"; }
   var TORDER=["low","medium","hard","genial"];
   function tierAt(i){
     var t=tierOf(i);
@@ -2026,7 +2038,7 @@ Object.assign(BANK,{
     var nm=pool[Math.floor(Math.random()*pool.length)];
     var rt=Math.max(700,r+Math.round((Math.random()-0.5)*140));
     var res=[];
-    for(var i=0;i<10;i++){
+    for(var i=0;i<5;i++){
       var t=tierOf(i);
       var p=0.46+(rt-1000)/1500+(t==="low"?0.22:t==="medium"?0.06:t==="hard"?-0.08:-0.16);
       p=Math.max(0.22,Math.min(0.86,p));
@@ -2047,14 +2059,34 @@ Object.assign(BANK,{
       whoHTML(S.opp.name,S.opp.avatar,0,S.opp.score,false);
   }
 
+  function parseChallenge(){
+    var h=location.hash||"";
+    if(h.indexOf("c=")<0) return null;
+    var o={}; h.replace(/^#/,"").split("&").forEach(function(p){
+      var kv=p.split("="); o[kv[0]]=decodeURIComponent(kv[1]||"");
+    });
+    if(!o.c||!BANK[o.c]) return null;
+    var qs=(o.i||"").split("-").map(Number).filter(function(n){ return n>=0&&n<BANK[o.c].q.length; });
+    if(qs.length<5) return null;
+    return {cat:o.c,score:parseFloat(o.s)||0,qs:qs.slice(0,5)};
+  }
   function start(cat,fromMap,floor){
     ac();
-    S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[]};
+    var qs=[]; for(var qi=0;qi<BANK[cat].q.length;qi++) qs.push(qi);
+    qs.sort(function(){ return Math.random()-0.5; });
+    S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[],
+       mode:MODE,qs:qs.slice(0,5),oppAt:0};
     S.opp=makeOpponent();
+    S.target=null;
+    if(PENDING){
+      S.qs=PENDING.qs.slice(0,5); S.mode="send"; S.target=PENDING.score;
+      $("stake").hidden=false;
+      $("stake").innerHTML='A challenge from <b>'+S.opp.name+'</b> \u00b7 beat '+PENDING.score.toFixed(1);
+    }
     $("home").hidden=true; $("end").hidden=true; $("mapwrap").hidden=true; $("play").hidden=false;
     $("cat").textContent=cat;
     var p=$("pips"); p.innerHTML="";
-    for(var i=0;i<10;i++){ p.appendChild(document.createElement("i")); }
+    for(var i=0;i<5;i++){ p.appendChild(document.createElement("i")); }
     paintVs();
     if(S.map){
       var cells=gridCells(R1,C1), mine=null;
@@ -2072,12 +2104,12 @@ Object.assign(BANK,{
   }
   function ask(){
     S.answered=false;
-    var q=BANK[S.cat].q[S.i], t=tierAt(S.i);
-    $("count").textContent=(S.i+1)+" / 10";
+    var q=BANK[S.cat].q[S.qs[S.i]], t=tierAt(S.i);
+    $("count").textContent=(S.i+1)+" / 5";
     $("q").textContent=q[0];
     var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>"+t+"</span>";
     $("feedback").innerHTML=""; $("next").hidden=true; $("heard").textContent="";
-    S.built=buildOptions(S.cat,S.i,COUNT[t]);
+    S.built=buildOptions(S.cat,S.qs[S.i],COUNT[t]);
     var box=$("options"); box.innerHTML=""; box.className="opts n"+COUNT[t];
     S.built.options.forEach(function(o,ix){
       var b=document.createElement("button");
@@ -2088,6 +2120,7 @@ Object.assign(BANK,{
     });
     $("pass").hidden=false;
     paintPips(); startClock();
+    if(S.mode==="live") armOpponent();
   }
   function paintPips(){
     var p=$("pips").children;
@@ -2109,19 +2142,44 @@ Object.assign(BANK,{
       if(left<=0){ clearInterval(tick); if(!S.answered) judge(-1,true); }
     },100);
   }
+  function armOpponent(){
+    clearTimeout(S.oppTimer);
+    var r=ratings()[S.cat]||1000;
+    var base=4200-(r-1000)*0.9;
+    S.oppAt=Math.max(1400,Math.min(9500,base+Math.random()*1800));
+    S.oppTimer=setTimeout(function(){
+      if(S.answered) return;
+      S.answered=true; clearInterval(tick);
+      var t=tierAt(S.i), pts=+TIER[t].toFixed(1);
+      S.opp.score+=pts; S.opp.got++; S.opp.res[S.i]={ok:true,pts:pts};
+      var btns=$("options").querySelectorAll(".opt");
+      for(var i=0;i<btns.length;i++){ btns[i].disabled=true; if(i===S.built.correct) btns[i].className="opt right"; }
+      $("pass").hidden=true;
+      $("feedback").innerHTML='<div class="fb no"><span class="pts">0</span><b>Taken</b>'+
+        S.opp.name+' got there first, in '+(S.oppAt/1000).toFixed(1)+' seconds. '+
+        '<span style="color:var(--dim);font-size:13px">The answer is <strong>'+primary(BANK[S.cat].q[S.qs[S.i]][1])+'</strong></span></div>';
+      $("next").hidden=false; $("next").textContent=S.i===4?"See the result":"Next";
+      paintPips(); paintVs(); chime(false);
+    },S.oppAt);
+  }
   function mult(secs){ return secs<CLOCK/3?1.5:secs<CLOCK*2/3?1:0.5; }
   function judge(pick,timedOut){
     if(S.answered) return;
-    S.answered=true; clearInterval(tick);
+    S.answered=true; clearInterval(tick); clearTimeout(S.oppTimer);
     var secs=Math.min(CLOCK,(Date.now()-t0)/1000);
-    var q=BANK[S.cat].q[S.i], t=tierAt(S.i);
+    var q=BANK[S.cat].q[S.qs[S.i]], t=tierAt(S.i);
     var ok=pick===S.built.correct;
     var pts=ok?+(TIER[t]*mult(secs)).toFixed(1):0;
     S.score+=pts; if(ok) S.correct++;
     S.results[S.i]=ok;
     if(ok&&(S.fastest===null||secs<S.fastest)) S.fastest=secs;
-    var their=S.opp.res[S.i];
-    S.opp.score+=their.pts; if(their.ok) S.opp.got++;
+    var their=S.opp.res[S.i]||{ok:false,pts:0};
+    if(S.mode==="live"){
+      if(ok){ S.opp.res[S.i]={ok:false,pts:0}; their={ok:false,pts:0,beaten:true}; }
+      else { var tp=+TIER[t].toFixed(1); S.opp.score+=tp; S.opp.got++; their={ok:true,pts:tp}; }
+    } else {
+      S.opp.score+=their.pts; if(their.ok) S.opp.got++;
+    }
     var btns=$("options").querySelectorAll(".opt");
     for(var i=0;i<btns.length;i++){
       btns[i].disabled=true;
@@ -2133,14 +2191,15 @@ Object.assign(BANK,{
       '<span class="pts">'+(ok?"+"+pts:"0")+'</span>'+
       '<b>'+(ok?"Correct":(timedOut?"Time":"No"))+'</b>'+
       (ok?"":"The answer is <strong>"+primary(q[1])+"</strong>. ")+
-      '<span style="color:var(--dim);font-size:13px">'+S.opp.name+
-      (their.ok?' took it for '+their.pts:' missed it')+'</span></div>';
+      '<span style="color:var(--dim);font-size:13px">'+
+      (S.mode==="live"?(ok?'You were quicker than '+S.opp.name:S.opp.name+' took the point'):
+        S.opp.name+(their.ok?' took it for '+their.pts:' missed it'))+'</span></div>';
     $("next").hidden=false;
-    $("next").textContent=S.i===9?"See the result":"Next";
+    $("next").textContent=S.i===4?"See the result":"Next";
     paintPips(); paintVs(); chime(ok);
   }
   $("pass").onclick=function(){ judge(-1,false); };
-  $("next").onclick=function(){ if(S.i<9){ S.i++; ask(); } else { finish(); } };
+  $("next").onclick=function(){ if(S.i<4){ S.i++; ask(); } else { finish(); } };
 
   /* ---------- voice ---------- */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2245,26 +2304,46 @@ Object.assign(BANK,{
     clearInterval(tick);
     $("play").hidden=true; $("end").hidden=false;
     var rt=ratings(), before=rt[S.cat]||1000;
-    var delta=Math.round((S.correct/10-0.5)*60);
+    var delta=Math.round((S.correct/5-0.5)*60);
     var after=Math.max(600,before+delta);
     rt[S.cat]=after; store.set("ratings",rt);
     $("endcat").textContent=S.cat;
-    $("endpct").textContent="of 34.5 with speed";
+    $("endpct").textContent="of 37.5 with speed";
     $("endvs").innerHTML=whoHTML(me.name,me.avatar,grade(),S.score,true)+
       '<span class="mid">vs</span>'+whoHTML(S.opp.name,S.opp.avatar,0,S.opp.score,false);
     $("score").textContent=S.score.toFixed(1);
-    $("correct").textContent=S.correct+" / 10";
+    $("correct").textContent=S.correct+" / 5";
     $("fastest").textContent=S.fastest!==null?S.fastest.toFixed(1)+"s":"\u2013";
     $("rating").textContent=after;
     $("delta").textContent=(delta>=0?"+":"")+delta;
     var won=S.score>S.opp.score;
-    $("verdict").textContent = won ?
-      (S.correct>=9?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
-      : (S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it.");
+    if(S.target!==null&&S.target!==undefined){
+      $("verdict").textContent = S.score>S.target ? "You beat "+S.opp.name+"'s "+S.target.toFixed(1)+"."
+        : S.score===S.target ? "Level with "+S.opp.name+"'s "+S.target.toFixed(1)+"."
+        : S.opp.name+" still holds it, "+S.target.toFixed(1)+" to your "+S.score.toFixed(1)+".";
+    } else {
+      $("verdict").textContent = won ?
+        (S.correct>=5?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
+        : (S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it.");
+    }
+    var oldSend=$("sendchal"); if(oldSend) oldSend.remove();
+    if(S.mode==="send" && (S.target===null||S.target===undefined)){
+      var link=location.origin+location.pathname+"#c="+encodeURIComponent(S.cat)+
+        "&s="+S.score.toFixed(1)+"&i="+S.qs.join("-");
+      var btn=document.createElement("button");
+      btn.id="sendchal"; btn.className="btn"; btn.style.marginTop="10px";
+      btn.textContent="Send this challenge";
+      btn.onclick=function(){
+        if(navigator.share){ navigator.share({title:"Geniality",text:"Beat "+S.score.toFixed(1)+" in "+S.cat,url:link}); }
+        else if(navigator.clipboard){ navigator.clipboard.writeText(link); btn.textContent="Copied. Paste it to them."; }
+        else { btn.textContent=link; }
+      };
+      $("end").insertBefore(btn,$("home2"));
+    }
     if(S.map){
       var cl=climbPts()+S.score;
       store.set("climb",+cl.toFixed(1));
-      if(S.correct>=6){
+      if(S.correct>=3){
         var h=heldList();
         if(h.indexOf(S.cat)<0) h.push(S.cat);
         store.set("held",h);
@@ -2375,6 +2454,26 @@ Object.assign(BANK,{
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=true;
     $("mapwrap").hidden=false; drawMap();
   }
+  var MODEHINT={solo:"Five questions, twelve seconds each. Your score against theirs.",
+    live:"A race. Whoever answers first takes the point. Miss it and they take it.",
+    send:"Play five, then send the challenge. They have to beat your score."};
+  var modeBtns=$("modes").querySelectorAll("button");
+  for(var mb=0;mb<modeBtns.length;mb++){
+    (function(bn){
+      bn.onclick=function(){
+        MODE=bn.getAttribute("data-mode"); store.set("mode",MODE);
+        for(var k=0;k<modeBtns.length;k++) modeBtns[k].className=modeBtns[k]===bn?"on":"";
+        $("modehint").textContent=MODEHINT[MODE];
+      };
+    })(modeBtns[mb]);
+  }
+  MODE=store.get("mode","solo");
+  for(var mb2=0;mb2<modeBtns.length;mb2++){
+    if(modeBtns[mb2].getAttribute("data-mode")===MODE){
+      modeBtns[mb2].className="on";
+      $("modehint").textContent=MODEHINT[MODE];
+    } else modeBtns[mb2].className="";
+  }
   $("tolist").onclick=function(){ $("mapwrap").hidden=true; $("home").hidden=false; drawList(); };
   function mapButton(){
     var b=document.createElement("button");
@@ -2392,6 +2491,9 @@ Object.assign(BANK,{
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
   }
   mapButton();
+  PENDING=parseChallenge();
+  if(PENDING){ start(PENDING.cat,false,0); }
+
   if(me.name&&me.avatar!==null){ showMap(); }
 })();
 </script>
