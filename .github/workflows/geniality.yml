@@ -69,6 +69,7 @@ jobs:
             DEVELOPMENT_TEAM=3GU37GL28P \
             CODE_SIGN_STYLE=Automatic \
             TARGETED_DEVICE_FAMILY=1 \
+            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             MARKETING_VERSION=1.0.0 \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
       - name: Export the IPA for the App Store
