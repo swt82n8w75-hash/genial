@@ -123,6 +123,20 @@
   .agrid button .ava{border-radius:3px;border:2px solid transparent}
   .agrid button.on .ava{border-color:var(--gold)}
   .rgt{display:flex;align-items:center;gap:10px}
+  .maphead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px}
+  .lvlname{font-family:Georgia,serif;font-size:19px}
+  .climb{height:3px;background:#1b2130;border-radius:2px;overflow:hidden}
+  .climbbar{height:100%;width:0;background:linear-gradient(90deg,#8a6b1e,#e2b64c);transition:width .4s}
+  .climbtxt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:7px 0 4px}
+  .hexstage{margin:6px -14px 0}
+  .hexstage svg{display:block;width:100%;height:auto}
+  .hx{cursor:default}
+  .hx.reach{cursor:pointer}
+  .hx text{font-family:"Helvetica Neue",Arial,sans-serif;fill:#7c8699;font-size:9px;text-anchor:middle}
+  .hx.held text{fill:#f2efe6;font-weight:600}
+  .hx.reach text{fill:#d9d3c2}
+  .stake{font-size:11.5px;color:var(--gold);margin:9px 0 0;letter-spacing:.02em}
+  .stake b{font-weight:600}
   .vs{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 0;
       font-size:13px;color:var(--dim)}
   .vs .who{display:flex;align-items:center;gap:7px;min-width:0}
@@ -141,6 +155,17 @@
 <body>
 <div class="wrap">
 
+  <section id="mapwrap" hidden>
+    <div class="maphead">
+      <span class="lvlname" id="lvlname">Level 1 · The Ground</span>
+      <button class="snd" id="tolist">subjects</button>
+    </div>
+    <div class="climb"><div class="climbbar" id="climbbar"></div></div>
+    <div class="climbtxt" id="climbtxt">0 of 50 to Level 2</div>
+    <div class="hexstage" id="hexstage"></div>
+    <p class="note">The lattice. You can only take a hexagon that touches one you hold. Win it and the ones around it open. Fifty points opens Level 2 above you.</p>
+  </section>
+
   <section id="home">
     <div class="head">
       <div class="brand"><span class="gem dia"></span><h1 class="mark">Geniality</h1></div>
@@ -158,6 +183,7 @@
     <div class="pips" id="pips"></div>
     <div class="top"><span id="cat"></span><span class="rgt"><span id="count"></span><button id="sound" class="snd" aria-label="Sound">sound on</button></span></div>
     <div class="vs" id="vs"></div>
+    <div class="stake" id="stake" hidden></div>
     <div class="clock"><i id="clockbar"></i></div>
     <div class="q" id="q"></div>
     <div><span class="tier low" id="tier"><span>low</span></span></div>
@@ -1849,8 +1875,7 @@ Object.assign(BANK,{
     me.name=n||me.name||"You";
     if(me.avatar===null){ me.avatar=0; }
     store.set("name",me.name); store.set("avatar",me.avatar);
-    $("sheet").hidden=true; paintMe(); drawList();
-    if(!hand.length) openHand();
+    $("sheet").hidden=true; paintMe(); drawList(); showMap();
   };
 
   /* ---------- your three ---------- */
@@ -1985,6 +2010,12 @@ Object.assign(BANK,{
   var COUNT={low:4,medium:6,hard:8,genial:10};
   var TIER={low:1,medium:2,hard:3,genial:5};
   function tierOf(i){ return i<3?"low":i<6?"medium":i<9?"hard":"genial"; }
+  var TORDER=["low","medium","hard","genial"];
+  function tierAt(i){
+    var t=tierOf(i);
+    if(S.map && S.floor && TORDER.indexOf(t)<S.floor) t=TORDER[S.floor];
+    return t;
+  }
 
   var NAMES=["Marguerite","Hollis","Ptolemy","Beatrix","Cormac","Idris","Rosalind","Ambrose","Saoirse",
     "Keziah","Dunstan","Verity","Ignatius","Marisol","Tobias","Wren","Cressida","Barnaby","Linnea",
@@ -2016,20 +2047,32 @@ Object.assign(BANK,{
       whoHTML(S.opp.name,S.opp.avatar,0,S.opp.score,false);
   }
 
-  function start(cat){
+  function start(cat,fromMap,floor){
     ac();
-    S={cat:cat,i:0,score:0,correct:0,fastest:null,answered:false,results:[]};
+    S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[]};
     S.opp=makeOpponent();
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=false;
     $("cat").textContent=cat;
     var p=$("pips"); p.innerHTML="";
     for(var i=0;i<10;i++){ p.appendChild(document.createElement("i")); }
     paintVs();
+    if(S.map){
+      var nb=0;
+      var cells=triCells(5), mine=null;
+      cells.forEach(function(c,i){ if(ENTRY[i]===S.cat) mine=c; });
+      if(mine) nb=neighbours(mine,5).filter(function(x){
+        var ix=cells.map(function(c){return c.q+","+c.r;}).indexOf(x.q+","+x.r);
+        return ix>=0 && heldList().indexOf(ENTRY[ix])<0;
+      }).length;
+      $("stake").hidden=false;
+      $("stake").innerHTML='Win this to hold <b>'+S.cat+'</b>'+(nb?' and open '+nb+' more':'')+
+        ' \u00b7 questions from '+TORDER[S.floor];
+    } else { $("stake").hidden=true; }
     ask();
   }
   function ask(){
     S.answered=false;
-    var q=BANK[S.cat].q[S.i], t=tierOf(S.i);
+    var q=BANK[S.cat].q[S.i], t=tierAt(S.i);
     $("count").textContent=(S.i+1)+" / 10";
     $("q").textContent=q[0];
     var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>"+t+"</span>";
@@ -2071,7 +2114,7 @@ Object.assign(BANK,{
     if(S.answered) return;
     S.answered=true; clearInterval(tick);
     var secs=Math.min(CLOCK,(Date.now()-t0)/1000);
-    var q=BANK[S.cat].q[S.i], t=tierOf(S.i);
+    var q=BANK[S.cat].q[S.i], t=tierAt(S.i);
     var ok=pick===S.built.correct;
     var pts=ok?+(TIER[t]*mult(secs)).toFixed(1):0;
     S.score+=pts; if(ok) S.correct++;
@@ -2218,10 +2261,140 @@ Object.assign(BANK,{
     $("verdict").textContent = won ?
       (S.correct>=9?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
       : (S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it.");
+    if(S.map){
+      var cl=climbPts()+S.score;
+      store.set("climb",+cl.toFixed(1));
+      if(S.correct>=6){
+        var h=heldList();
+        if(h.indexOf(S.cat)<0) h.push(S.cat);
+        store.set("held",h);
+      }
+      if(cl>=25) store.set("lvl2",true);
+      $("home2").textContent="Back to the map";
+    } else { $("home2").textContent="Subjects"; }
     paintMe(); renderSafe();
   }
   $("again").onclick=function(){ start(S.cat); };
-  $("home2").onclick=function(){ $("end").hidden=true; $("home").hidden=false; drawList(); };
+  $("home2").onclick=function(){
+    $("end").hidden=true;
+    if(S.map){ showMap(); } else { $("home").hidden=false; drawList(); }
+  };
+
+  /* ---------- the map: a lattice of hexagons ---------- */
+  var ENTRY=CATS.slice(0,25), SPECIAL=CATS.slice(25);
+  function triCells(n){
+    var out=[],r,q;
+    for(r=0;r<n;r++){ for(q=-r;q<=r;q++) out.push({q:q,r:r}); }
+    return out;
+  }
+  function key(c){ return c.q+","+c.r; }
+  function neighbours(c,n){
+    var cand=[[c.q-1,c.r],[c.q+1,c.r],[c.q,c.r-1],[c.q+1,c.r-1],[c.q,c.r+1],[c.q-1,c.r+1]],out=[];
+    cand.forEach(function(p){
+      var q=p[0],r=p[1];
+      if(r<0||r>=n) return;
+      if(Math.abs(q)>r) return;
+      out.push({q:q,r:r});
+    });
+    return out;
+  }
+  function heldList(){ return store.get("held",[]); }
+  function climbPts(){ return store.get("climb",0); }
+  function lvl2Open(){ return store.get("lvl2",false); }
+  function wrapName(n,max){
+    var w=n.split(" "),lines=[],cur="";
+    w.forEach(function(x){
+      if((cur+" "+x).trim().length<=max) cur=(cur+" "+x).trim();
+      else { if(cur) lines.push(cur); cur=x; }
+    });
+    if(cur) lines.push(cur);
+    return lines.slice(0,3);
+  }
+  function drawMap(){
+    var held=heldList(), climb=climbPts(), open=lvl2Open();
+    $("lvlname").textContent = open ? "Level 2 \u00b7 The Ascent" : "Level 1 \u00b7 The Ground";
+    var pct=Math.min(100,climb/25*100);
+    $("climbbar").style.width=pct+"%";
+    $("climbtxt").textContent = open ? "Level 2 open \u00b7 "+climb+" points"
+      : climb+" of 25 to Level 2";
+
+    var n1=5, s1=40, n2=10, s2=22;
+    var cells1=triCells(n1), cells2=triCells(n2);
+    var gap=76;
+    var h1=1.5*s1*(n1-1)+2*s1, h2=1.5*s2*(n2-1)+2*s2;
+    var off1=h2+gap;
+    var halfW=Math.max(Math.sqrt(3)*s1*(n1-1)/2, Math.sqrt(3)*s2*(n2-1)/2)+s1;
+    var W=halfW*2, H=h1+h2+gap;
+
+    // reachable set
+    var reach={};
+    var heldCells={};
+    cells1.forEach(function(c,i){
+      if(held.indexOf(ENTRY[i])>=0) heldCells[key(c)]=i;
+    });
+    if(!Object.keys(heldCells).length){
+      cells1.forEach(function(c,i){ if(c.r===n1-1) reach[key(c)]=i; });
+    } else {
+      cells1.forEach(function(c,i){
+        if(held.indexOf(ENTRY[i])>=0) return;
+        neighbours(c,n1).some(function(nb){ return heldCells.hasOwnProperty(key(nb)); })
+          && (reach[key(c)]=i);
+      });
+    }
+
+    var parts=[];
+    function hexPath(cx,cy,s){
+      var pts=[[0,-s],[s*0.866,-s/2],[s*0.866,s/2],[0,s],[-s*0.866,s/2],[-s*0.866,-s/2]];
+      return pts.map(function(p){ return (cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); }).join(" ");
+    }
+    function cellSVG(c,i,s,oy,list,isLevel2){
+      var cx=Math.sqrt(3)*s*(c.q+c.r/2), cy=1.5*s*c.r+oy;
+      var k=key(c), name=list[i];
+      var isHeld=held.indexOf(name)>=0;
+      var isReach=!isLevel2 && reach.hasOwnProperty(k);
+      var cls="hx"+(isHeld?" held":isReach?" reach":"");
+      var fill=isHeld?"#1d1a10":isReach?"#141a26":"#0d1118";
+      var stroke=isHeld?"#e2b64c":isReach?"#3a4256":"#1b2130";
+      var sw=isHeld?1.7:isReach?1.2:0.9;
+      var floorv=isLevel2?3:(c.r>=3?1:c.r>=1?2:3);
+      var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+floorv+'">'+
+        '<polygon points="'+hexPath(cx,cy,s)+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+      if(isHeld||isReach){
+        var lines=wrapName(name,s>30?10:8);
+        var fs=s>30?9:6.5, lh=fs+2.5, y0=cy-(lines.length-1)*lh/2+fs*0.35;
+        lines.forEach(function(ln,ix){
+          g+='<text x="'+cx.toFixed(1)+'" y="'+(y0+ix*lh).toFixed(1)+'" style="font-size:'+fs+'px">'+ln+'</text>';
+        });
+      }
+      return g+'</g>';
+    }
+    cells2.forEach(function(c,i){ parts.push(cellSVG(c,i,s2,0,SPECIAL,true)); });
+    cells1.forEach(function(c,i){ parts.push(cellSVG(c,i,s1,off1,ENTRY,false)); });
+
+    $("hexstage").innerHTML='<svg viewBox="'+(-halfW)+' 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'
+      +parts.join("")+'</svg>';
+    var nodes=$("hexstage").querySelectorAll(".hx.reach");
+    for(var i2=0;i2<nodes.length;i2++){
+      (function(nd){
+        nd.addEventListener("click",function(){
+          var cat=nd.getAttribute("data-cat");
+          if(cat) start(cat,true,+nd.getAttribute("data-floor")||0);
+        });
+      })(nodes[i2]);
+    }
+  }
+  function showMap(){
+    $("home").hidden=true; $("end").hidden=true; $("play").hidden=true;
+    $("mapwrap").hidden=false; drawMap();
+  }
+  $("tolist").onclick=function(){ $("mapwrap").hidden=true; $("home").hidden=false; drawList(); };
+  function mapButton(){
+    var b=document.createElement("button");
+    b.className="snd"; b.textContent="the map"; b.style.marginLeft="8px";
+    b.onclick=function(){ showMap(); };
+    var head=document.querySelector("#home .head");
+    if(head) head.appendChild(b);
+  }
 
   /* ---------- boot ---------- */
   document.querySelector("#home .tag").textContent = CATS.length+
@@ -2229,7 +2402,9 @@ Object.assign(BANK,{
   drawChips(); drawList(); paintMe();
   if(!me.name||me.avatar===null){
     drawAgrid(); $("pname").value=me.name||""; $("sheet").hidden=false;
-  } else if(!hand.length){ openHand(); }
+  }
+  mapButton();
+  if(me.name&&me.avatar!==null){ showMap(); }
 })();
 </script>
 </body>
