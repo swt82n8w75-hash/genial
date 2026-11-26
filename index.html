@@ -2019,43 +2019,80 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     set:function(k,v){ try{ localStorage.setItem("genial."+k,JSON.stringify(v)); }catch(e){} }
   };
 
-  /* ---------- avatars: 72 faces, five grades ---------- */
+  /* ---------- avatars: 40 objects, twelve finishes, five grades ---------- */
   var PAL=[["#2b3a55","#8fb8d8"],["#3a2b45","#c9a6e0"],["#1f3b32","#7fd6a8"],["#4a2f22","#e8b06a"],
            ["#22303f","#7fc4d6"],["#3d2233","#e08fb0"],["#2f3320","#c3d67f"],["#3a3520","#e2b64c"],
            ["#241f3a","#9f8fe0"],["#3a2320","#d98a72"],["#1e3238","#79c7b8"],["#33301f","#d9c47a"]];
   var GRADE=[["#2a3142","#2a3142"],["#8a5a2b","#c98a4b"],["#8d94a3","#d6dbe4"],
              ["#a8802a","#e2b64c"],["#5f7fa8","#bfe0ff"]];
+  /* ---------- the faces are objects, Monopoly fashion ---------- */
+  var TOKENS=[
+    ["cheese", '<path d="M12 46 L40 20 L52 28 L52 46 Z" fill="{A}"/><circle cx="24" cy="40" r="2.4" fill="{B}"/><circle cx="34" cy="34" r="2" fill="{B}"/><circle cx="44" cy="40" r="2.6" fill="{B}"/>'],
+    ["shoe", '<path d="M18 20 h9 v13 q0 4 5 6 l11 5 q4 2 2 6 H18 Z" fill="{A}"/><path d="M18 46 h27" stroke="{B}" stroke-width="2"/>'],
+    ["wasp", '<ellipse cx="34" cy="34" rx="10" ry="7" fill="{A}"/><path d="M28 30 h12 M27 36 h13" stroke="{B}" stroke-width="2"/><ellipse cx="34" cy="24" rx="7" ry="4" fill="#fff" opacity="0.75"/><path d="M44 34 l6 3 -6 3 Z" fill="{B}"/>'],
+    ["nail", '<rect x="30" y="16" width="5" height="28" rx="1.5" fill="{A}"/><rect x="23" y="12" width="19" height="5" rx="2" fill="{A}"/><path d="M30 44 h5 l-2.5 6 Z" fill="{A}"/>'],
+    ["top hat", '<rect x="15" y="41" width="34" height="5" rx="2.5" fill="{A}"/><rect x="22" y="14" width="20" height="26" rx="2" fill="{A}"/><rect x="22" y="32" width="20" height="4" fill="{B}"/>'],
+    ["thimble", '<path d="M22 46 q0-24 10-24 t10 24 Z" fill="{A}"/><circle cx="28" cy="34" r="1.6" fill="{B}"/><circle cx="36" cy="34" r="1.6" fill="{B}"/><circle cx="32" cy="42" r="1.6" fill="{B}"/>'],
+    ["iron", '<path d="M15 40 h34 l-4-11 q-2-6-10-6 h-9 q-9 0-9 8 Z" fill="{A}"/><path d="M15 45 h34" stroke="{B}" stroke-width="2.5"/>'],
+    ["paw", '<circle cx="32" cy="36" r="9" fill="{A}"/><circle cx="22" cy="27" r="4" fill="{A}"/><circle cx="30" cy="22" r="4" fill="{A}"/><circle cx="39" cy="24" r="4" fill="{A}"/><circle cx="44" cy="31" r="4" fill="{A}"/>'],
+    ["cat", '<circle cx="32" cy="35" r="11" fill="{A}"/><path d="M22 28 l2-10 8 6 Z M42 28 l-2-10 -8 6 Z" fill="{A}"/><circle cx="28" cy="34" r="1.8" fill="{B}"/><circle cx="36" cy="34" r="1.8" fill="{B}"/>'],
+    ["ship", '<path d="M14 38 h36 l-6 10 H20 Z" fill="{A}"/><rect x="31" y="14" width="3" height="24" fill="{A}"/><path d="M34 16 L48 32 H34 Z" fill="{B}"/>'],
+    ["car", '<path d="M14 38 h36 v6 H14 Z" fill="{A}"/><path d="M22 38 l4-9 h14 l5 9 Z" fill="{A}"/><circle cx="22" cy="46" r="4" fill="{B}"/><circle cx="42" cy="46" r="4" fill="{B}"/>'],
+    ["barrow", '<path d="M16 24 h26 l-4 14 H20 Z" fill="{A}"/><circle cx="40" cy="46" r="5" fill="{B}"/><path d="M16 26 L10 18" stroke="{A}" stroke-width="3"/>'],
+    ["key", '<circle cx="24" cy="24" r="8" fill="none" stroke="{A}" stroke-width="5"/><path d="M30 30 L46 46" stroke="{A}" stroke-width="5"/><path d="M40 40 l-4 4 M44 44 l-4 4" stroke="{A}" stroke-width="4"/>'],
+    ["teapot", '<circle cx="32" cy="36" r="12" fill="{A}"/><path d="M44 34 l8-4 v8 Z" fill="{A}"/><path d="M20 30 q-8 0-6 8" fill="none" stroke="{A}" stroke-width="3"/><circle cx="32" cy="20" r="3" fill="{B}"/>'],
+    ["rocket", '<path d="M32 10 q9 12 9 24 H23 q0-12 9-24 Z" fill="{A}"/><circle cx="32" cy="26" r="3.6" fill="{B}"/><path d="M23 34 l-7 8 h7 Z M41 34 l7 8 h-7 Z" fill="{A}"/><path d="M28 42 h8 l-4 8 Z" fill="{B}"/>'],
+    ["anchor", '<circle cx="32" cy="16" r="4" fill="none" stroke="{A}" stroke-width="3.5"/><path d="M32 20 v24" stroke="{A}" stroke-width="4"/><path d="M18 36 q14 14 28 0" fill="none" stroke="{A}" stroke-width="4"/><path d="M22 30 h20" stroke="{A}" stroke-width="3"/>'],
+    ["bell", '<path d="M20 40 q0-18 12-18 t12 18 Z" fill="{A}"/><rect x="17" y="40" width="30" height="4" rx="2" fill="{A}"/><circle cx="32" cy="48" r="3.5" fill="{B}"/>'],
+    ["crown", '<path d="M16 44 l2-20 8 8 6-12 6 12 8-8 2 20 Z" fill="{A}"/><circle cx="32" cy="22" r="2" fill="{B}"/>'],
+    ["dice", '<rect x="18" y="18" width="28" height="28" rx="5" fill="{A}"/><circle cx="26" cy="26" r="2.6" fill="{B}"/><circle cx="38" cy="38" r="2.6" fill="{B}"/><circle cx="32" cy="32" r="2.6" fill="{B}"/>'],
+    ["clock", '<circle cx="32" cy="32" r="15" fill="none" stroke="{A}" stroke-width="4"/><path d="M32 24 v9 l7 4" stroke="{A}" stroke-width="3.5" fill="none"/>'],
+    ["camera", '<rect x="14" y="24" width="36" height="22" rx="4" fill="{A}"/><circle cx="32" cy="35" r="7" fill="{B}"/><rect x="24" y="19" width="10" height="5" rx="2" fill="{A}"/>'],
+    ["guitar", '<circle cx="24" cy="40" r="9" fill="{A}"/><circle cx="34" cy="30" r="7" fill="{A}"/><rect x="36" y="12" width="5" height="18" rx="2" transform="rotate(18 38 21)" fill="{A}"/><circle cx="24" cy="40" r="3" fill="{B}"/>'],
+    ["umbrella", '<path d="M14 32 a18 18 0 0 1 36 0 Z" fill="{A}"/><path d="M32 32 v14 q0 6-7 4" fill="none" stroke="{A}" stroke-width="3.5"/>'],
+    ["fish", '<path d="M16 32 q12-12 24 0 q-12 12-24 0 Z" fill="{A}"/><path d="M40 32 l10-7 v14 Z" fill="{A}"/><circle cx="24" cy="30" r="1.8" fill="{B}"/>'],
+    ["cactus", '<rect x="29" y="18" width="7" height="28" rx="3.5" fill="{A}"/><rect x="20" y="28" width="6" height="10" rx="3" fill="{A}"/><rect x="38" y="24" width="6" height="12" rx="3" fill="{A}"/>'],
+    ["mushroom", '<path d="M14 32 a18 14 0 0 1 36 0 Z" fill="{A}"/><rect x="27" y="32" width="10" height="14" rx="4" fill="{A}"/><circle cx="24" cy="28" r="2" fill="{B}"/><circle cx="38" cy="26" r="1.8" fill="{B}"/>'],
+    ["skull", '<circle cx="32" cy="30" r="13" fill="{A}"/><rect x="25" y="38" width="14" height="9" rx="3" fill="{A}"/><circle cx="27" cy="29" r="3" fill="{B}"/><circle cx="37" cy="29" r="3" fill="{B}"/>'],
+    ["robot", '<rect x="20" y="22" width="24" height="20" rx="4" fill="{A}"/><circle cx="27" cy="31" r="2.8" fill="{B}"/><circle cx="37" cy="31" r="2.8" fill="{B}"/><path d="M32 22 v-7" stroke="{A}" stroke-width="3"/><circle cx="32" cy="13" r="3" fill="{B}"/><rect x="26" y="42" width="12" height="5" rx="2" fill="{A}"/>'],
+    ["balloon", '<ellipse cx="32" cy="26" rx="11" ry="13" fill="{A}"/><path d="M32 39 q4 8 0 14" fill="none" stroke="{A}" stroke-width="2.5"/><circle cx="28" cy="21" r="2.4" fill="#fff" opacity="0.6"/>'],
+    ["icecream", '<path d="M22 32 h20 l-10 20 Z" fill="{A}"/><circle cx="32" cy="26" r="9" fill="{B}"/><circle cx="24" cy="30" r="6" fill="{B}"/>'],
+    ["candle", '<rect x="26" y="26" width="12" height="22" rx="3" fill="{A}"/><path d="M32 12 q6 8 0 12 q-6-4 0-12 Z" fill="{B}"/>'],
+    ["cassette", '<rect x="14" y="22" width="36" height="22" rx="3" fill="{A}"/><circle cx="24" cy="33" r="4" fill="{B}"/><circle cx="40" cy="33" r="4" fill="{B}"/><rect x="28" y="30" width="8" height="6" fill="{B}"/>'],
+    ["glasses", '<circle cx="23" cy="34" r="8" fill="none" stroke="{A}" stroke-width="3.5"/><circle cx="41" cy="34" r="8" fill="none" stroke="{A}" stroke-width="3.5"/><path d="M31 34 h2" stroke="{A}" stroke-width="3.5"/>'],
+    ["hammer", '<rect x="20" y="18" width="24" height="9" rx="3" fill="{A}"/><rect x="30" y="27" width="5" height="22" rx="2" fill="{B}"/>'],
+    ["spanner", '<path d="M40 18 a8 8 0 1 0 4 10 L26 46 a4 4 0 1 0 5 5 L49 33 a8 8 0 0 0-9-15 Z" fill="{A}"/>'],
+    ["moon", '<path d="M40 16 a17 17 0 1 0 0 32 a13 13 0 1 1 0-32 Z" fill="{A}"/>'],
+    ["star", '<path d="M32 12 l6 13 14 2 -10 10 3 14 -13-7 -13 7 3-14 -10-10 14-2 Z" fill="{A}"/>'],
+    ["heart", '<path d="M32 46 q-16-10 -16-20 a8 8 0 0 1 16-3 a8 8 0 0 1 16 3 q0 10-16 20 Z" fill="{A}"/>'],
+    ["feather", '<path d="M20 46 q4-24 24-30 q0 22-24 30 Z" fill="{A}"/><path d="M22 44 L38 22" stroke="{B}" stroke-width="2"/>'],
+    ["eye", '<ellipse cx="32" cy="32" rx="17" ry="10" fill="{A}"/><circle cx="32" cy="32" r="5.5" fill="{B}"/><circle cx="30" cy="30" r="1.8" fill="#fff" opacity="0.8"/>']
+  ];
   function avatarSVG(i,size,grade){
-    var p=PAL[i%PAL.length], s=size||64, k=Math.floor(i/12)%6, g=grade||0;
-    var f=GRADE[Math.min(4,g)], inner='', id="av"+i+"_"+g;
-    if(k===0) inner='<rect x="24" y="24" width="16" height="16" fill="url(#g'+id+')" transform="rotate(45 32 32)"/>';
-    if(k===1) inner='<circle cx="32" cy="32" r="11" fill="none" stroke="url(#g'+id+')" stroke-width="3.4"/>';
-    if(k===2) inner='<path d="M32 19 L46 44 L18 44 Z" fill="url(#g'+id+')"/>';
-    if(k===3) inner='<rect x="18" y="26" width="28" height="4.5" rx="2" fill="url(#g'+id+')"/>'+
-                    '<rect x="18" y="36" width="17" height="4.5" rx="2" fill="url(#g'+id+')"/>';
-    if(k===4) inner='<path d="M22 22 L42 42 M42 22 L22 42" stroke="url(#g'+id+')" stroke-width="4.4" stroke-linecap="round"/>';
-    if(k===5) inner='<path d="M20 39 A12 12 0 0 1 44 39 Z" fill="url(#g'+id+')"/>';
-    var frame = g>0 ? '<rect x="1.6" y="1.6" width="60.8" height="60.8" rx="14" fill="none" stroke="'+f[1]+'" stroke-width="2.2" opacity="0.85"/>' : '';
+    var p=PAL[i%PAL.length], tok=TOKENS[Math.floor(i/PAL.length)%TOKENS.length];
+    var s=size||64, g=grade||0, f=GRADE[Math.min(4,g)], id="av"+i+"_"+g;
+    var glyph=tok[1].split("{A}").join(p[1]).split("{B}").join(p[0]);
+    var frame = g>0 ? '<rect x="1.4" y="1.4" width="61.2" height="61.2" rx="14" fill="none" stroke="'+f[1]+'" stroke-width="2.2" opacity="0.9"/>' : '';
     var marks='';
-    if(g>=3) marks='<rect x="0" y="0" width="9" height="9" fill="'+f[1]+'" transform="rotate(45 4.5 4.5)"/>'+
-                   '<rect x="55" y="55" width="9" height="9" fill="'+f[1]+'" transform="rotate(45 59.5 59.5)"/>';
+    if(g>=3) marks='<rect x="-3" y="-3" width="11" height="11" fill="'+f[1]+'" transform="rotate(45 2.5 2.5)"/>'+
+                   '<rect x="56" y="56" width="11" height="11" fill="'+f[1]+'" transform="rotate(45 61.5 61.5)"/>';
     var pips='';
-    for(var q=0;q<g;q++) pips+='<circle cx="'+(14+q*7)+'" cy="55" r="1.9" fill="'+f[1]+'" opacity="0.9"/>';
+    for(var q=0;q<g;q++) pips+='<circle cx="'+(15+q*7)+'" cy="55.5" r="1.9" fill="'+f[1]+'" opacity="0.95"/>';
     return '<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" class="ava" aria-hidden="true">'
-      +'<defs><linearGradient id="g'+id+'" x1="0" y1="0" x2="1" y2="1">'
-      +'<stop offset="0" stop-color="'+p[1]+'"/><stop offset="1" stop-color="'+p[0]+'" stop-opacity="0.95"/>'
-      +'</linearGradient>'
-      +'<radialGradient id="bg'+id+'" cx="0.32" cy="0.24" r="0.9">'
-      +'<stop offset="0" stop-color="'+p[1]+'" stop-opacity="0.30"/><stop offset="1" stop-color="'+p[0]+'" stop-opacity="0"/>'
-      +'</radialGradient></defs>'
+      +'<defs><radialGradient id="bg'+id+'" cx="0.3" cy="0.2" r="1">'
+      +'<stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/><stop offset="1" stop-color="#000000" stop-opacity="0.28"/>'
+      +'</radialGradient>'
+      +'<linearGradient id="sh'+id+'" x1="0" y1="0" x2="0" y2="1">'
+      +'<stop offset="0" stop-color="'+p[0]+'"/><stop offset="1" stop-color="'+p[1]+'" stop-opacity="0.35"/></linearGradient></defs>'
+      +'<rect width="64" height="64" rx="14" fill="#0e141d"/>'
       +'<rect width="64" height="64" rx="14" fill="'+p[0]+'"/>'
       +'<rect width="64" height="64" rx="14" fill="url(#bg'+id+')"/>'
-      +'<path d="M0 14 A14 14 0 0 1 14 0 L50 0 A14 14 0 0 0 0 0 Z" fill="#ffffff" opacity="0.06"/>'
-      +inner+frame+marks+pips+'</svg>';
+      +'<ellipse cx="32" cy="50" rx="15" ry="4" fill="#000" opacity="0.30"/>'
+      +glyph+frame+marks+pips+'</svg>';
   }
   var me={ name:store.get("name",""), avatar:store.get("avatar",null) };
   var hand=store.get("hand",[]);
-  function bestRating(){
+function bestRating(){
     var r=ratings(), best=1000, k;
     for(k in r){ if(r[k]>best) best=r[k]; }
     return best;
@@ -2067,7 +2104,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   function gateFaces(){
     var el=$("gfaces"); if(!el) return;
     el.innerHTML="";
-    for(var i=0;i<72;i++){
+    for(var i=0;i<80;i++){
       (function(i){
         var b=document.createElement("button");
         b.innerHTML=avatarSVG(i,84,grade());
@@ -2102,7 +2139,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       if(PENDING){ start(PENDING.cat,false,0); } else { showMap(); }
     };
   }
-  function paintMe(){
+    function paintMe(){
     var el=$("myavatar");
     if(me.avatar!==null) el.innerHTML=avatarSVG(me.avatar,64,grade());
   }
@@ -2163,7 +2200,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
   /* ---------- profile sheet ---------- */
   function drawAgrid(){
     var el=$("agrid"); el.innerHTML="";
-    for(var i=0;i<72;i++){
+    for(var i=0;i<80;i++){
       (function(i){
         var b=document.createElement("button");
         b.innerHTML=avatarSVG(i,96,grade());
@@ -2501,7 +2538,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       var mult=[1.5,1,0.5][Math.floor(Math.random()*3)];
       res.push({ok:ok, pts:ok?+(TIER[t]*mult).toFixed(1):0});
     }
-    return {name:nm, avatar:Math.floor(Math.random()*72), rating:rt, res:res, score:0, got:0};
+    return {name:nm, avatar:Math.floor(Math.random()*80), rating:rt, res:res, score:0, got:0};
   }
   function whoHTML(name,av,gr,score,isMe){
     return '<span class="who">'+avatarSVG(av,28,gr)+'<b>'+name+'</b>'+
@@ -3100,7 +3137,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     tiers.forEach(function(T){ T.rows=Math.max(3,Math.ceil(T.list.length/T.cols)); });
     TIERS=tiers;
   }
-  var GAP=54, ZOOM=1;
+  var GAP=54, ZOOM=1, LIT={};
   var LEVELINK={
     1:{name:"The Ground",    reach:"#4a5a78", held:"#8fb4e8", fill:"#161d2b", hfill:"#17243a", ink:"#9db6dd"},
     2:{name:"The Ascent",    reach:"#6f7683", held:"#e4e8ee", fill:"#1a1d23", hfill:"#24282f", ink:"#dfe5ee"},
@@ -3436,7 +3473,13 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     var reach={};
     if(!held.length){
       // the edge is open: start wherever your subject is
-      f.cells.forEach(function(c){ if(c.cat && c.ring>=f.R-2) reach[c.q+","+c.r]=1; });
+      f.cells.forEach(function(c){ if(c.cat && c.ring>=f.R) reach[c.q+","+c.r]=1; });
+      LIT={};
+      var rim=f.cells.filter(function(c){ return c.cat && c.ring>=f.R; });
+      var step=Math.max(1,Math.floor(rim.length/8));
+      for(var li=0; li<rim.length && Object.keys(LIT).length<8; li+=step){
+        LIT[rim[li].q+","+rim[li].r]=1;
+      }
     } else {
       held.forEach(function(cat){
         var c=cellOf(cat); if(!c) return;
@@ -3446,6 +3489,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
 
     var w=Math.sqrt(3)*s, W=w*(2*f.R+2)+20, H=3*s*f.R+3*s+20, parts=[];
     parts.push('<defs>'+
+      '<filter id="litglow" x="-50%" y="-50%" width="200%" height="200%">'+
+      '<feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'+
       '<radialGradient id="floorlight"><stop offset="0" stop-color="'+themeNow().glow+'" stop-opacity="0.20"/>'+
       '<stop offset="0.55" stop-color="'+themeNow().glow+'" stop-opacity="0.05"/>'+
       '<stop offset="1" stop-color="'+themeNow().glow+'" stop-opacity="0"/></radialGradient>'+
@@ -3462,7 +3507,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
         .map(function(p){ return (cx+p[0]).toFixed(1)+","+(cy+p[1]).toFixed(1); }).join(" ");
       var isHeld=c.cat&&held.indexOf(c.cat)>=0;
       var isReach=!!reach[c.q+","+c.r];
-      var cls="hx"+(isHeld?" held":isReach?" reach":"");
+      var litNow=!held.length && LIT[c.q+","+c.r];
+      var cls="hx"+(isHeld?" held":isReach?(litNow?" reach lit":" reach"):"");
       var TH=themeNow();
       if(c.cat&&(isHeld||isReach)&&s>4){
         parts.push('<polygon points="'+pts+'" fill="'+TH.deep+'" opacity="0.9" '+
@@ -3474,10 +3520,12 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
       else if(c.mystery&&(isHeld||isReach)){ fill="#1a1230"; stroke="#8f6ad8"; sw=1.5; }
       else if(c.double&&(isHeld||isReach)){ fill="#2a1d0a"; stroke="#f0a93b"; sw=1.5; }
       else if(isHeld){ fill=TH.deep; stroke=TH.held; sw=1.8; }
-      else if(isReach){ fill="#101823"; stroke=TH.edge; sw=1.3; }
+      else if(litNow){ fill="#16202c"; stroke=TH.held; sw=2.2; }
+      else if(isReach){ fill="#0e151f"; stroke=TH.edge; sw=1.0; }
       else if(c.cat){ fill="#0c1219"; stroke="#1b2734"; sw=0.6; }
       parts.push('<g class="'+cls+'" data-cat="'+(c.cat&&(isHeld||isReach)?c.cat:"")+'" data-floor="'+floorNow+'" data-ascent="'+(c.ascent?1:0)+'">'+
-        '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>');
+        '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"'+
+        (litNow?' filter="url(#litglow)"':(isReach&&!isHeld?' opacity="0.62"':''))+ '/>');
       if(c.ascent&&s>7){
         parts.push('<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+(s*0.55).toFixed(1)+'" fill="url(#goldglow)" opacity="0.55"/>');
       }
@@ -3501,8 +3549,8 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     if(gn){
       if(!held.length){
         gn.hidden=false;
-        gn.innerHTML='You are on the ground floor. Tap a subject on the rim to begin there, '+
-          'then work inward. Tap empty board to go in, tap twice to come back out.';
+        gn.innerHTML='The whole outer edge is open. Tap any subject on the rim to begin there, '+
+          'or take one of the lit ones if you would rather be guided. Tap empty board to go in, tap twice to come back out.';
       } else { gn.hidden=true; }
     }
     refreshEggs();
@@ -3749,7 +3797,7 @@ for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r)
     for(var i=0;i<12;i++){
       var n=A[(seed+i*7)%A.length];
       if(used[n]) continue; used[n]=1;
-      out.push({name:n, avatar:(seed+i*13)%72, iq:96+((seed>>>(i%16))%46)});
+      out.push({name:n, avatar:(seed+i*13)%80, iq:96+((seed>>>(i%16))%46)});
     }
     return out;
   }
