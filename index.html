@@ -143,6 +143,10 @@
   .hexstage svg .hx.held[data-level="2"] polygon{filter:drop-shadow(0 0 9px rgba(228,232,238,.5))}
   .hexstage svg .hx.held[data-level="3"] polygon{filter:drop-shadow(0 0 10px rgba(242,205,99,.55))}
   .hexstage svg .hx.held[data-level="4"] polygon{filter:drop-shadow(0 0 11px rgba(240,117,106,.55))}
+  .tfbox{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .tfclaim{grid-column:1/-1;background:#141a24;border:1px solid #2a3444;border-left:2px solid #e8bd55;
+    padding:14px 14px;font-size:17px;line-height:1.35;color:#f0f3f8;margin-bottom:2px}
+  .opt.tf{justify-content:center;font-size:16px;letter-spacing:.04em}
   .streak{color:var(--gold);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
   .legend{display:flex;gap:14px;margin:14px 0 0;font-size:10.5px;color:var(--dim);letter-spacing:.04em}
   .legend span{display:flex;align-items:center;gap:5px}
@@ -2106,7 +2110,9 @@ Object.assign(BANK,{
     var qs=[]; for(var qi=0;qi<BANK[cat].q.length;qi++) qs.push(qi);
     qs.sort(function(){ return Math.random()-0.5; });
     S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[],
-       mode:MODE,qs:qs.slice(0,5),oppAt:0};
+       mode:MODE,qs:qs.slice(0,5),oppAt:0,banked:0,lpot:1,li:0};
+    var roll=Math.random();
+    S.kind = roll<0.22?"truefalse" : roll<0.44?"ladder" : "standard";
     S.opp=makeOpponent();
     S.target=null;
     if(PENDING){
@@ -2136,6 +2142,8 @@ Object.assign(BANK,{
     ask();
   }
   function ask(){
+    if(S.kind==="truefalse") return askTF();
+    if(S.kind==="ladder") return askLadder();
     S.answered=false;
     var q=BANK[S.cat].q[S.qs[S.i]], t=tierAt(S.i);
     $("count").textContent=(S.i+1)+" / 5";
@@ -2155,6 +2163,114 @@ Object.assign(BANK,{
     paintPips(); startClock();
     if(S.mode==="live") armOpponent();
   }
+  function askTF(){
+    S.answered=false;
+    var q=BANK[S.cat].q[S.qs[S.i]];
+    var b=buildOptions(S.cat,S.qs[S.i],4);
+    var useRight=Math.random()<0.5, shown;
+    if(useRight) shown=b.options[b.correct];
+    else { var w=(b.correct+1+Math.floor(Math.random()*(b.options.length-1)))%b.options.length; shown=b.options[w]; }
+    S.tf={shown:shown,isTrue:useRight};
+    $("count").textContent=(S.i+1)+" / 5 \u00b7 true or false";
+    $("q").textContent=q[0];
+    var el=$("tier"); el.className="tier medium"; el.innerHTML="<span>true or false</span>";
+    $("feedback").innerHTML=""; $("next").hidden=true; $("heard").textContent="";
+    var box=$("options"); box.innerHTML=""; box.className="opts n2 tfbox";
+    box.innerHTML='<div class="tfclaim">'+shown+'</div>';
+    [["True",1],["False",0]].forEach(function(pair){
+      var btn=document.createElement("button");
+      btn.className="opt tf";
+      btn.innerHTML='<span class="ltr">'+(pair[1]?"T":"F")+'</span>'+pair[0];
+      btn.onclick=function(){ judgeTF(pair[1]); };
+      box.appendChild(btn);
+    });
+    $("pass").hidden=false; $("pass").textContent="skip";
+    paintPips(); startClock();
+  }
+  function judgeTF(saidTrue){
+    if(S.answered) return;
+    S.answered=true; clearInterval(tick); clearTimeout(S.oppTimer);
+    var ok=(saidTrue?1:0)===(S.tf.isTrue?1:0);
+    var secs=Math.min(CLOCK,(Date.now()-t0)/1000);
+    var pts=ok?+(2*mult(secs)).toFixed(1):0;
+    S.score+=pts; if(ok) S.correct++;
+    S.results[S.i]=ok;
+    S.streak=ok?(S.streak||0)+1:0;
+    if(ok&&(S.fastest===null||secs<S.fastest)) S.fastest=secs;
+    var their=S.opp.res[S.i]||{ok:false,pts:0};
+    if(S.mode==="live"){ if(ok){ S.opp.res[S.i]={ok:false,pts:0}; } else { S.opp.score+=2; S.opp.got++; } }
+    else { S.opp.score+=their.pts; if(their.ok) S.opp.got++; }
+    var btns=$("options").querySelectorAll(".opt");
+    for(var i=0;i<btns.length;i++){ btns[i].disabled=true; }
+    $("pass").hidden=true;
+    $("feedback").innerHTML='<div class="fb '+(ok?"ok":"no")+'"><span class="pts">'+(ok?"+"+pts:"0")+'</span>'+
+      '<b>'+(ok?"Right":"Wrong")+'</b>'+(S.tf.isTrue?"It was true.":"It was false.")+
+      (S.streak>=3?' <span class="streak">'+S.streak+' in a row</span>':'')+'</div>';
+    $("next").hidden=false; $("next").textContent=S.i===4?"See the result":"Next";
+    paintPips(); paintVs(); chime(ok);
+  }
+
+  /* the ladder: double or lose it */
+  function askLadder(){
+    S.answered=false;
+    var qs=BANK[S.cat].q;
+    if(!S.lorder||S.li>=S.lorder.length){
+      S.lorder=qs.map(function(_,i){return i;}).sort(function(){return Math.random()-0.5;});
+      S.li=0;
+    }
+    var qi=S.lorder[S.li], q=qs[qi], t=tierAt(Math.min(4,S.li));
+    $("count").textContent="Pot "+S.lpot+" \u00b7 question "+(S.li+1);
+    $("q").textContent=q[0];
+    var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>the ladder</span>";
+    $("feedback").innerHTML=""; $("next").hidden=true; $("heard").textContent="";
+    S.built=buildOptions(S.cat,qi,COUNT[t]);
+    var box=$("options"); box.innerHTML=""; box.className="opts n"+COUNT[t];
+    S.built.options.forEach(function(o,ix){
+      var b=document.createElement("button");
+      b.className="opt";
+      b.innerHTML='<span class="ltr">'+"ABCDEFGHIJ".charAt(ix)+'</span>'+o;
+      b.onclick=function(){ judgeLadder(ix,false); };
+      box.appendChild(b);
+    });
+    $("pass").hidden=false; $("pass").textContent="Bank "+S.lpot;
+    paintPips(); startClock();
+  }
+  function judgeLadder(pick,timedOut){
+    if(S.answered) return;
+    S.answered=true; clearInterval(tick); clearTimeout(S.oppTimer);
+    var ok=pick===S.built.correct;
+    var qs=BANK[S.cat].q, q=qs[S.lorder[S.li]];
+    var btns=$("options").querySelectorAll(".opt");
+    for(var i=0;i<btns.length;i++){
+      btns[i].disabled=true;
+      if(i===S.built.correct) btns[i].className="opt right";
+      else if(i===pick) btns[i].className="opt wrong";
+    }
+    if(ok){
+      S.lpot*=2; S.li++;
+      $("pass").hidden=false; $("pass").textContent="Bank "+S.lpot;
+      $("feedback").innerHTML='<div class="fb ok"><span class="pts">\u00d72</span><b>Pot '+S.lpot+'</b>'+
+        '<span style="color:var(--dim);font-size:13px">Bank it, or carry on and double again.</span></div>';
+      $("next").hidden=false; $("next").textContent="Carry on";
+      chime(true);
+    } else {
+      S.lpot=0;
+      $("pass").hidden=true;
+      $("feedback").innerHTML='<div class="fb no"><span class="pts">0</span><b>Bust</b>'+
+        'The answer is <strong>'+primary(q[1])+'</strong>. The pot is gone.</div>';
+      $("next").hidden=false; $("next").textContent="See the result";
+      chime(false);
+    }
+    paintVs();
+  }
+  function bankLadder(){
+    if(!S.lpot) return;
+    S.banked+=S.lpot; S.score+=S.lpot;
+    $("feedback").innerHTML='<div class="fb ok"><span class="pts">+'+S.lpot+'</span><b>Banked</b></div>';
+    S.lpot=0;
+    finish();
+  }
+
   function paintPips(){
     var p=$("pips").children;
     for(var i=0;i<p.length;i++){
@@ -2233,8 +2349,15 @@ Object.assign(BANK,{
     $("next").textContent=S.i===4?"See the result":"Next";
     paintPips(); paintVs(); chime(ok);
   }
-  $("pass").onclick=function(){ judge(-1,false); };
-  $("next").onclick=function(){ if(S.i<4){ S.i++; ask(); } else { finish(); } };
+  $("pass").onclick=function(){
+    if(S.kind==="ladder"){ bankLadder(); return; }
+    if(S.kind==="truefalse"){ judgeTF(null); return; }
+    judge(-1,false);
+  };
+  $("next").onclick=function(){
+    if(S.kind==="ladder"){ if(S.lpot){ askLadder(); } else { finish(); } return; }
+    if(S.i<4){ S.i++; ask(); } else { finish(); }
+  };
 
   /* ---------- voice ---------- */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2339,6 +2462,7 @@ Object.assign(BANK,{
     clearInterval(tick);
     $("play").hidden=true; $("end").hidden=false;
     var rt=ratings(), before=rt[S.cat]||1000;
+    var won = S.kind==="ladder" ? (S.banked>=3) : (S.correct>=(S.kind==="truefalse"?4:3));
     var delta=Math.round((S.correct/5-0.5)*60);
     var after=Math.max(600,before+delta);
     rt[S.cat]=after; store.set("ratings",rt);
@@ -2347,22 +2471,24 @@ Object.assign(BANK,{
     $("endvs").innerHTML=whoHTML(me.name,me.avatar,grade(),S.score,true)+
       '<span class="mid">vs</span>'+whoHTML(S.opp.name,S.opp.avatar,0,S.opp.score,false);
     $("score").textContent=S.score.toFixed(1);
-    $("correct").textContent=S.correct+" / 5";
+    $("correct").textContent = S.kind==="ladder" ? ("banked "+S.banked) : (S.correct+" / 5");
     $("fastest").textContent=S.fastest!==null?S.fastest.toFixed(1)+"s":"\u2013";
     $("rating").textContent=after;
     $("delta").textContent=(delta>=0?"+":"")+delta;
-    var won=S.score>S.opp.score;
+    var beat=S.score>S.opp.score;
     if(S.target!==null&&S.target!==undefined){
       $("verdict").textContent = S.score>S.target ? "You beat "+S.opp.name+"'s "+S.target.toFixed(1)+"."
         : S.score===S.target ? "Level with "+S.opp.name+"'s "+S.target.toFixed(1)+"."
         : S.opp.name+" still holds it, "+S.target.toFixed(1)+" to your "+S.score.toFixed(1)+".";
     } else {
-      $("verdict").textContent = won ?
-        (S.correct>=5?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
-        : (S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it.");
+      $("verdict").textContent = !won ?
+        (S.kind==="ladder"?"Bust. You needed three banked to hold it.":"Not this time. "+S.opp.name+" took it.")
+        : (S.kind==="ladder"?("Banked "+S.banked+". You took it off "+S.opp.name+"."):
+           beat?(S.correct>=5?"Genial. You took "+S.opp.name+" apart.":"You took it off "+S.opp.name+".")
+               :(S.score===S.opp.score?"A draw with "+S.opp.name+".":S.opp.name+" took it."));
     }
     var oldGate=$("gategate"); if(oldGate) oldGate.remove();
-    if(S.map&&S.correct>=3){
+    if(S.map&&won){
       var T=tierOfCat(S.cat), idx=T.list.indexOf(S.cat);
       if(isGate(T,idx)&&!store.get("gate"+T.level,false)){
         var gb=document.createElement("button");
@@ -2390,7 +2516,7 @@ Object.assign(BANK,{
     if(S.map){
       var cl=climbPts()+S.score;
       store.set("climb",+cl.toFixed(1));
-      if(S.correct>=3){
+      if(won){
         var h=heldList();
         if(h.indexOf(S.cat)<0) h.push(S.cat);
         store.set("held",h);
@@ -2481,6 +2607,19 @@ Object.assign(BANK,{
     }
     var W=maxW+8, H=y-GAP+8;
     var parts=[];
+    var defs='<defs>';
+    TIERS.forEach(function(T){
+      var p=inkFor(T.level);
+      defs+='<linearGradient id="g'+T.level+'" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0" stop-color="'+p.fill+'" stop-opacity="1"/>'+
+        '<stop offset="1" stop-color="#080b10"/></linearGradient>';
+      defs+='<linearGradient id="h'+T.level+'" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0" stop-color="'+p.hfill+'"/><stop offset="1" stop-color="#0a0d12"/></linearGradient>';
+      defs+='<filter id="s'+T.level+'" x="-20%" y="-20%" width="140%" height="140%">'+
+        '<feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="'+p.held+'" flood-opacity="0.18"/></filter>';
+    });
+    defs+='</defs>';
+    parts.push(defs);
     TIERS.forEach(function(T,ti){
       var w=Math.sqrt(3)*T.s, cells=gridCells(T.rows,T.cols), open=tierOpen(T.level);
       var heldCells={};
@@ -2500,20 +2639,27 @@ Object.assign(BANK,{
         }
       }
       var p=inkFor(T.level);
+      // the plate this lattice sits on, so a level reads as raised above the one below
+      var plateW=Math.sqrt(3)*T.s*T.cols+8, plateH=1.5*T.s*(T.rows-1)+2*T.s+10;
+      parts.push('<rect x="0" y="'+(ys[ti]-4)+'" width="'+plateW.toFixed(0)+'" height="'+plateH.toFixed(0)+
+        '" rx="18" fill="#0a0e15" opacity="0.85" stroke="'+p.reach+'" stroke-opacity="0.16" filter="url(#s'+T.level+')"/>');
       cells.forEach(function(c,i){
         var cx=c.c*w+(c.r%2?w/2:0)+w/2+4, cy=c.r*1.5*T.s+T.s+ys[ti];
         var name=T.list[i];
         var isHeld=held.indexOf(name)>=0;
         var isReach=reach.hasOwnProperty(gkey(c));
         var cls="hx"+(isHeld?" held":isReach?" reach":"");
-        var fill=isHeld?p.hfill:isReach?p.fill:"#0b0e14";
+        var fill=isHeld?"url(#h"+T.level+")":isReach?"url(#g"+T.level+")":"#0b0e14";
         var stroke=isHeld?p.held:isReach?p.reach:"#161c26";
-        var sw=isHeld?2:isReach?1.4:0.7;
+        var sw=isHeld?2.2:isReach?1.5:0.7;
         var fl=T.level===1?floorFor(c.r,T.rows):(c.r>=T.rows-2?2:3);
         var pts=[[0,-T.s],[T.s*0.866,-T.s/2],[T.s*0.866,T.s/2],[0,T.s],[-T.s*0.866,T.s/2],[-T.s*0.866,-T.s/2]]
           .map(function(q){ return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1); }).join(" ");
         var g='<g class="'+cls+'" data-cat="'+(isHeld||isReach?name:"")+'" data-floor="'+fl+'" data-level="'+T.level+'">'+
-              '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+              '<polygon points="'+pts+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'+
+              (isHeld||isReach?'<polygon points="'+[[-T.s*0.866,-T.s/2],[0,-T.s],[T.s*0.866,-T.s/2]]
+                .map(function(q){return (cx+q[0]).toFixed(1)+","+(cy+q[1]).toFixed(1);}).join(" ")+
+                '" fill="none" stroke="'+p.held+'" stroke-opacity="'+(isHeld?0.5:0.22)+'" stroke-width="1"/>':'');
         if((isHeld||isReach)&&isGate(T,i)){
           g+='<text x="'+cx.toFixed(1)+'" y="'+(cy-T.s*0.62).toFixed(1)+'" style="font-size:'+(T.s>30?11:8)+
              'px;fill:'+p.held+'">\u25c6</text>';
