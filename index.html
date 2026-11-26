@@ -162,6 +162,14 @@
   .tfclaim{grid-column:1/-1;background:#141a24;border:1px solid #2a3444;border-left:2px solid #e8bd55;
     padding:14px 14px;font-size:17px;line-height:1.35;color:#f0f3f8;margin-bottom:2px}
   .opt.tf{justify-content:center;font-size:16px;letter-spacing:.04em}
+  .intro{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;background:radial-gradient(circle at 50% 38%,#13223c 0%,#05070b 72%);z-index:6;text-align:center;padding:26px;
+    animation:introin .35s ease-out}
+  @keyframes introin{from{opacity:0}to{opacity:1}}
+  .intro .ik{font-family:Georgia,serif;font-size:30px;line-height:1.1;color:#f4f7fb;letter-spacing:-.01em}
+  .intro .is{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#8fa3c0}
+  .intro .ip{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#e8bd55;opacity:.85;margin-top:2px}
+  .intro .btn{margin-top:16px;min-width:150px}
   .streak{color:var(--gold);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
   .legend{display:flex;gap:14px;margin:14px 0 0;font-size:10.5px;color:var(--dim);letter-spacing:.04em}
   .legend span{display:flex;align-items:center;gap:5px}
@@ -1827,6 +1835,9 @@ Object.assign(BANK,{
 ["Which mountain was home to the gods?","Mount Olympus","olympus"]
 ]}
 });
+(function(){var ADD={"Television": [["Which BBC soap is set in Albert Square?", "EastEnders"], ["Which naturalist presented Planet Earth?", "David Attenborough", "attenborough"], ["Which quiz show features a 'Chaser'?", "The Chase"], ["Which detective series is set in Oxford and began in 1987?", "Inspector Morse", "morse"], ["Which channel is Coronation Street shown on?", "ITV"], ["Which reality show puts celebrities in the jungle?", "I'm a Celebrity Get Me Out of Here", "im a celebrity"], ["Which presenter hosted The Generation Game and Strictly?", "Bruce Forsyth"], ["What does BBC stand for?", "British Broadcasting Corporation"], ["Which series follows the Crawley family and their servants?", "Downton Abbey"]], "80s television": [["Which 1980s US soap was set on a Texas ranch?", "Dallas"], ["Which children's series featured a talking scarecrow?", "Worzel Gummidge"], ["Which 1980s series featured a talking car called KITT?", "Knight Rider"], ["Which 1980s show had the catchphrase 'I pity the fool'?", "The A-Team", "a team"], ["Which 1980s cartoon featured transforming robots?", "Transformers"], ["Which 1982 BBC play followed five Merseyside tarmac workers?", "Boys from the Blackstuff"], ["Which 1980s sitcom featured an alien called Gordon Shumway?", "ALF"], ["Which 1980s detective series was set on Jersey?", "Bergerac"], ["Which 1980s children's series featured a robot called Metal Mickey?", "Metal Mickey"]], "Rock music": [["Who is known as the King of Rock and Roll?", "Elvis Presley", "elvis"], ["Which band released Bohemian Rhapsody?", "Queen"], ["Which guitarist founded Led Zeppelin?", "Jimmy Page"], ["Which band uses a tongue and lips logo?", "The Rolling Stones", "rolling stones"], ["Who sang Like a Rolling Stone?", "Bob Dylan"], ["Which band released Stairway to Heaven?", "Led Zeppelin"], ["Which music festival took place on a farm in 1969?", "Woodstock"], ["Which Irish band has a singer called Bono?", "U2"], ["Who was Nirvana's frontman?", "Kurt Cobain"], ["Which band recorded The Dark Side of the Moon?", "Pink Floyd"]], "Pop music": [["Which group had a hit with Wannabe?", "Spice Girls"], ["Who released the album Thriller?", "Michael Jackson"], ["Which British singer released Someone Like You?", "Adele"], ["Which Liverpool band featured John Lennon and Paul McCartney?", "The Beatles", "beatles"], ["Which 1990s boy band included Robbie Williams?", "Take That"], ["Which rapper is married to Beyonce?", "Jay-Z", "jay z"], ["Which Canadian singer released the song Baby?", "Justin Bieber"], ["Which singer released Bad Guy in 2019?", "Billie Eilish"]], "Films": [["Which 1997 film is about a ship that sinks?", "Titanic"], ["Who directed Jaws?", "Steven Spielberg", "spielberg"], ["Which film features Hannibal Lecter?", "The Silence of the Lambs"], ["Which 1939 film is set in Kansas and the land of Oz?", "The Wizard of Oz"], ["Which film series features a ring and a hobbit?", "The Lord of the Rings", "lord of the rings"], ["Who played the Terminator?", "Arnold Schwarzenegger"], ["Which 1972 film about a crime family stars Marlon Brando?", "The Godfather"], ["Which British film series features the spy 007?", "James Bond"], ["Which 2019 South Korean film won the Best Picture Oscar?", "Parasite"]], "Food and cooking": [["Which vegetable is the main ingredient of guacamole?", "Avocado"], ["Which country is paella from?", "Spain"], ["What is the main ingredient of hummus?", "Chickpeas"], ["Which cheese is used in tiramisu?", "Mascarpone"], ["Which spice comes from the crocus flower?", "Saffron"], ["Which grain is used to make risotto?", "Rice"], ["Which fruit is used to make cider?", "Apple"], ["What is the Japanese dish of raw fish on rice?", "Sushi"], ["Which Italian dish is made with layers of pasta and ragu?", "Lasagne", "lasagna"], ["What is the main ingredient of a meringue?", "Egg white", "egg whites"]], "Football": [["How many players from each side start a football match?", "Eleven", "11"], ["How many minutes are in a standard football half?", "45", "forty five"], ["What is Europe's top club competition called?", "The Champions League"], ["Who is the Premier League's all-time top scorer?", "Alan Shearer"], ["Which London club plays at Stamford Bridge?", "Chelsea"], ["What is scoring three goals in one match called?", "A hat-trick", "hat trick"], ["Which country hosted the 2014 World Cup?", "Brazil"]], "Sport": [["In which sport is Wimbledon played?", "Tennis"], ["How many holes are in a full round of golf?", "Eighteen", "18"], ["In which sport would you perform a slam dunk?", "Basketball"], ["How often are the Summer Olympics normally held?", "Every four years", "4 years"], ["How long is an Olympic swimming pool?", "Fifty metres", "50 metres"]], "History": [["Who was the first man to walk on the Moon?", "Neil Armstrong"], ["Which wall fell in 1989?", "The Berlin Wall"], ["Who was British Prime Minister for most of the Second World War?", "Winston Churchill"], ["Which ship sank on its maiden voyage in 1912?", "Titanic"], ["Who was the first Tudor monarch?", "Henry VII", "henry 7"], ["Which ancient civilisation built the pyramids at Giza?", "The Egyptians", "egyptian"], ["Which ship carried the Pilgrims to America in 1620?", "The Mayflower"], ["Who was the last Tsar of Russia?", "Nicholas II", "nicholas 2"]], "Science": [["How many bones are in the adult human body?", "206"], ["Which gas do plants absorb from the air?", "Carbon dioxide", "CO2"], ["Which force keeps the planets in orbit?", "Gravity"], ["How many chambers does the human heart have?", "Four", "4"], ["What is the largest organ of the human body?", "The skin"], ["What does DNA stand for?", "Deoxyribonucleic acid"], ["Roughly how fast does light travel in a vacuum?", "300,000 km per second", "300000 km per second"]], "Countries and capitals": [["What is the capital of Brazil?", "Brasilia"], ["What is the capital of Switzerland?", "Bern"], ["What is the capital of Turkey?", "Ankara"], ["What is the capital of New Zealand?", "Wellington"], ["What is the administrative capital of South Africa?", "Pretoria"], ["What is the capital of Norway?", "Oslo"], ["What is the capital of Argentina?", "Buenos Aires"]], "Books": [["Who wrote A Christmas Carol?", "Charles Dickens"], ["Who wrote The Old Man and the Sea?", "Ernest Hemingway"], ["Who wrote Things Fall Apart?", "Chinua Achebe"], ["Who wrote Beloved?", "Toni Morrison"]], "Comedy": [["Which two comedians made up The Two Ronnies?", "Ronnie Barker and Ronnie Corbett"], ["Which US sitcom is set in a paper company in Scranton?", "The Office"], ["Which 1975 film features the Knights Who Say Ni?", "Monty Python and the Holy Grail"], ["Who wrote and starred in Fleabag?", "Phoebe Waller-Bridge"], ["Which sitcom features four friends in New York and a coffee shop?", "Friends"], ["Which comedian created the character Ali G?", "Sacha Baron Cohen"], ["Which sketch show featured the Dead Parrot sketch?", "Monty Python's Flying Circus"]], "Art": [["Who painted the ceiling of the Sistine Chapel?", "Michelangelo"], ["Which artist cut off part of his own ear?", "Vincent van Gogh", "van gogh"], ["Which artist painted the water lilies at Giverny?", "Claude Monet"], ["Who sculpted The Thinker?", "Auguste Rodin"], ["Which art movement was Salvador Dali part of?", "Surrealism"], ["Who painted The Night Watch?", "Rembrandt"], ["Which artist is famous for paintings of Campbell's soup cans?", "Andy Warhol"]], "Animals": [["Which mammal is the only one capable of true flight?", "The bat"], ["What is a group of lions called?", "A pride"], ["Which flightless bird lives in Antarctica?", "The penguin"], ["What is the largest animal in the ocean?", "The blue whale"], ["Which animal is known as the ship of the desert?", "The camel"], ["What is a baby kangaroo called?", "A joey"]], "Space": [["Which planet is known as the Red Planet?", "Mars"], ["What is the largest planet in the solar system?", "Jupiter"], ["What is the name of our galaxy?", "The Milky Way"], ["Which planet has the most prominent ring system?", "Saturn"], ["A light year is a measure of what?", "Distance"], ["Which star is closest to Earth?", "The Sun"], ["What was the name of the first artificial satellite?", "Sputnik 1", "sputnik"], ["Which space telescope was launched in 1990?", "The Hubble Space Telescope", "hubble"]], "Music": [["What is the highest female singing voice called?", "Soprano"], ["How many lines are on a musical staff?", "Five", "5"], ["What does the musical direction 'forte' mean?", "Loud"], ["Which instrument has 88 keys?", "The piano"], ["What is a group of four musicians called?", "A quartet"], ["What is the lowest male singing voice called?", "Bass"], ["Which instrument is played with a bow and held under the chin?", "The violin"]], "Cars": [["Which country is Ferrari from?", "Italy"], ["What does BMW stand for?", "Bayerische Motoren Werke"], ["Which company makes the Golf?", "Volkswagen"], ["What does ABS stand for in a car?", "Anti-lock braking system"], ["Which Japanese company makes the Corolla?", "Toyota"], ["Which Swedish car maker is known for safety?", "Volvo"], ["Which British brand makes the Range Rover?", "Land Rover"], ["How many wheels does a standard car have?", "Four", "4"], ["Which pedal is on the right in a manual car?", "The accelerator"]], "Travel": [["What is the currency of Japan?", "The yen"], ["Which is the largest ocean?", "The Pacific"], ["Which city is known as the Eternal City?", "Rome"], ["What document do you need to enter most countries?", "A passport"], ["Which country is Machu Picchu in?", "Peru"], ["Which sea separates Europe from Africa?", "The Mediterranean"], ["Which airport has the code LHR?", "Heathrow"], ["What is the tallest mountain in the world?", "Mount Everest", "everest"]], "Technology": [["What does CPU stand for?", "Central Processing Unit"], ["Who co-founded Microsoft?", "Bill Gates"], ["What does RAM stand for?", "Random Access Memory"], ["Who founded SpaceX and leads Tesla?", "Elon Musk"], ["In which year was the first iPhone released?", "2007"], ["What does USB stand for?", "Universal Serial Bus"], ["Which language is used to build web pages?", "HTML"]], "Games": [["Which board game features Park Lane and Mayfair?", "Monopoly"], ["How many pieces does each player start with in chess?", "Sixteen", "16"], ["Which game is played on a table with a cue and 22 balls?", "Snooker"], ["How many points is a Q worth in Scrabble?", "Ten", "10"], ["Which company created the character Mario?", "Nintendo"], ["Which dice game uses five dice and a cup?", "Yahtzee"], ["How many cards are in a standard deck without jokers?", "52"], ["Which card game is played with a dummy hand?", "Bridge"], ["What is the highest value card in a standard deck?", "The ace"]], "Money": [["Which is the central bank of the UK?", "The Bank of England"], ["What is a loan to buy a house called?", "A mortgage"], ["What does GDP stand for?", "Gross Domestic Product"], ["What is the charge for borrowing money called?", "Interest"], ["Which coin is worth one hundred pence?", "The pound coin"]], "Health": [["How many minutes of exercise a week does the NHS recommend for adults?", "150"], ["Which vitamin does sunlight help the body make?", "Vitamin D"], ["What is a normal resting heart rate for an adult?", "60 to 100 beats per minute", "60-100"], ["Which organs filter waste from the blood?", "The kidneys"], ["How many portions of fruit and vegetables a day are recommended?", "Five", "5"], ["What is the first thing to do with a burn?", "Cool it under running water"], ["How many hours of sleep do most adults need?", "Seven to nine", "7-9"], ["Which number do you call for an ambulance in the UK?", "999"]], "British culture": [["Which dish is often cited as the British national dish?", "Chicken tikka masala"], ["On which date is Boxing Day?", "26 December", "26th december"], ["What is the upper house of the UK Parliament called?", "The House of Lords"], ["Which is the UK's second largest city?", "Birmingham"], ["What is a 'cuppa'?", "A cup of tea"], ["Which London palace is the monarch's official residence?", "Buckingham Palace"], ["Which Scottish instrument is played with a bag of air?", "The bagpipes"], ["In which year was the NHS founded?", "1948"], ["What is the name of the UK flag?", "The Union Jack", "union flag"]], "Nature": [["What is the process by which plants make their own food?", "Photosynthesis"], ["Which is the largest rainforest in the world?", "The Amazon"], ["How many seasons are there in the UK?", "Four", "4"], ["What is the place where an animal naturally lives called?", "Its habitat"], ["What are animals that eat only plants called?", "Herbivores"], ["Which gas do trees release into the air?", "Oxygen"], ["What is the largest coral reef system called?", "The Great Barrier Reef"], ["What is a large area covered with trees called?", "A forest"], ["What is the first stage of the water cycle called?", "Evaporation"]]};
+for(var k in ADD){ if(BANK[k]) BANK[k].q=BANK[k].q.concat(ADD[k].map(function(r){return r;})); }
+})();
 </script>
 <script>
 (function(){
@@ -2066,6 +2077,37 @@ Object.assign(BANK,{
   function beat(){ var c=ac(); if(!c||!soundOn) return; var t=c.currentTime+0.01;
     tone(t,62,0.5,0.22,"sine"); tone(t+0.23,47,0.32,0.20,"sine"); }
   function tickSound(){ var c=ac(); if(!c||!soundOn) return; tone(c.currentTime+0.01,1500,0.10,0.045,"square"); }
+  function introMusic(){
+    var c=ac(); if(!c||!soundOn) return;
+    var t=c.currentTime+0.05, i;
+    for(i=0;i<7;i++) tone(t+i*0.32, 55, 0.09, 0.30, "sine");
+    var notes=[110,130.81,164.81,220,261.63,329.63,440,523.25,659.25,880];
+    for(i=0;i<notes.length;i++) tone(t+0.08+i*0.17, notes[i], 0.075+i*0.004, 0.22, "triangle");
+    var hit=[110,164.81,220,440];
+    for(i=0;i<hit.length;i++) tone(t+1.92, hit[i], 0.11, 0.90, "sawtooth");
+    tone(t+1.92, 1760, 0.045, 0.55, "sine");
+    tone(t+2.25, 880, 0.05, 0.40, "triangle");
+  }
+  function kindLabel(){
+    return S.kind==="truefalse" ? "true or false" : S.kind==="ladder" ? "the ladder" : "five questions";
+  }
+  function roundIntro(then){
+    var box=document.createElement("div");
+    box.className="intro"; box.id="introbox";
+    box.innerHTML='<div class="ik">'+S.cat+'</div>'+
+      '<div class="is">'+TORDER[S.floor]+' \u00b7 '+kindLabel()+'</div>'+
+      '<div class="ip">played by '+playedCount(S.cat)+'</div>'+
+      '<button class="btn" id="go">Begin</button>';
+    $("play").appendChild(box);
+    introMusic();
+    var go=function(){
+      if(!document.getElementById("introbox")) return;
+      var el=document.getElementById("introbox"); if(el) el.remove();
+      then();
+    };
+    box.querySelector("#go").onclick=go;
+    setTimeout(go,2900);
+  }
   function chime(up){ var c=ac(); if(!c||!soundOn) return; var t=c.currentTime+0.01;
     if(up){ tone(t,660,0.18,0.16,"triangle"); tone(t+0.11,990,0.16,0.26,"triangle"); }
     else { tone(t,150,0.20,0.30,"sawtooth"); tone(t+0.06,110,0.14,0.34,"sine"); } }
@@ -2131,10 +2173,22 @@ Object.assign(BANK,{
     if(qs.length<5) return null;
     return {cat:o.c,score:parseFloat(o.s)||0,qs:qs.slice(0,5),name:o.n||""};
   }
+  function seenBook(){ return store.get("seen",{}); }
+  function nextIndex(cat){
+    var all=BANK[cat].q.length, b=seenBook(), seen=b[cat]||[], i;
+    var unseen=[]; for(i=0;i<all;i++) if(seen.indexOf(i)<0) unseen.push(i);
+    if(!unseen.length){ seen=[]; for(i=0;i<all;i++) unseen.push(i); }
+    var pick=unseen[Math.floor(Math.random()*unseen.length)];
+    seen=seen.concat([pick]);
+    b[cat]=seen; store.set("seen",b);
+    return pick;
+  }
+  function pickQuestions(cat,n){
+    var o=[],i; for(i=0;i<n;i++) o.push(nextIndex(cat)); return o;
+  }
   function start(cat,fromMap,floor,defend){
     ac();
-    var qs=[]; for(var qi=0;qi<BANK[cat].q.length;qi++) qs.push(qi);
-    qs.sort(function(){ return Math.random()-0.5; });
+    var qs=pickQuestions(cat,5);
     S={cat:cat,map:!!fromMap,floor:floor||0,i:0,score:0,correct:0,fastest:null,answered:false,results:[],
        mode:MODE,qs:qs.slice(0,5),oppAt:0,banked:0,lpot:1,li:0,defend:defend||null};
     var roll=Math.random();
@@ -2163,12 +2217,12 @@ Object.assign(BANK,{
       }).length;
       $("stake").hidden=false;
       $("stake").innerHTML='Win this to hold <b>'+S.cat+'</b>'+(nb?' and open '+nb+' more':'')+
-        ' \u00b7 from '+TORDER[S.floor];
+        ' \u00b7 from '+TORDER[S.floor]+' \u00b7 played by '+playedCount(S.cat);
     } else if(S.defend){
       $("stake").hidden=false;
       $("stake").innerHTML='Defending <b>'+S.cat+'</b> against '+S.opp.name+' \u00b7 three of five keeps it';
     } else { $("stake").hidden=true; }
-    ask();
+    roundIntro(ask);
   }
   function ask(){
     if(S.kind==="truefalse") return askTF();
@@ -2243,10 +2297,8 @@ Object.assign(BANK,{
   function askLadder(){
     S.answered=false;
     var qs=BANK[S.cat].q;
-    if(!S.lorder||S.li>=S.lorder.length){
-      S.lorder=qs.map(function(_,i){return i;}).sort(function(){return Math.random()-0.5;});
-      S.li=0;
-    }
+    if(!S.lorder){ S.lorder=[]; S.li=0; }
+    if(S.li>=S.lorder.length) S.lorder.push(nextIndex(S.cat));
     var qi=S.lorder[S.li], q=qs[qi], t=tierAt(Math.min(4,S.li));
     $("count").textContent="Pot "+S.lpot+" \u00b7 question "+(S.li+1);
     $("q").textContent=q[0];
@@ -2542,6 +2594,7 @@ Object.assign(BANK,{
       };
       $("end").insertBefore(btn,$("home2"));
     }
+    if(S.map) addPlay(S.cat);
     if(S.defend){
       var bk=arsenalBook(), hd=heldList();
       if(won){
@@ -2617,6 +2670,20 @@ Object.assign(BANK,{
                .map(function(p){return {r:p[0],c:p[1]};});
   }
   function heldList(){ return store.get("held",[]); }
+  function hash32(s){ var h=2166136261,i; for(i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=(h*16777619)>>>0; } return h; }
+  function playsBook(){ return store.get("plays",{}); }
+  function addPlay(cat){ var p=playsBook(); p[cat]=(p[cat]||0)+1; store.set("plays",p); }
+  function playedCount(cat){
+    var T=tierOfCat(cat), h=hash32(cat), mine=playsBook()[cat]||0;
+    var span = T.level===1?[280,1180] : T.level===2?[60,420] : [25,190];
+    return span[0]+(h%(span[1]-span[0]))+mine;
+  }
+  function levelPlays(level){
+    var T=tierByLevel(level), total=0;
+    T.list.forEach(function(c){ total+=playedCount(c); });
+    return total;
+  }
+  function shortNum(n){ return n>=1000 ? (n/1000).toFixed(n>=10000?0:1).replace(/\.0$/,"")+"k" : ""+n; }
   var CAP=10;
   function arsenalBook(){ return store.get("arsenal",{}); }
   function bookSave(b){ store.set("arsenal",b); }
@@ -2795,6 +2862,9 @@ Object.assign(BANK,{
       // a quiet band naming each tier
       parts.push('<text x="6" y="'+(ys[ti]+10)+'" style="font-size:9px;letter-spacing:.18em;fill:'+p.ink+';opacity:.75">'+
         T.level+" \u00b7 "+p.name.toUpperCase()+(open?"":" \u00b7 LOCKED")+'</text>');
+      parts.push('<text x="'+(plateW-6).toFixed(0)+'" y="'+(ys[ti]+10)+'" text-anchor="end" '+
+        'style="font-size:9px;letter-spacing:.12em;fill:'+p.ink+';opacity:.55">'+
+        shortNum(levelPlays(T.level))+' ROUNDS PLAYED</text>');
     });
 
     $("hexstage").innerHTML='<svg viewBox="0 0 '+W.toFixed(0)+' '+H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet" '+
