@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Genial</title>
+<title>Geniality</title>
 <meta name="theme-color" content="#0d0f14">
 <style>
   :root{
@@ -16,15 +16,14 @@
   body{font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
        padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
   .wrap{max-width:640px;margin:0 auto;padding:22px 18px 44px}
-  /* diamond language */
   .dia{transform:rotate(45deg)}
   .head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .brand{display:flex;align-items:center;gap:12px}
-  .gem{width:16px;height:16px;background:var(--gold);border-radius:2px;flex:0 0 auto;
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .gem{width:14px;height:14px;background:var(--gold);border-radius:2px;flex:0 0 auto;
        box-shadow:0 0 0 3px rgba(226,182,76,.14)}
-  .mark{font-family:Georgia,"Iowan Old Style",serif;font-size:30px;letter-spacing:.16em;
-        text-transform:uppercase;margin:0;line-height:1}
-  .avabtn{width:46px;height:46px;flex:0 0 auto;cursor:pointer;border:0;background:none;padding:0}
+  .mark{font-family:Georgia,"Iowan Old Style",serif;font-size:25px;letter-spacing:.13em;
+        text-transform:uppercase;margin:0;line-height:1;white-space:nowrap}
+  .avabtn{width:44px;height:44px;flex:0 0 auto;cursor:pointer;border:0;background:none;padding:0}
   .ava{width:100%;height:100%;display:block;border-radius:3px;overflow:hidden}
   .tag{color:var(--dim);font-size:14px;margin:14px 0 0}
   .rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);margin:18px 0}
@@ -39,12 +38,10 @@
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}
   .tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:4px;
         padding:15px 14px 13px;cursor:pointer;overflow:hidden;
-        clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
-        transition:border-color .15s,background .15s}
+        clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
   .tile:active{background:#212838}
   .tile b{display:block;font-size:15px;line-height:1.25;font-weight:600;padding-right:6px}
-  .tile i{display:block;font-style:normal;color:var(--dim);font-size:11.5px;margin-top:7px;
-          letter-spacing:.04em}
+  .tile i{display:block;font-style:normal;color:var(--dim);font-size:11.5px;margin-top:7px}
   .tile .rt{color:var(--gold)}
   .tile .gem{position:absolute;top:9px;right:9px;width:7px;height:7px;opacity:.5;box-shadow:none}
   .note{color:var(--dim);font-size:12.5px;line-height:1.55;margin-top:18px;
@@ -56,33 +53,48 @@
   .pips i.done{background:var(--gold);border-color:var(--gold)}
   .pips i.now{background:var(--gold2);border-color:var(--gold2)}
   .pips i.miss{background:var(--red);border-color:var(--red)}
-  .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);
-       gap:10px}
-  .clock{height:3px;background:var(--ink2);border-radius:2px;overflow:hidden;margin:14px 0 20px}
+  .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);gap:10px}
+  .clock{height:3px;background:var(--ink2);border-radius:2px;overflow:hidden;margin:14px 0 18px}
   .clock i{display:block;height:100%;background:var(--gold);width:100%;transition:width .1s linear}
-  .q{font-family:Georgia,"Iowan Old Style",serif;font-size:25px;line-height:1.34;margin:16px 0 18px}
+  .q{font-family:Georgia,"Iowan Old Style",serif;font-size:24px;line-height:1.32;margin:14px 0 16px}
   .tier{display:inline-block;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
         padding:4px 11px;border:1px solid var(--line);border-radius:2px;
-        transform:skewX(-12deg);margin-bottom:22px}
+        transform:skewX(-12deg);margin-bottom:16px}
   .tier span{display:inline-block;transform:skewX(12deg)}
   .tier.low{color:#8fb8d8;border-color:#2b3f52}
   .tier.medium{color:#9fd8a8;border-color:#2e4a35}
   .tier.hard{color:#e8b06a;border-color:#4d3a22}
   .tier.genial{color:var(--gold);border-color:#6b5220;background:#221a09}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 10px}
+  .opt{display:flex;align-items:center;gap:9px;text-align:left;background:var(--card);
+       border:1px solid var(--line);color:var(--cream);border-radius:3px;padding:14px 12px;
+       font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;line-height:1.2;
+       min-height:56px}
+  .opt .ltr{flex:0 0 20px;height:20px;display:flex;align-items:center;justify-content:center;
+            border:1px solid var(--line);border-radius:2px;font-size:10.5px;color:var(--gold);
+            font-weight:700}
+  .opts.n8 .opt,.opts.n10 .opt{font-size:13.5px;padding:11px 10px;min-height:52px;gap:7px}
+  .opts.n10 .opt{font-size:12.8px}
+  .opt.right{border-color:var(--green);background:#14301e}
+  .opt.wrong{border-color:var(--red);background:#2c1815}
+  .opt:disabled{opacity:1}
+  .mic{width:100%;padding:12px;border-radius:3px;border:1px solid var(--line);background:var(--ink2);
+       color:var(--cream);font-size:14.5px;font-weight:600;margin-top:6px;font-family:inherit;cursor:pointer}
+  .mic.on{border-color:var(--gold);color:var(--gold)}
+  #heard{font-size:12.5px;color:var(--dim);margin:8px 0 0;min-height:17px}
   .btn{display:block;width:100%;padding:15px;border-radius:3px;border:0;font-size:16px;font-weight:600;
-       cursor:pointer;background:var(--gold);color:#1a1206;margin-top:10px;letter-spacing:.02em}
+       cursor:pointer;background:var(--gold);color:#1a1206;margin-top:10px;font-family:inherit}
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);font-weight:500}
-  .fb{border-radius:3px;padding:14px 15px;margin-top:16px;font-size:15px}
+  .fb{border-radius:3px;padding:13px 15px;margin-top:12px;font-size:15px}
   .fb.ok{background:#14301e;border:1px solid #2c5a3a}
   .fb.no{background:#2c1815;border:1px solid #5a3129}
-  .fb b{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:7px}
+  .fb b{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px}
   .fb.ok b{color:var(--green)} .fb.no b{color:var(--red)}
   .pts{float:right;color:var(--gold);font-weight:700}
   .big{font-family:Georgia,serif;font-size:56px;line-height:1;margin:14px 0 6px}
   .kv{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
   .kv span:last-child{color:var(--cream);font-weight:600}
   .kv span:first-child{color:var(--dim)}
-  /* avatar picker */
   .sheet{position:fixed;inset:0;background:rgba(6,8,12,.94);z-index:20;display:flex;
          align-items:center;justify-content:center;padding:24px}
   .sheet .inner{max-width:420px;width:100%}
@@ -90,6 +102,11 @@
   .agrid button{border:0;background:none;padding:0;cursor:pointer;aspect-ratio:1}
   .agrid button .ava{border-radius:3px;border:2px solid transparent}
   .agrid button.on .ava{border-color:var(--gold)}
+  .rgt{display:flex;align-items:center;gap:10px}
+  .snd{background:none;border:1px solid var(--line);color:var(--dim);font-size:10px;
+       letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:2px;
+       font-family:inherit;cursor:pointer}
+  .snd.off{color:#6b7488;border-color:#222836}
   [hidden]{display:none!important}
 </style>
 </head>
@@ -98,12 +115,12 @@
 
   <section id="home">
     <div class="head">
-      <div class="brand"><span class="gem dia"></span><h1 class="mark">Genial</h1></div>
+      <div class="brand"><span class="gem dia"></span><h1 class="mark">Geniality</h1></div>
       <button class="avabtn" id="myavatar" aria-label="Your avatar"></button>
     </div>
-    <p class="tag">A hundred subjects. Ten questions each. Answer fast, or don't bother.</p>
+    <p class="tag">Ten questions a round. Four options at the bottom, ten at the top.</p>
     <div class="rule"></div>
-    <input id="search" type="text" placeholder="Search the hundred" autocomplete="off">
+    <input id="search" type="text" placeholder="Search the subjects" autocomplete="off">
     <div class="chips" id="chips"></div>
     <div id="list"></div>
     <p class="note">Practice mode. The pools and the ladder live on this phone. Opponents, the three-question toll and the marking of your own questions arrive with the server.</p>
@@ -111,15 +128,14 @@
 
   <section id="play" hidden>
     <div class="pips" id="pips"></div>
-    <div class="top"><span id="cat"></span><span id="count"></span></div>
+    <div class="top"><span id="cat"></span><span class="rgt"><span id="count"></span><button id="sound" class="snd" aria-label="Sound">sound on</button></span></div>
     <div class="clock"><i id="clockbar"></i></div>
     <div class="q" id="q"></div>
     <div><span class="tier low" id="tier"><span>low</span></span></div>
-    <div id="answerbox">
-      <input id="answer" type="text" placeholder="Your answer" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <button class="btn" id="submit">Answer</button>
-      <button class="btn ghost" id="pass">Pass</button>
-    </div>
+    <div class="opts n4" id="options"></div>
+    <button class="mic" id="mic">Speak your answer</button>
+    <p id="heard"></p>
+    <button class="btn ghost" id="pass">Pass</button>
     <div id="feedback"></div>
     <button class="btn" id="next" hidden>Next</button>
   </section>
@@ -141,7 +157,7 @@
 
 <div class="sheet" id="sheet" hidden>
   <div class="inner">
-    <div class="head"><div class="brand"><span class="gem dia"></span><h1 class="mark" style="font-size:22px">Your face</h1></div></div>
+    <div class="head"><div class="brand"><span class="gem dia"></span><h1 class="mark" style="font-size:20px">Your face</h1></div></div>
     <p class="tag">Pick a diamond. It goes on your card and your ladder.</p>
     <div class="agrid" id="agrid"></div>
     <button class="btn" id="avdone">That's me</button>
@@ -1714,9 +1730,9 @@ Object.assign(BANK,{
     shown.forEach(function(c){
       if(filter==="All" && BANK[c].area!==lastArea){
         lastArea=BANK[c].area;
-        var h=document.createElement("div"); h.className="sect"; h.textContent=lastArea;
+        var h=document.createElement("div");
         h.style.fontSize="11px";h.style.letterSpacing=".18em";h.style.textTransform="uppercase";
-        h.style.color="var(--dim)";h.style.margin="22px 0 0";
+        h.style.color="var(--dim)";h.style.margin="22px 0 0";h.textContent=lastArea;
         el.appendChild(h);
         var g=document.createElement("div"); g.className="grid"; el.appendChild(g);
       }
@@ -1749,47 +1765,128 @@ Object.assign(BANK,{
   $("myavatar").onclick=function(){ drawAgrid(); $("sheet").hidden=false; };
   $("avdone").onclick=function(){ $("sheet").hidden=true; if(avatar===null){ avatar=0; store.set("avatar",0);} paintAvatar($("myavatar")); };
 
-  /* ---------- marking ---------- */
+  /* ---------- answer options ---------- */
+  var NUMW={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
+    eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,
+    nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90,
+    hundred:100,thousand:1000};
+  var NUMR={}; Object.keys(NUMW).forEach(function(k){ NUMR[NUMW[k]]=k; });
   function norm(s){
     return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()
-      .replace(/^(the|a|an) /,"");
+      .replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim().replace(/^(the|a|an) /,"");
   }
-  function lev(a,b){
-    if(a===b) return 0;
-    var m=a.length,n=b.length,prev=[],i,j;
-    for(j=0;j<=n;j++) prev[j]=j;
-    for(i=1;i<=m;i++){
-      var cur=[i];
-      for(j=1;j<=n;j++){
-        cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
-      }
-      prev=cur;
-    }
-    return prev[n];
+  function primary(a){ return String(a).split("|")[0]; }
+  function numeric(v){
+    var s=norm(v);
+    if(/^\d+$/.test(s)) return parseInt(s,10);
+    if(NUMW.hasOwnProperty(s)) return NUMW[s];
+    return null;
   }
-  function isRight(given, q){
-    var g=norm(given).replace(/ /g,"");
-    if(!g) return false;
-    var answers=[q[1]].concat((q[2]&&q[2]!=="skip")?q[2].split("|"):[]);
-    for(var i=0;i<answers.length;i++){
-      var a=norm(answers[i]).replace(/ /g,"");
-      if(!a) continue;
-      if(g===a) return true;
-      if(a.length>=4 && (g.indexOf(a)>=0 || a.indexOf(g)>=0) && Math.min(g.length,a.length)>=4) return true;
-      var tol=Math.max(1,Math.floor(a.length/6));
-      if(Math.abs(g.length-a.length)<=tol+1 && lev(g,a)<=tol) return true;
+  function wordOf(n){
+    if(NUMR[n]) return NUMR[n].charAt(0).toUpperCase()+NUMR[n].slice(1);
+    return String(n);
+  }
+  function closeness(a,b){
+    a=norm(a).replace(/ /g,""); b=norm(b).replace(/ /g,"");
+    if(!a||!b) return 0;
+    var set={}, i, hit=0;
+    for(i=0;i<a.length-1;i++) set[a.substr(i,2)]=1;
+    for(i=0;i<b.length-1;i++) if(set[b.substr(i,2)]) hit++;
+    return hit/Math.max(1,(b.length-1));
+  }
+  var ALL_ANSWERS=null;
+  function allAnswers(){
+    if(ALL_ANSWERS) return ALL_ANSWERS;
+    ALL_ANSWERS=[];
+    CATS.forEach(function(c){ BANK[c].q.forEach(function(q){ ALL_ANSWERS.push(primary(q[1])); }); });
+    return ALL_ANSWERS;
+  }
+  function buildOptions(cat, idx, count){
+    var q=BANK[cat].q[idx], right=primary(q[1]);
+    var seen={}, pool=[], i;
+    seen[norm(right)]=1;
+    var num=numeric(right);
+    function push(v){
+      if(!v) return;
+      var n=norm(v);
+      if(!n||seen[n]) return;
+      var vn=numeric(v);
+      if(num!==null){ if(vn===null) return; }
+      else { if(vn!==null) return; }
+      seen[n]=1; pool.push(v);
     }
-    return false;
+    if(num!==null){
+      [num+1,num-1,num+2,num-2,num+3,num-3,num+10,num-10,num*2,Math.round(num/2)].forEach(function(v){
+        if(v>0 && v!==num) push(wordOf(v));
+      });
+    }
+    var area=BANK[cat].area;
+    BANK[cat].q.forEach(function(o){ push(primary(o[1])); });
+    CATS.forEach(function(c){
+      if(c===cat||BANK[c].area!==area) return;
+      BANK[c].q.forEach(function(o){ push(primary(o[1])); });
+    });
+    allAnswers().forEach(function(v){ push(v); });
+    pool.sort(function(a,b){
+      var d=closeness(right,b)-closeness(right,a);
+      if(Math.abs(d)>0.001) return d;
+      return Math.abs(norm(a).length-norm(right).length)-Math.abs(norm(b).length-norm(right).length);
+    });
+    var opts=pool.slice(0,count-1);
+    opts.push(right);
+    for(i=opts.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t2=opts[i];opts[i]=opts[j];opts[j]=t2; }
+    return {options:opts, correct:opts.indexOf(right)};
   }
 
+  /* ---------- sound: heartbeat, tick, chime ---------- */
+  var AC=null, soundOn=store.get("sound",true), lastBeat=0, lastTickSec=-1;
+  function ac(){
+    if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; } }
+    if(AC && AC.state==="suspended"){ try{ AC.resume(); }catch(e){} }
+    return AC;
+  }
+  function tone(when,freq,gainv,dur,type){
+    var c=ac(); if(!c) return;
+    var o=c.createOscillator(), g=c.createGain();
+    o.type=type||"sine"; o.frequency.setValueAtTime(freq,when);
+    g.gain.setValueAtTime(0.0001,when);
+    g.gain.linearRampToValueAtTime(gainv,when+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0008,when+dur);
+    o.connect(g); g.connect(c.destination); o.start(when); o.stop(when+dur+0.03);
+  }
+  function beat(){
+    var c=ac(); if(!c||!soundOn) return;
+    var t=c.currentTime+0.01;
+    tone(t,62,0.5,0.22,"sine");
+    tone(t+0.23,47,0.32,0.20,"sine");
+  }
+  function tickSound(){
+    var c=ac(); if(!c||!soundOn) return;
+    tone(c.currentTime+0.01,1500,0.10,0.045,"square");
+  }
+  function chime(up){
+    var c=ac(); if(!c||!soundOn) return;
+    var t=c.currentTime+0.01;
+    if(up){ tone(t,660,0.18,0.16,"triangle"); tone(t+0.11,990,0.16,0.26,"triangle"); }
+    else { tone(t,150,0.20,0.30,"sawtooth"); tone(t+0.06,110,0.14,0.34,"sine"); }
+  }
+  $("sound").onclick=function(){
+    soundOn=!soundOn; store.set("sound",soundOn);
+    $("sound").textContent = soundOn ? "sound on" : "sound off";
+    $("sound").className = "snd"+(soundOn?"":" off");
+    if(soundOn){ ac(); beat(); }
+  };
+  $("sound").textContent = soundOn ? "sound on" : "sound off";
+  $("sound").className = "snd"+(soundOn?"":" off");
+
   /* ---------- play ---------- */
-  var S={};
-  var CLOCK=20;
+  var S={}, CLOCK=20, tick=null, t0=0, rec=null;
+  var COUNT={low:4,medium:6,hard:8,genial:10};
   function tierOf(i){ return i<3?"low":i<6?"medium":i<9?"hard":"genial"; }
   var TIER={low:1,medium:2,hard:3,genial:5};
 
   function start(cat){
+    ac();
     S={cat:cat, i:0, score:0, correct:0, fastest:null, answered:false, results:[]};
     $("home").hidden=true; $("end").hidden=true; $("play").hidden=false;
     $("cat").textContent=cat;
@@ -1799,15 +1896,22 @@ Object.assign(BANK,{
   }
   function ask(){
     S.answered=false;
-    var q=BANK[S.cat].q[S.i];
+    var q=BANK[S.cat].q[S.i], t=tierOf(S.i);
     $("count").textContent=(S.i+1)+" / 10";
     $("q").textContent=q[0];
-    var t=tierOf(S.i), el=$("tier");
-    el.className="tier "+t; el.innerHTML="<span>"+t+"</span>";
-    $("feedback").innerHTML=""; $("answerbox").hidden=false;
-    $("next").hidden=true;
-    var inp=$("answer"); inp.value=""; inp.disabled=false;
-    setTimeout(function(){ inp.focus(); },60);
+    var el=$("tier"); el.className="tier "+t; el.innerHTML="<span>"+t+"</span>";
+    $("feedback").innerHTML=""; $("next").hidden=true;
+    S.built=buildOptions(S.cat,S.i,COUNT[t]);
+    var box=$("options"); box.innerHTML="";
+    box.className="opts n"+COUNT[t];
+    S.built.options.forEach(function(o,ix){
+      var b=document.createElement("button");
+      b.className="opt";
+      b.innerHTML='<span class="ltr">'+"ABCDEFGHIJ".charAt(ix)+'</span>'+o;
+      b.onclick=function(){ judge(ix,false); };
+      box.appendChild(b);
+    });
+    $("pass").hidden=false;
     paintPips();
     startClock();
   }
@@ -1819,49 +1923,100 @@ Object.assign(BANK,{
       else if(i===S.i) p[i].className="now";
     }
   }
-  var tick=null, t0=0;
   function startClock(){
-    clearInterval(tick); t0=Date.now();
+    clearInterval(tick); t0=Date.now(); lastBeat=0; lastTickSec=-1;
     $("clockbar").style.width="100%";
     tick=setInterval(function(){
       var el=Date.now()-t0, left=Math.max(0,CLOCK-el/1000);
       $("clockbar").style.width=(left/CLOCK*100)+"%";
-      if(left<=0){ clearInterval(tick); if(!S.answered) judge(null,true); }
+      var period = left>13 ? 1.35 : left>6.5 ? 0.92 : 0.6;
+      if(Date.now()-lastBeat >= period*1000){ lastBeat=Date.now(); beat(); }
+      if(left<=5 && left>0){
+        var sec=Math.ceil(left);
+        if(sec!==lastTickSec){ lastTickSec=sec; tickSound(); }
+      }
+      if(left<=0){ clearInterval(tick); if(!S.answered) judge(-1,true); }
     },100);
   }
   function mult(secs){ return secs<CLOCK/3?1.5:secs<CLOCK*2/3?1:0.5; }
-  function judge(given, timedOut){
+  function judge(pick, timedOut){
     if(S.answered) return;
     S.answered=true; clearInterval(tick);
     var secs=Math.min(CLOCK,(Date.now()-t0)/1000);
     var q=BANK[S.cat].q[S.i];
-    var ok = given!==null && isRight(given,q);
+    var ok = pick===S.built.correct;
+    chime(ok);
     var pts = ok ? +(TIER[tierOf(S.i)]*mult(secs)).toFixed(1) : 0;
     S.score+=pts; if(ok) S.correct++;
     S.results[S.i]=ok;
     if(ok && (S.fastest===null || secs<S.fastest)) S.fastest=secs;
-    $("answerbox").hidden=true;
+    var btns=$("options").querySelectorAll(".opt");
+    for(var i=0;i<btns.length;i++){
+      btns[i].disabled=true;
+      if(i===S.built.correct) btns[i].className="opt right";
+      else if(i===pick) btns[i].className="opt wrong";
+    }
+    $("pass").hidden=true;
     $("feedback").innerHTML='<div class="fb '+(ok?"ok":"no")+'">'+
       '<span class="pts">'+(ok?"+"+pts:"0")+'</span>'+
-      '<b>'+(ok?"Correct":"No")+'</b>'+
-      (ok? "" : "The answer is <strong>"+q[1]+"</strong>.")+
-      (timedOut? " Time.":"")+'</div>';
+      '<b>'+(ok?"Correct":(timedOut?"Time":"No"))+'</b>'+
+      (ok? "" : "The answer is <strong>"+q[1].split("|")[0]+"</strong>.")+'</div>';
     $("next").hidden=false;
     $("next").textContent = S.i===9 ? "See the result" : "Next";
     paintPips();
   }
-  $("submit").onclick=function(){ judge($("answer").value,false); };
-  $("answer").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); judge($("answer").value,false); } });
-  $("pass").onclick=function(){ judge(null,false); };
+  $("pass").onclick=function(){ judge(-1,false); };
   $("next").onclick=function(){ if(S.i<9){ S.i++; ask(); } else { finish(); } };
+
+  /* ---------- voice ---------- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ $("mic").hidden=true; }
+  else {
+    $("mic").onclick=function(){
+      if(S.answered) return;
+      try{
+        rec = new SR();
+        rec.lang="en-GB"; rec.interimResults=false; rec.maxAlternatives=5;
+        rec.onresult=function(ev){
+          var heard=[], i, j;
+          for(i=0;i<ev.results.length;i++)
+            for(j=0;j<ev.results[i].length;j++) heard.push(ev.results[i][j].transcript);
+          var pick=-1;
+          heard.forEach(function(h){
+            if(pick>=0) return;
+            var n=norm(h), m=n.match(/^([a-j])\b/);
+            if(m){ var ix="abcdefghij".indexOf(m[1]); if(ix<S.built.options.length) pick=ix; }
+            if(pick<0){
+              S.built.options.forEach(function(o,ix2){
+                if(pick<0 && norm(o)===n) pick=ix2;
+              });
+            }
+            if(pick<0){
+              var num=numeric(n);
+              if(num!==null){
+                S.built.options.forEach(function(o,ix3){
+                  if(pick<0 && numeric(o)===num) pick=ix3;
+                });
+              }
+            }
+          });
+          if(pick>=0) judge(pick,false);
+          else $("heard").textContent="I heard \u201c"+heard[0]+"\u201d. Say a letter, or tap.";
+        };
+        rec.onerror=function(){ $("heard").textContent="Didn't catch that. Tap, or say a letter."; };
+        rec.onend=function(){ $("mic").classList.remove("on"); };
+        $("mic").classList.add("on");
+        $("heard").textContent="Listening. Say a letter or the answer.";
+        rec.start();
+      }catch(e){ $("heard").textContent="Voice isn't available here. Tap instead."; }
+    };
+  }
 
   function finish(){
     clearInterval(tick);
     $("play").hidden=true; $("end").hidden=false;
-    var pct=Math.round(S.score/(3*1+3*2+3*3+5)*10); // max without speed = 23
     var rt=ratings(); var before=rt[S.cat]||1000;
-    var ratio=S.correct/10;
-    var delta=Math.round((ratio-0.5)*60);
+    var delta=Math.round((S.correct/10-0.5)*60);
     var after=Math.max(600,before+delta);
     rt[S.cat]=after; store.set("ratings",rt);
     $("endcat").textContent=S.cat;
@@ -1881,10 +2036,9 @@ Object.assign(BANK,{
 
   /* ---------- boot ---------- */
   document.querySelector("#home .tag").textContent = CATS.length+
-    " subjects, entry level upwards. Ten questions each. Answer fast, or don\'t bother.";
+    " subjects, entry level upwards. Ten questions each. Four options at the bottom, ten at the top.";
   drawChips(); drawList();
   if(avatar===null){ drawAgrid(); $("sheet").hidden=false; } else { paintAvatar($("myavatar")); }
-  $("cat").textContent="";
 })();
 </script>
 </body>
