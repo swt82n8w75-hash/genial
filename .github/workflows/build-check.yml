@@ -1,0 +1,45 @@
+name: Geniality build check (no signing)
+on:
+  workflow_dispatch:
+jobs:
+  compile:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Put the Geniality build in place
+        run: |
+          mkdir -p www
+          cp -R geniality/. www/
+          rm -f www/capacitor.config.json
+          cp geniality/capacitor.config.json capacitor.config.json
+      - name: Install dependencies
+        run: npm install
+      - name: Add iOS platform if missing
+        run: |
+          if [ ! -d ios ]; then npx cap add ios; fi
+      - name: Sync web assets
+        run: npx cap sync ios
+      - name: Compile without signing
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            MARKETING_VERSION=1.0.0 CURRENT_PROJECT_VERSION=1 build
+      - name: Report what was built
+        run: |
+          cd ios/App
+          APP=$(ls -d build/Build/Products/Release-iphoneos/*.app | head -1)
+          echo "built: $APP"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Info.plist"
+          du -sh "$APP"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: geniality-unsigned-app
+          path: ios/App/build/Build/Products/Release-iphoneos/*.app
